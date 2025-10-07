@@ -10,6 +10,8 @@ WORKDIR /app
 
 RUN corepack enable
 
+RUN pnpm config set store-dir /pnpm/store
+
 EXPOSE 3000
 
 CMD [ "sh", "-c", "pnpm install && pnpm run dev" ]
