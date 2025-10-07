@@ -9,7 +9,7 @@ module.exports = {
     "next-env.d.ts",
     "*rc.(c|m)[jt]s",
     "*.config.(c|m)[jt]s",
-    "pnpm-lock.yaml"
+    "pnpm-lock.yaml",
   ],
   rules: {
     // ...
