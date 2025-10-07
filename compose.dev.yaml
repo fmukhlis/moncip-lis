@@ -1,0 +1,23 @@
+services:
+  moncip-lis:
+    container_name: moncip-lis
+    build:
+      context: .
+      target: dev
+    env_file:
+      - .env
+      - .env.local
+    volumes:
+      - ./:/app
+      - pnpm-store:/app/.pnpm-store
+    ports:
+      - 3000:3000
+#     network:
+#       - default_network
+
+# networks:
+#   default_network:
+#     external: true
+
+volumes:
+  pnpm-store:

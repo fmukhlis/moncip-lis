@@ -1,0 +1,15 @@
+services:
+  moncip-lis:
+    container_name: moncip-lis
+    build:
+      context: .
+      target: runner
+    restart: always
+    ports:
+      - 3000:3000
+#     networks:
+#       - default_network
+
+# networks:
+#   default_network:
+#     external: true
