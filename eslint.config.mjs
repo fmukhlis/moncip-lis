@@ -20,6 +20,7 @@ const eslintConfig = [
       "next-env.d.ts",
       ".lintstagedrc.js",
       "commitlint.config.js",
+      "coverage/**"
     ],
   },
 ];
