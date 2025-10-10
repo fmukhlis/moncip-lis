@@ -12,12 +12,18 @@ services:
       - pnpm-store:/pnpm/store
     ports:
       - 3000:3000
-#     network:
-#       - default_network
 
-# networks:
-#   default_network:
-#     external: true
+  db:
+    image: postgres:17
+    shm_size: 128mb
+    environment:
+      POSTGRES_USER: moncip_lis
+      POSTGRES_PASSWORD: moncip_lis
+
+  adminer:
+    image: adminer
+    ports:
+      - 8080:8080
 
 volumes:
   pnpm-store:
