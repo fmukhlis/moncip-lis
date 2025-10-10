@@ -21,6 +21,7 @@ const eslintConfig = [
       ".lintstagedrc.js",
       "commitlint.config.js",
       "coverage/**",
+      "generated/prisma/**",
     ],
   },
 ];
