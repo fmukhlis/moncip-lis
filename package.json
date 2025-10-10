@@ -11,6 +11,9 @@
     "test:watch": "jest --watch",
     "prepare": "husky"
   },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
   "dependencies": {
     "@prisma/client": "^6.17.0",
     "next": "15.5.4",
