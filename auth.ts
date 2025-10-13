@@ -1,8 +1,10 @@
 import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
+import prisma from "./lib/prisma";
 import NextAuth from "next-auth";
 
 import { Provider } from "next-auth/providers";
+import { PrismaAdapter } from "@auth/prisma-adapter";
 
 const providers: Provider[] = [Google, GitHub];
 
@@ -16,8 +18,12 @@ export const providerMap = providers.map((provider) => {
 });
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  providers,
   pages: {
     signIn: "/signin",
   },
+  adapter: PrismaAdapter(prisma),
+  session: {
+    strategy: "database",
+  },
+  providers,
 });
