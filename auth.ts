@@ -26,4 +26,16 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     strategy: "database",
   },
   providers,
+  callbacks: {
+    session({ session, user }) {
+      session.user.role = user.role;
+      return session;
+    },
+  },
 });
+
+declare module "next-auth" {
+  interface User {
+    role?: "admin" | "doctor" | "lab_tech";
+  }
+}
