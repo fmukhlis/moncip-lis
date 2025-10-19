@@ -3,6 +3,7 @@ import LOGOS from "@/components/logos";
 
 import type { Metadata } from "next";
 
+import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { roboto } from "@/lib/fonts";
 import { providerMap, signIn } from "@/auth";
@@ -18,11 +19,11 @@ function Signup(props: {
   return (
     <div className="h-screen flex justify-center items-center">
       <main className="bg-card w-4/5  md:w-[500px] border border-input p-6 rounded-md shadow-sm shadow-input">
-        <h1 className="text-2xl font-black text-center mb-3">
+        <h1 className="text-2xl font-black text-center mb-2">
           Sign Up to Moncip LIS
         </h1>
 
-        <p className="mb-3 text-center">
+        <p className="mb-4 text-center">
           Create a new <span className="font-semibold">Administrator</span>{" "}
           account
         </p>
@@ -43,20 +44,22 @@ function Signup(props: {
                 }
               }}
             >
-              <Button
-                variant={"google-spec"}
-                size={"google-spec"}
-                type="submit"
-              >
-                <div className="flex items-center">
-                  <div className="w-[25px] h-[25px]">
-                    {LOGOS[provider.name as "Google" | "GitHub"]}
+              <Field>
+                <Button
+                  variant={"google-spec"}
+                  size={"google-spec"}
+                  type="submit"
+                >
+                  <div className="flex items-center">
+                    <div className="w-[25px] h-[25px]">
+                      {LOGOS[provider.name as "Google" | "GitHub"]}
+                    </div>
+                    <span className={`${roboto.className} ml-[10px]`}>
+                      Sign in with {provider.name}
+                    </span>
                   </div>
-                  <span className={`${roboto.className} ml-[10px]`}>
-                    Sign in with {provider.name}
-                  </span>
-                </div>
-              </Button>
+                </Button>
+              </Field>
             </form>
           ))}
         </div>
