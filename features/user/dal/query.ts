@@ -1,22 +1,8 @@
+import z from "zod";
 import prisma from "@/lib/prisma";
+import saltAndHash from "@/lib/salt-and-hash";
 
-export default async function getLabMembers(laboratoryId: string) {
-  const users = await prisma.user.findMany({
-    where: {
-      role: {
-        not: "admin",
-      },
-      laboratoryId,
-    },
-  });
-
-  return users.map((user) => ({
-    id: user.id,
-    name: user.name,
-    role: user.role,
-    username: user.username,
-  }));
-}
+import { CreateUserSchema } from "../schema";
 
 export async function getUserCredentials(username: string) {
   const user = await prisma.user.findUnique({ where: { username } });
@@ -27,4 +13,23 @@ export async function getUserCredentials(username: string) {
         password: user.password,
       }
     : null;
+}
+
+export async function createUser(
+  laboratoryId: string,
+  { name, role, username, password }: z.infer<typeof CreateUserSchema>,
+) {
+  return prisma.user.create({
+    data: {
+      name,
+      role,
+      username,
+      password: await saltAndHash(password),
+      laboratory: {
+        connect: {
+          id: laboratoryId,
+        },
+      },
+    },
+  });
 }

@@ -6,9 +6,9 @@ import { Input } from "../ui/input";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Spinner } from "../ui/spinner";
-import { createUser } from "@/features/user/action";
 import { useSession } from "next-auth/react";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { createUserAction } from "@/features/user/action";
 import { CreateUserSchema } from "@/features/user/schema";
 import { Controller, useForm } from "react-hook-form";
 import { Field, FieldError, FieldGroup, FieldLabel } from "../ui/field";
@@ -44,7 +44,10 @@ export default function CreateUserForm() {
   });
 
   async function onSubmit(data: z.infer<typeof CreateUserSchema>) {
-    const response = await createUser(session?.user?.laboratoryId ?? "", data);
+    const response = await createUserAction(
+      session?.user?.laboratoryId ?? "",
+      data,
+    );
     if (response.success) {
       toast.success(response.message);
     } else {
