@@ -1,9 +1,9 @@
-import getLabMembers from "@/features/user/dal/query";
 import CreateUserForm from "@/components/user/create-user-form";
 
 import { auth } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { Metadata } from "next";
+import { getLabMembers } from "@/features/lab/dal/query";
 import { SessionProvider } from "next-auth/react";
 import {
   Card,

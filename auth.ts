@@ -8,6 +8,7 @@ import Credentials from "next-auth/providers/credentials";
 import { Provider } from "next-auth/providers";
 import { randomUUID } from "crypto";
 import { PrismaAdapter } from "@auth/prisma-adapter";
+import { createLaboratory } from "./features/lab/dal/query";
 import { getUserCredentials } from "./features/user/dal/query";
 import { encode as defaultEncode } from "next-auth/jwt";
 import { SignInWithCredentialsSchema } from "./features/authentication/schema";
@@ -79,9 +80,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       const { email, username, image, name, role, laboratoryId } = session.user;
 
       if (!session.user.laboratoryId && session.user.role === "admin") {
-        await prisma.laboratory.create({
-          data: { users: { connect: { id: session.user.id } } },
-        });
+        await createLaboratory(session.user.id);
       }
 
       return {
