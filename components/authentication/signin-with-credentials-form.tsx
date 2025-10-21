@@ -1,12 +1,13 @@
 "use client";
 
 import z from "zod";
+import React from "react";
 
 import { Input } from "../ui/input";
-import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
+import { signInWithCredentials } from "@/features/authentication/action";
 import { SignInWithCredentialsSchema } from "@/features/authentication/schema";
 import {
   Field,
@@ -14,40 +15,43 @@ import {
   FieldGroup,
   FieldLabel,
 } from "@/components/ui/field";
-import React from "react";
 
-export default function LoginWithCredentialsForm(
-  props: React.ComponentPropsWithoutRef<"form">,
-) {
+export default function LoginWithCredentialsForm({
+  callbackUrl,
+}: {
+  callbackUrl?: string;
+}) {
   const form = useForm<z.infer<typeof SignInWithCredentialsSchema>>({
     resolver: zodResolver(SignInWithCredentialsSchema),
     defaultValues: {
-      email: "",
+      username: "",
       password: "",
     },
     reValidateMode: "onChange",
   });
 
-  function onSubmit(data: z.infer<typeof SignInWithCredentialsSchema>) {}
+  async function onSubmit(data: z.infer<typeof SignInWithCredentialsSchema>) {
+    await signInWithCredentials({ data, callbackUrl });
+  }
 
   return (
-    <form {...props} onSubmit={form.handleSubmit(onSubmit)}>
+    <form onSubmit={form.handleSubmit(onSubmit)}>
       <FieldGroup className="gap-2">
         <Controller
-          name="email"
+          name="username"
           render={({ field, fieldState }) => {
             return (
               <Field className="gap-1">
-                <FieldLabel htmlFor="email" className="text-base">
-                  Email
+                <FieldLabel htmlFor="username" className="text-base">
+                  Username
                 </FieldLabel>
                 <Input
                   {...field}
-                  id="email"
+                  id="username"
                   required
                   className="h-[50px] text-base"
                   aria-invalid={fieldState.invalid}
-                  placeholder="name@domain.com"
+                  placeholder="Your username..."
                 />
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />

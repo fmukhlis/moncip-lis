@@ -2,22 +2,24 @@ import Link from "next/link";
 import LOGOS from "@/components/logos";
 import LoginWithCredentialsForm from "@/components/authentication/signin-with-credentials-form";
 
-import type { Metadata } from "next";
-
 import { Field } from "@/components/ui/field";
 import { roboto } from "@/lib/fonts";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { providerMap, signIn } from "@/auth";
 
+import type { Metadata } from "next";
+
 export const metadata: Metadata = {
   title: "Sign In",
-  description: "Login to Moncip LIS",
+  description: "Sign In to Moncip LIS",
 };
 
-function Signin(props: {
+async function Signin(props: {
   searchParams: Promise<{ callbackUrl: string | undefined }>;
 }) {
+  const callbackUrl = (await props.searchParams).callbackUrl;
+
   return (
     <div className="h-screen flex justify-center items-center">
       <main className="bg-card w-4/5 max-w-lg border border-input p-6 rounded-md shadow-sm shadow-input">
@@ -28,19 +30,7 @@ function Signin(props: {
         <p className="mb-2 text-center">Login with credentials</p>
 
         <div className="w-[70%] mx-auto">
-          <LoginWithCredentialsForm
-            action={async () => {
-              "use server";
-              const callbackUrl = (await props.searchParams).callbackUrl;
-              try {
-                await signIn("credentials", {
-                  redirectTo: callbackUrl ?? "",
-                });
-              } catch (error) {
-                throw error;
-              }
-            }}
-          />
+          <LoginWithCredentialsForm callbackUrl={callbackUrl} />
         </div>
 
         <Separator orientation="horizontal" className="mt-5 mb-3" />
@@ -59,7 +49,7 @@ function Signin(props: {
                 const callbackUrl = (await props.searchParams).callbackUrl;
                 try {
                   await signIn(provider.id, {
-                    redirectTo: callbackUrl ?? "",
+                    redirectTo: callbackUrl ?? "/admin",
                   });
                 } catch (error) {
                   throw error;

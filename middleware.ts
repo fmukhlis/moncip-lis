@@ -16,13 +16,15 @@ export const config = {
 
 export default auth((req) => {
   if (req.auth) {
-    console.log(req.nextUrl.pathname);
     if (req.nextUrl.pathname === "/signin") {
       const rootUrl = new URL("/", req.nextUrl.origin);
       return Response.redirect(rootUrl);
     }
   } else {
-    if (req.nextUrl.pathname.startsWith("/dashboard")) {
+    if (
+      req.nextUrl.pathname.startsWith("/admin") ||
+      req.nextUrl.pathname.startsWith("/lab")
+    ) {
       const signInUrl = new URL("/signin", req.nextUrl.origin);
       return Response.redirect(signInUrl);
     }

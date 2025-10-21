@@ -15,6 +15,16 @@ function Dialog({
 function DialogTrigger({
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Trigger>) {
+  const [isMounted, setIsMounted] = React.useState(false);
+
+  React.useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  if (!isMounted) {
+    const { children } = props;
+    return children;
+  }
   return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />;
 }
 

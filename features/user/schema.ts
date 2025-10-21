@@ -1,6 +1,8 @@
 import z from "zod";
 
-export const SignInWithCredentialsSchema = z.object({
+export const CreateUserSchema = z.object({
+  role: z.enum(["lab_tech", "doctor"]),
+  name: z.string().max(50).nonempty(),
   username: z
     .string()
     .min(3)

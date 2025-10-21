@@ -15,13 +15,16 @@ datasource db {
 }
 
 model User {
-  id            String          @id @default(cuid())
+  laboratoryId  String?
+  id            String          @id @default(cuid(2))
   name          String?
-  email         String          @unique
+  email         String?          @unique
+  username      String?          @unique
   emailVerified DateTime?
   image         String?
   role          Role            @default(admin)
   password      String?
+  laboratory    Laboratory?     @relation(fields: [laboratoryId], references: [id])
   accounts      Account[]
   sessions      Session[]
   // Optional for WebAuthn support
@@ -90,4 +93,9 @@ model Authenticator {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
  
   @@id([userId, credentialID])
+}
+
+model Laboratory {
+  id        String   @id @default(cuid(2))
+  users     User[]
 }
