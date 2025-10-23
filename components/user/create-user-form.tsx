@@ -1,12 +1,12 @@
 "use client";
 
 import z from "zod";
+import React from "react";
 
 import { Input } from "../ui/input";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Spinner } from "../ui/spinner";
-import { useSession } from "next-auth/react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createUserAction } from "@/features/user/action";
 import { CreateUserSchema } from "@/features/user/schema";
@@ -30,7 +30,7 @@ import {
 } from "../ui/dialog";
 
 export default function CreateUserForm() {
-  const { data: session } = useSession();
+  const cancelButtonRef = React.useRef<HTMLButtonElement | null>(null);
 
   const form = useForm<z.infer<typeof CreateUserSchema>>({
     mode: "onSubmit",
@@ -47,6 +47,7 @@ export default function CreateUserForm() {
     const response = await createUserAction(data);
     if (response.success) {
       toast.success(response.message);
+      cancelButtonRef.current?.click();
     } else {
       toast.error(response.message);
     }
@@ -175,7 +176,12 @@ export default function CreateUserForm() {
           </div>
           <DialogFooter className="">
             <DialogClose asChild>
-              <Button type="button" variant="secondary" className="mr-auto">
+              <Button
+                ref={cancelButtonRef}
+                type="button"
+                variant="secondary"
+                className="mr-auto"
+              >
                 Close
               </Button>
             </DialogClose>

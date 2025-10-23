@@ -4,6 +4,7 @@ import z from "zod";
 
 import { auth } from "@/auth";
 import { createUser } from "./dal/query";
+import { revalidatePath } from "next/cache";
 import { CreateUserSchema } from "./schema";
 
 export async function createUserAction(data: z.infer<typeof CreateUserSchema>) {
@@ -20,6 +21,8 @@ export async function createUserAction(data: z.infer<typeof CreateUserSchema>) {
   }
 
   await createUser(session.user.laboratoryId, parsedData.data);
+
+  revalidatePath("/admin/dashboard");
 
   return { success: true, message: "User created successfully.", data: data };
 }
