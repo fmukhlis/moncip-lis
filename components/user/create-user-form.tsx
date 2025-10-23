@@ -44,10 +44,7 @@ export default function CreateUserForm() {
   });
 
   async function onSubmit(data: z.infer<typeof CreateUserSchema>) {
-    const response = await createUserAction(
-      session?.user?.laboratoryId ?? "",
-      data,
-    );
+    const response = await createUserAction(data);
     if (response.success) {
       toast.success(response.message);
     } else {
