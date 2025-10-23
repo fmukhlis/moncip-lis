@@ -19,7 +19,7 @@ export async function createUser(
   laboratoryId: string,
   { name, role, username, password }: z.infer<typeof CreateUserSchema>,
 ) {
-  return prisma.user.create({
+  return await prisma.user.create({
     data: {
       name,
       role,

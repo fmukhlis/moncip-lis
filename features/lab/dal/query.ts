@@ -19,7 +19,7 @@ export async function getLabMembers(laboratoryId: string) {
 }
 
 export async function createLaboratory(userId: string) {
-  prisma.laboratory.create({
+  return await prisma.laboratory.create({
     data: { users: { connect: { id: userId } } },
   });
 }

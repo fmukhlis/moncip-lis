@@ -49,7 +49,7 @@ async function Signin(props: {
                 const callbackUrl = (await props.searchParams).callbackUrl;
                 try {
                   await signIn(provider.id, {
-                    redirectTo: callbackUrl ?? "/admin",
+                    redirectTo: callbackUrl ?? "/dashboard",
                   });
                 } catch (error) {
                   throw error;
