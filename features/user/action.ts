@@ -2,6 +2,8 @@
 
 import z from "zod";
 
+import prisma from "@/lib/prisma";
+
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
 import { createUser, updateUser } from "./dal/query";
@@ -12,12 +14,12 @@ export async function createUserAction(data: z.infer<typeof CreateUserSchema>) {
 
   const parsedData = CreateUserSchema.safeParse(data);
 
-  if (
-    !parsedData.success ||
-    session?.user?.role !== "admin" ||
-    !session.user.laboratoryId
-  ) {
-    return { success: false, message: "Failed to create user.", data: data };
+  if (session?.user?.role !== "admin" || !session.user.laboratoryId) {
+    return { success: false, message: "Authorization violations.", data: data };
+  }
+
+  if (!parsedData.success) {
+    return { success: false, message: "Invalid data.", data: data };
   }
 
   await createUser(session.user.laboratoryId, parsedData.data);
@@ -35,17 +37,23 @@ export async function updateUserAction(
 
   const parsedData = UpdateUserSchema.safeParse(data);
 
-  if (
-    !parsedData.success ||
-    session?.user?.role !== "admin" ||
-    !session.user.laboratoryId
-  ) {
-    return { success: false, message: "Failed to update user.", data: data };
+  if (!parsedData.success) {
+    return { success: false, message: "Invalid data.", data: data };
   }
 
-  await updateUser(userId, parsedData.data);
+  try {
+    await prisma.$transaction(async (tx) => {
+      const user = await updateUser(tx, userId, parsedData.data);
 
-  revalidatePath("/admin/dashboard");
+      if (user.laboratoryId !== session?.user?.laboratoryId) {
+        throw new Error();
+      }
+    });
 
-  return { success: true, message: "User updated successfully.", data: data };
+    revalidatePath("/admin/dashboard");
+
+    return { success: true, message: "User updated successfully.", data: data };
+  } catch (error) {
+    return { success: false, message: "Authorization violations.", data: data };
+  }
 }

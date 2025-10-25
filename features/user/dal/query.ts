@@ -2,6 +2,7 @@ import z from "zod";
 import prisma from "@/lib/prisma";
 import saltAndHash from "@/lib/salt-and-hash";
 
+import { Prisma } from "@/generated/prisma";
 import { CreateUserSchema, UpdateUserSchema } from "../schema";
 
 export async function getUserCredentials(username: string) {
@@ -35,10 +36,11 @@ export async function createUser(
 }
 
 export async function updateUser(
+  tx: Prisma.TransactionClient,
   userId: string,
   { name, role, username, password }: z.infer<typeof UpdateUserSchema>,
 ) {
-  return await prisma.user.update({
+  return await tx.user.update({
     where: {
       id: userId,
     },
