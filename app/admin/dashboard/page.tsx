@@ -1,10 +1,10 @@
+import LabMemberTable from "@/components/user/lab-member-table";
 import CreateUserForm from "@/components/user/create-user-form";
 
-import { auth } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { Metadata } from "next";
-import { getLabMembers } from "@/features/lab/dal/query";
 import { SessionProvider } from "next-auth/react";
+import { ArrowBigLeft, ArrowBigRight } from "lucide-react";
 import {
   Card,
   CardTitle,
@@ -15,14 +15,10 @@ import {
 } from "@/components/ui/card";
 
 export const metadata: Metadata = {
-  title: "Users",
+  title: "Admin Dashboard",
 };
 
 export default async function AdminDashboard() {
-  const session = await auth();
-
-  const users = await getLabMembers(session?.user?.laboratoryId ?? "");
-
   return (
     <SessionProvider>
       <main>
@@ -35,19 +31,18 @@ export default async function AdminDashboard() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <ul>
-              {users.map((user) => (
-                <li key={user.id} className="text-sm">
-                  {user.name}
-                </li>
-              ))}
-            </ul>
+            <LabMemberTable />
           </CardContent>
-          <CardFooter className="flex gap-2">
-            <Button variant={"destructive"} className="mr-auto font-semibold">
-              Delete
-            </Button>
+          <CardFooter className="flex gap-3">
             <CreateUserForm />
+            <Button variant={"secondary"} className="w-[90px] ml-auto">
+              <ArrowBigLeft />
+              Prev
+            </Button>
+            <Button variant={"secondary"} className="w-[90px] -auto">
+              Next
+              <ArrowBigRight />
+            </Button>
           </CardFooter>
         </Card>
       </main>

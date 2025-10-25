@@ -2,7 +2,7 @@ import z from "zod";
 import prisma from "@/lib/prisma";
 import saltAndHash from "@/lib/salt-and-hash";
 
-import { CreateUserSchema } from "../schema";
+import { CreateUserSchema, UpdateUserSchema } from "../schema";
 
 export async function getUserCredentials(username: string) {
   const user = await prisma.user.findUnique({ where: { username } });
@@ -30,6 +30,23 @@ export async function createUser(
           id: laboratoryId,
         },
       },
+    },
+  });
+}
+
+export async function updateUser(
+  userId: string,
+  { name, role, username, password }: z.infer<typeof UpdateUserSchema>,
+) {
+  return await prisma.user.update({
+    where: {
+      id: userId,
+    },
+    data: {
+      name,
+      role,
+      username,
+      password: password ? await saltAndHash(password) : undefined,
     },
   });
 }

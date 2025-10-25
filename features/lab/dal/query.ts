@@ -1,5 +1,7 @@
 import prisma from "@/lib/prisma";
 
+import { $Enums } from "@/generated/prisma";
+
 export async function getLabMembers(laboratoryId: string) {
   const users = await prisma.user.findMany({
     where: {
@@ -13,7 +15,7 @@ export async function getLabMembers(laboratoryId: string) {
   return users.map((user) => ({
     id: user.id,
     name: user.name,
-    role: user.role,
+    role: user.role as Exclude<$Enums.Role, "admin">,
     username: user.username,
   }));
 }
