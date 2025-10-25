@@ -30,7 +30,7 @@ import {
 } from "../ui/dialog";
 
 export default function CreateUserForm() {
-  const cancelButtonRef = React.useRef<HTMLButtonElement | null>(null);
+  const [isOpen, setIsOpen] = React.useState(false);
 
   const form = useForm<z.infer<typeof CreateUserSchema>>({
     mode: "onSubmit",
@@ -47,14 +47,20 @@ export default function CreateUserForm() {
     const response = await createUserAction(data);
     if (response.success) {
       toast.success(response.message);
-      cancelButtonRef.current?.click();
+      setIsOpen(false);
     } else {
       toast.error(response.message);
     }
   }
 
+  React.useEffect(() => {
+    if (isOpen) {
+      form.reset();
+    }
+  }, [isOpen]);
+
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <form id="create-user-form" onSubmit={form.handleSubmit(onSubmit)}>
         <DialogTrigger asChild>
           <Button variant="default" type="button" className="font-semibold">
@@ -72,10 +78,12 @@ export default function CreateUserForm() {
                 render={({ field, fieldState }) => {
                   return (
                     <Field className="gap-2" data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="name">Full Name</FieldLabel>
+                      <FieldLabel htmlFor="create-user-form-name">
+                        Full Name
+                      </FieldLabel>
                       <Input
                         {...field}
-                        id="name"
+                        id="create-user-form-name"
                         required
                         className=""
                         aria-invalid={fieldState.invalid}
@@ -93,10 +101,12 @@ export default function CreateUserForm() {
                 render={({ field, fieldState }) => {
                   return (
                     <Field className="gap-2" data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor="username">Username</FieldLabel>
+                      <FieldLabel htmlFor="create-user-form-username">
+                        Username
+                      </FieldLabel>
                       <Input
                         {...field}
-                        id="username"
+                        id="create-user-form-username"
                         required
                         className=""
                         aria-invalid={fieldState.invalid}
@@ -118,10 +128,12 @@ export default function CreateUserForm() {
                         className="gap-2"
                         data-invalid={fieldState.invalid}
                       >
-                        <FieldLabel htmlFor="password">Password</FieldLabel>
+                        <FieldLabel htmlFor="create-user-form-password">
+                          Password
+                        </FieldLabel>
                         <Input
                           {...field}
-                          id="password"
+                          id="create-user-form-password"
                           type="password"
                           required
                           className=""
@@ -144,14 +156,16 @@ export default function CreateUserForm() {
                         className="gap-2"
                         data-invalid={fieldState.invalid}
                       >
-                        <FieldLabel htmlFor="role">User Role</FieldLabel>
+                        <FieldLabel htmlFor="create-user-form-role">
+                          User Role
+                        </FieldLabel>
                         <Select
                           name={field.name}
                           value={field.value}
                           onValueChange={field.onChange}
                         >
                           <SelectTrigger
-                            id="role"
+                            id="create-user-form-role"
                             aria-invalid={fieldState.invalid}
                           >
                             <SelectValue placeholder="Select" />
@@ -174,19 +188,8 @@ export default function CreateUserForm() {
               </div>
             </FieldGroup>
           </div>
-          <DialogFooter className="">
-            <DialogClose asChild>
-              <Button
-                ref={cancelButtonRef}
-                type="button"
-                variant="secondary"
-                className="mr-auto"
-              >
-                Close
-              </Button>
-            </DialogClose>
+          <DialogFooter className="sm:flex-row-reverse">
             <Button
-              // size={"icon"}
               disabled={form.formState.isSubmitting}
               type="submit"
               form="create-user-form"
@@ -198,6 +201,11 @@ export default function CreateUserForm() {
                 "Create"
               )}
             </Button>
+            <DialogClose asChild>
+              <Button type="button" variant="secondary" className="mr-auto">
+                Close
+              </Button>
+            </DialogClose>
           </DialogFooter>
         </DialogContent>
       </form>

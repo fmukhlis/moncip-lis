@@ -1,3 +1,5 @@
+"use client";
+
 import z from "zod";
 import React from "react";
 
@@ -104,7 +106,7 @@ export default function UpdateUserForm({
         </DropdownMenuContent>
       </DropdownMenu>
       <form
-        id={`${userData.id}-create-user-form`}
+        id={`${userData.id}-update-user-form`}
         onSubmit={form.handleSubmit(onSubmit)}
       >
         <DialogContent className="sm:max-w-md">
@@ -118,12 +120,14 @@ export default function UpdateUserForm({
                 render={({ field, fieldState }) => {
                   return (
                     <Field className="gap-2" data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor={`${userData.id}-name`}>
+                      <FieldLabel
+                        htmlFor={`${userData.id}-update-user-form-name`}
+                      >
                         Full Name
                       </FieldLabel>
                       <Input
                         {...field}
-                        id={`${userData.id}-name`}
+                        id={`${userData.id}-update-user-form-name`}
                         required
                         className=""
                         aria-invalid={fieldState.invalid}
@@ -142,12 +146,14 @@ export default function UpdateUserForm({
                 render={({ field, fieldState }) => {
                   return (
                     <Field className="gap-2" data-invalid={fieldState.invalid}>
-                      <FieldLabel htmlFor={`${userData.id}-username`}>
+                      <FieldLabel
+                        htmlFor={`${userData.id}-update-user-form-username`}
+                      >
                         Username
                       </FieldLabel>
                       <Input
                         {...field}
-                        id={`${userData.id}-username`}
+                        id={`${userData.id}-update-user-form-username`}
                         required
                         className=""
                         aria-invalid={fieldState.invalid}
@@ -170,12 +176,14 @@ export default function UpdateUserForm({
                         className="gap-2"
                         data-invalid={fieldState.invalid}
                       >
-                        <FieldLabel htmlFor={`${userData.id}-password`}>
+                        <FieldLabel
+                          htmlFor={`${userData.id}-update-user-form-password`}
+                        >
                           Password
                         </FieldLabel>
                         <Input
                           {...field}
-                          id={`${userData.id}-password`}
+                          id={`${userData.id}-update-user-form-password`}
                           type="password"
                           required
                           className=""
@@ -198,7 +206,9 @@ export default function UpdateUserForm({
                         className="gap-2"
                         data-invalid={fieldState.invalid}
                       >
-                        <FieldLabel htmlFor={`${userData.id}-role`}>
+                        <FieldLabel
+                          htmlFor={`${userData.id}-update-user-form-role`}
+                        >
                           User Role
                         </FieldLabel>
                         <Select
@@ -207,7 +217,7 @@ export default function UpdateUserForm({
                           onValueChange={field.onChange}
                         >
                           <SelectTrigger
-                            id={`${userData.id}-role`}
+                            id={`${userData.id}-update-user-form-role`}
                             aria-invalid={fieldState.invalid}
                           >
                             <SelectValue placeholder="Select" />
@@ -230,16 +240,11 @@ export default function UpdateUserForm({
               </div>
             </FieldGroup>
           </div>
-          <DialogFooter className="">
-            <DialogClose asChild>
-              <Button type="button" variant="secondary" className="mr-auto">
-                Close
-              </Button>
-            </DialogClose>
+          <DialogFooter className="sm:flex-row-reverse">
             <Button
               disabled={form.formState.isSubmitting}
               type="submit"
-              form={`${userData.id}-create-user-form`}
+              form={`${userData.id}-update-user-form`}
               className="w-[100px]"
             >
               {form.formState.isSubmitting ? (
@@ -248,6 +253,12 @@ export default function UpdateUserForm({
                 "Update"
               )}
             </Button>
+
+            <DialogClose asChild>
+              <Button type="button" variant="secondary" className="mr-auto">
+                Close
+              </Button>
+            </DialogClose>
           </DialogFooter>
         </DialogContent>
       </form>
