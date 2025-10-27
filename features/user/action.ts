@@ -6,7 +6,7 @@ import prisma from "@/lib/prisma";
 
 import { auth } from "@/auth";
 import { revalidatePath } from "next/cache";
-import { createUser, updateUser } from "./dal/query";
+import { createUser, deleteUser, updateUser } from "./dal/query";
 import { CreateUserSchema, UpdateUserSchema } from "./schema";
 
 export async function createUserAction(data: z.infer<typeof CreateUserSchema>) {
@@ -53,7 +53,27 @@ export async function updateUserAction(
     revalidatePath("/admin/dashboard");
 
     return { success: true, message: "User updated successfully.", data: data };
-  } catch (error) {
+  } catch {
     return { success: false, message: "Authorization violations.", data: data };
+  }
+}
+
+export async function deleteUserAction(userId: string) {
+  const session = await auth();
+
+  try {
+    await prisma.$transaction(async (tx) => {
+      const user = await deleteUser(tx, userId);
+
+      if (user.laboratoryId !== session?.user?.laboratoryId) {
+        throw new Error();
+      }
+    });
+
+    revalidatePath("/admin/dashboard");
+
+    return { success: true, message: "User deleted successfully.", data: {} };
+  } catch {
+    return { success: false, message: "Authorization violations.", data: {} };
   }
 }

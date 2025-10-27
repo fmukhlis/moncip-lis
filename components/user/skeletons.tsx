@@ -28,8 +28,8 @@ export default function LabMemberSkeleton() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <CardTitle className="opacity-50">User Management</CardTitle>
-        <CardDescription className="opacity-50">
+        <CardTitle>User Management</CardTitle>
+        <CardDescription>
           Create, update, and remove user accounts. Control roles and manage
           system access for all team members.
         </CardDescription>
@@ -62,10 +62,10 @@ export default function LabMemberSkeleton() {
               {Array.from({ length: 5 }, (_, i) => (
                 <TableRow key={`${i}`} className="pointer-events-none">
                   <TableCell>
-                    <Skeleton className="ml-1.5 h-6 w-[186px] rounded-md" />
+                    <Skeleton className="ml-1.5 h-5 w-[186px] rounded-md" />
                   </TableCell>
                   <TableCell>
-                    <Skeleton className="h-6 w-20 rounded-md" />
+                    <Skeleton className="h-5 w-20 rounded-md" />
                   </TableCell>
                   <TableCell>
                     <Button variant="ghost" disabled className="size-8 flex">

@@ -52,3 +52,11 @@ export async function updateUser(
     },
   });
 }
+
+export async function deleteUser(tx: Prisma.TransactionClient, userId: string) {
+  return await tx.user.delete({
+    where: {
+      id: userId,
+    },
+  });
+}

@@ -29,10 +29,12 @@ import {
   DialogTrigger,
 } from "../ui/dialog";
 
-export default function CreateUserForm() {
+export default function CreateUserDialog() {
   const [isOpen, setIsOpen] = React.useState(false);
 
-  const form = useForm<z.infer<typeof CreateUserSchema>>({
+  const { reset, control, handleSubmit, formState } = useForm<
+    z.infer<typeof CreateUserSchema>
+  >({
     mode: "onSubmit",
     defaultValues: {
       role: "doctor",
@@ -55,13 +57,13 @@ export default function CreateUserForm() {
 
   React.useEffect(() => {
     if (isOpen) {
-      form.reset();
+      reset();
     }
-  }, [isOpen]);
+  }, [isOpen, reset]);
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <form id="create-user-form" onSubmit={form.handleSubmit(onSubmit)}>
+      <form id="create-user-form" onSubmit={handleSubmit(onSubmit)}>
         <DialogTrigger asChild>
           <Button variant="default" type="button" className="font-semibold">
             Add New User
@@ -94,7 +96,7 @@ export default function CreateUserForm() {
                     </Field>
                   );
                 }}
-                control={form.control}
+                control={control}
               />
               <Controller
                 name="username"
@@ -117,7 +119,7 @@ export default function CreateUserForm() {
                     </Field>
                   );
                 }}
-                control={form.control}
+                control={control}
               />
               <div className="flex gap-3">
                 <Controller
@@ -146,7 +148,7 @@ export default function CreateUserForm() {
                       </Field>
                     );
                   }}
-                  control={form.control}
+                  control={control}
                 />
                 <Controller
                   name="role"
@@ -183,19 +185,19 @@ export default function CreateUserForm() {
                       </Field>
                     );
                   }}
-                  control={form.control}
+                  control={control}
                 />
               </div>
             </FieldGroup>
           </div>
           <DialogFooter className="sm:flex-row-reverse">
             <Button
-              disabled={form.formState.isSubmitting}
+              disabled={formState.isSubmitting}
               type="submit"
               form="create-user-form"
               className="w-[100px]"
             >
-              {form.formState.isSubmitting ? (
+              {formState.isSubmitting ? (
                 <Spinner className="size-5" />
               ) : (
                 "Create"

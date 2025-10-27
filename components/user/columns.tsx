@@ -1,6 +1,6 @@
 "use client";
 
-import UpdateUserForm from "./update-user-form";
+import ActionMenu from "./action-menu";
 
 import { Button } from "../ui/button";
 import { ArrowDownUp } from "lucide-react";
@@ -49,7 +49,7 @@ export const labMemberColumns = [
       </Button>
     ),
     cell: ({ row }) => {
-      return <UpdateUserForm userData={row.original} />;
+      return <ActionMenu userData={row.original} />;
     },
   }),
 ] as ColumnDef<Awaited<ReturnType<typeof getLabMembers>>[number]>[];

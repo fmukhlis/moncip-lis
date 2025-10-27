@@ -1,7 +1,9 @@
 "use client";
 
 import React from "react";
-import CreateUserForm from "./user/create-user-form";
+import CreateUserDialog from "./user/create-user-dialog";
+import UpdateUserDialog from "./user/update-user-dialog";
+import DeleteUserDialog from "./user/delete-user-dialog";
 
 import type {
   SortingState,
@@ -150,10 +152,10 @@ export function DataTableForCard<TData, TValue>({
                       className="pointer-events-none opacity-70"
                     >
                       <TableCell>
-                        <div className="ml-1.5 h-6 w-[186px] rounded-md bg-muted"></div>
+                        <div className="ml-1.5 h-5 w-[186px] rounded-md bg-muted"></div>
                       </TableCell>
                       <TableCell>
-                        <div className="h-6 w-20 rounded-md bg-muted"></div>
+                        <div className="h-5 w-20 rounded-md bg-muted"></div>
                       </TableCell>
                       <TableCell>
                         <Button
@@ -172,7 +174,7 @@ export function DataTableForCard<TData, TValue>({
         </Table>
       </div>
       <div className="flex items-center pt-5 gap-3">
-        <CreateUserForm />
+        <CreateUserDialog />
         <Button
           variant={"secondary"}
           onClick={() => {
@@ -196,6 +198,8 @@ export function DataTableForCard<TData, TValue>({
           <ArrowBigRight />
         </Button>
       </div>
+      <UpdateUserDialog />
+      <DeleteUserDialog />
     </>
   );
 }

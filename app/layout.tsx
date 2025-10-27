@@ -1,5 +1,7 @@
 import "./globals.css";
 
+import StoreProvider from "@/StoreProvider";
+
 import type { Metadata } from "next";
 
 import { Toaster } from "@/components/ui/sonner";
@@ -31,15 +33,17 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-          <Toaster />
-        </ThemeProvider>
+        <StoreProvider>
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+            <Toaster />
+          </ThemeProvider>
+        </StoreProvider>
       </body>
     </html>
   );

@@ -8,11 +8,14 @@ import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Spinner } from "../ui/spinner";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { getLabMembers } from "@/features/lab/dal/query";
 import { UpdateUserSchema } from "@/features/user/schema";
 import { updateUserAction } from "@/features/user/action";
 import { Controller, useForm } from "react-hook-form";
-import { Edit, EllipsisVertical, Trash } from "lucide-react";
+import {
+  setSelectedUser,
+  setShowUpdateUserDialog,
+} from "@/features/user/userSlice";
+import { useAppDispatch, useAppSelector } from "@/hooks";
 import { Field, FieldError, FieldGroup, FieldLabel } from "../ui/field";
 import {
   Select,
@@ -22,93 +25,63 @@ import {
   SelectTrigger,
 } from "../ui/select";
 import {
-  DropdownMenu,
-  DropdownMenuItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-  DropdownMenuSeparator,
-} from "../ui/dropdown-menu";
-import {
   Dialog,
   DialogClose,
   DialogTitle,
   DialogFooter,
   DialogHeader,
   DialogContent,
-  DialogTrigger,
 } from "../ui/dialog";
 
-export default function UpdateUserForm({
-  userData,
-}: {
-  userData: Awaited<ReturnType<typeof getLabMembers>>[number];
-}) {
-  const [isOpen, setIsOpen] = React.useState(false);
+export default function UpdateUserDialog() {
+  const showUpdateUserDialog = useAppSelector(
+    (state) => state.user.showUpdateUserDialog,
+  );
+  const selectedUser = useAppSelector((state) => state.user.selectedUser);
 
-  const form = useForm<z.infer<typeof UpdateUserSchema>>({
+  const dispatch = useAppDispatch();
+
+  const { reset, control, handleSubmit, formState } = useForm<
+    z.infer<typeof UpdateUserSchema>
+  >({
     mode: "onSubmit",
     resolver: zodResolver(UpdateUserSchema),
   });
 
   async function onSubmit(data: z.infer<typeof UpdateUserSchema>) {
-    const response = await updateUserAction(userData.id, data);
-    if (response.success) {
-      toast.success(response.message);
-      setIsOpen(false);
-    } else {
-      toast.error(response.message);
+    if (selectedUser) {
+      const response = await updateUserAction(selectedUser.id, data);
+      if (response.success) {
+        toast.success(response.message);
+        dispatch(setShowUpdateUserDialog(false));
+      } else {
+        toast.error(response.message);
+      }
     }
   }
 
   React.useEffect(() => {
-    if (isOpen) {
-      form.reset({
-        name: "",
-        role: userData.role,
-        password: "",
-        username: "",
-      });
+    reset({
+      name: "",
+      role: selectedUser?.role ?? "doctor",
+      password: "",
+      username: "",
+    });
+
+    if (!showUpdateUserDialog) {
+      dispatch(setSelectedUser(null));
     }
-  }, [isOpen]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showUpdateUserDialog, reset, dispatch]);
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button
-            variant="ghost"
-            className="data-[state=open]:bg-muted text-muted-foreground size-8 flex"
-          >
-            <span className="sr-only">Open menu</span>
-            <EllipsisVertical className="h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent
-          side="right"
-          align="start"
-          className="min-w-[6rem]"
-        >
-          <DialogTrigger asChild>
-            <DropdownMenuItem
-              onClick={() => {
-                console.log(userData);
-              }}
-            >
-              <Edit />
-              Edit
-            </DropdownMenuItem>
-          </DialogTrigger>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem variant="destructive">
-            <Trash />
-            Delete
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-      <form
-        id={`${userData.id}-update-user-form`}
-        onSubmit={form.handleSubmit(onSubmit)}
-      >
+    <Dialog
+      open={showUpdateUserDialog}
+      onOpenChange={(isOpen) => {
+        dispatch(setShowUpdateUserDialog(isOpen));
+      }}
+    >
+      <form id={`update-user-form`} onSubmit={handleSubmit(onSubmit)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Update User</DialogTitle>
@@ -120,18 +93,16 @@ export default function UpdateUserForm({
                 render={({ field, fieldState }) => {
                   return (
                     <Field className="gap-2" data-invalid={fieldState.invalid}>
-                      <FieldLabel
-                        htmlFor={`${userData.id}-update-user-form-name`}
-                      >
+                      <FieldLabel htmlFor={`update-user-form-name`}>
                         Full Name
                       </FieldLabel>
                       <Input
                         {...field}
-                        id={`${userData.id}-update-user-form-name`}
+                        id={`update-user-form-name`}
                         required
                         className=""
                         aria-invalid={fieldState.invalid}
-                        placeholder={userData.name ?? ""}
+                        placeholder={selectedUser?.name ?? ""}
                       />
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
@@ -139,25 +110,23 @@ export default function UpdateUserForm({
                     </Field>
                   );
                 }}
-                control={form.control}
+                control={control}
               />
               <Controller
                 name="username"
                 render={({ field, fieldState }) => {
                   return (
                     <Field className="gap-2" data-invalid={fieldState.invalid}>
-                      <FieldLabel
-                        htmlFor={`${userData.id}-update-user-form-username`}
-                      >
+                      <FieldLabel htmlFor={`update-user-form-username`}>
                         Username
                       </FieldLabel>
                       <Input
                         {...field}
-                        id={`${userData.id}-update-user-form-username`}
+                        id={`update-user-form-username`}
                         required
                         className=""
                         aria-invalid={fieldState.invalid}
-                        placeholder={userData.username ?? ""}
+                        placeholder={selectedUser?.username ?? ""}
                       />
                       {fieldState.invalid && (
                         <FieldError errors={[fieldState.error]} />
@@ -165,7 +134,7 @@ export default function UpdateUserForm({
                     </Field>
                   );
                 }}
-                control={form.control}
+                control={control}
               />
               <div className="flex gap-3">
                 <Controller
@@ -176,14 +145,12 @@ export default function UpdateUserForm({
                         className="gap-2"
                         data-invalid={fieldState.invalid}
                       >
-                        <FieldLabel
-                          htmlFor={`${userData.id}-update-user-form-password`}
-                        >
+                        <FieldLabel htmlFor={`update-user-form-password`}>
                           Password
                         </FieldLabel>
                         <Input
                           {...field}
-                          id={`${userData.id}-update-user-form-password`}
+                          id={`update-user-form-password`}
                           type="password"
                           required
                           className=""
@@ -196,7 +163,7 @@ export default function UpdateUserForm({
                       </Field>
                     );
                   }}
-                  control={form.control}
+                  control={control}
                 />
                 <Controller
                   name="role"
@@ -206,9 +173,7 @@ export default function UpdateUserForm({
                         className="gap-2"
                         data-invalid={fieldState.invalid}
                       >
-                        <FieldLabel
-                          htmlFor={`${userData.id}-update-user-form-role`}
-                        >
+                        <FieldLabel htmlFor={`update-user-form-role`}>
                           User Role
                         </FieldLabel>
                         <Select
@@ -217,7 +182,7 @@ export default function UpdateUserForm({
                           onValueChange={field.onChange}
                         >
                           <SelectTrigger
-                            id={`${userData.id}-update-user-form-role`}
+                            id={`update-user-form-role`}
                             aria-invalid={fieldState.invalid}
                           >
                             <SelectValue placeholder="Select" />
@@ -235,19 +200,19 @@ export default function UpdateUserForm({
                       </Field>
                     );
                   }}
-                  control={form.control}
+                  control={control}
                 />
               </div>
             </FieldGroup>
           </div>
           <DialogFooter className="sm:flex-row-reverse">
             <Button
-              disabled={form.formState.isSubmitting}
               type="submit"
-              form={`${userData.id}-update-user-form`}
+              form={`update-user-form`}
+              disabled={formState.isSubmitting}
               className="w-[100px]"
             >
-              {form.formState.isSubmitting ? (
+              {formState.isSubmitting ? (
                 <Spinner className="size-5" />
               ) : (
                 "Update"

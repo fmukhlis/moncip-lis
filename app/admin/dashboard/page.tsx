@@ -3,7 +3,6 @@ import LabMemberSkeleton from "@/components/user/skeletons";
 
 import { Metadata } from "next";
 import { Suspense } from "react";
-import { SessionProvider } from "next-auth/react";
 
 export const metadata: Metadata = {
   title: "Admin Dashboard",
@@ -11,12 +10,10 @@ export const metadata: Metadata = {
 
 export default async function AdminDashboard() {
   return (
-    <SessionProvider>
-      <main>
-        <Suspense fallback={<LabMemberSkeleton />}>
-          <LabMember />
-        </Suspense>
-      </main>
-    </SessionProvider>
+    <main>
+      <Suspense key={`${Math.random()}`} fallback={<LabMemberSkeleton />}>
+        <LabMember />
+      </Suspense>
+    </main>
   );
 }
