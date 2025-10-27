@@ -46,7 +46,6 @@ async function Signin(props: {
               key={provider.id}
               action={async () => {
                 "use server";
-                const callbackUrl = (await props.searchParams).callbackUrl;
                 try {
                   await signIn(provider.id, {
                     redirectTo: callbackUrl ?? "/dashboard",
