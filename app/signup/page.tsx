@@ -13,9 +13,11 @@ export const metadata: Metadata = {
   description: "Create a new Moncip LIS account",
 };
 
-function Signup(props: {
+async function Signup(props: {
   searchParams: Promise<{ callbackUrl: string | undefined }>;
 }) {
+  const callbackUrl = (await props.searchParams).callbackUrl;
+
   return (
     <div className="h-screen flex justify-center items-center">
       <main className="bg-card w-4/5  md:w-[500px] border border-input p-6 rounded-md shadow-sm shadow-input">
@@ -34,7 +36,6 @@ function Signup(props: {
               key={provider.id}
               action={async () => {
                 "use server";
-                const callbackUrl = (await props.searchParams).callbackUrl;
                 try {
                   await signIn(provider.id, {
                     redirectTo: callbackUrl ?? "",
