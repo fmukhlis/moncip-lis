@@ -111,6 +111,8 @@ jobs:
         run: pnpm install
 
       - run: pnpm run test --ci --coverage
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
@@ -151,6 +153,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - run: npm run build
-      #   env:
-      #     DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      - run: pnpm run build
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
