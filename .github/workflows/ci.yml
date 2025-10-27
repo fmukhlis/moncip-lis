@@ -110,9 +110,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - run: pnpm dlx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+
       - run: pnpm run test --ci --coverage
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
@@ -153,6 +157,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - run: pnpm dlx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+
       - run: pnpm run build
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
