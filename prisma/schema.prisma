@@ -96,6 +96,140 @@ model Authenticator {
 }
 
 model Laboratory {
-  id        String   @id @default(cuid(2))
-  users     User[]
+  id      String    @id @default(cuid(2))
+  users   User[]
+}
+
+model LabTest {
+  categoryId        String
+  methodId          String?
+  specimenId        String
+  unitId            String
+  id                String            @id @default(cuid(2))
+  code              String            @unique
+  name              String
+  resultType        ResultType    
+  possibleValues    String[]          @default([])
+  isActive          Boolean           @default(true)
+  
+  category          Category          @relation(fields: [categoryId], references: [id])
+  method            Method?           @relation(fields: [methodId], references: [id])
+  specimen          Specimen          @relation(fields: [specimenId], references: [id])
+  unit              Unit              @relation(fields: [unitId], references: [id])
+  labTestGroups     LabTestGroup[]    
+  referenceRanges   ReferenceRange[]
+  prices            Price[]
+}
+
+enum ResultType {
+  boolean
+  numeric
+  ordinal
+  text
+}
+
+model LabTestGroup {
+  categoryId    String
+  id            String        @id @default(cuid(2))
+  code          String        @unique
+  name          String
+  description   String?
+  isActive      Boolean       @default(true)
+
+  categories    Category[]    
+  labTests      LabTest[]     
+}
+
+model ReferenceRange {
+  labTestId   String
+  unitId      String
+  id          String    @id @default(cuid(2))
+  gender      Gender
+  ageMin      Int
+  ageMax      Int
+  valueLow    Decimal
+  valueHigh   Decimal
+
+  labTest     LabTest   @relation(fields: [labTestId], references: [id])
+  unit        Unit      @relation(fields: [unitId], references: [id])
+}
+
+enum Gender {
+  M
+  F
+}
+
+model Specimen {
+  id            String      @id @default(cuid(2))
+  code          String      @unique
+  name          String
+  description   String?
+
+  labTests      LabTest[]   
+}
+
+model Category {
+  id              String            @id @default(cuid(2))
+  code            String            @unique
+  name            String
+  description     String?
+
+  labTestGroups   LabTestGroup[]    
+  labTests        LabTest[]
+}
+
+model Method {
+  id            String      @id @default(cuid(2))
+  code          String      @unique
+  name          String
+  description   String?
+
+  labTests      LabTest[]
+}
+
+model Unit {
+  id                String              @id @default(cuid(2))
+  code              String              @unique
+  name              String
+  description       String?
+
+  labTests          LabTest[]
+  referenceRanges   ReferenceRange[]    
+  conversionsFrom   UnitConversion[]    @relation("fromUnit")
+  conversionTo      UnitConversion[]    @relation("toUnit")
+}
+
+model UnitConversion {
+  fromUnitId    String
+  toUnitId      String
+  id            String      @id @default(cuid(2))
+  factor        Decimal
+  offset        Decimal?    
+  
+  fromUnit      Unit        @relation("fromUnit", fields: [fromUnitId], references: [id])
+  toUnit        Unit        @relation("toUnit", fields: [toUnitId], references: [id])
+
+  @@unique([fromUnitId, toUnitId])
+}
+
+model TariffGroup {
+  id            String    @id @default(cuid(2))
+  code          String    @unique
+  name          String
+  description   String?
+
+  prices        Price[]
+}
+
+model Price {
+  labTestId       String
+  tariffGroupId   String
+  id              String        @id @default(cuid(2))
+  price           Decimal   
+  validFrom       DateTime      @default(now())
+  validTo         DateTime?
+  isActive        Boolean       @default(true)
+
+  tariffGroup     TariffGroup   @relation(fields: [tariffGroupId], references: [id])
+  labTest         LabTest       @relation(fields: [labTestId], references: [id])
 }
