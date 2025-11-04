@@ -1,12 +1,9 @@
-import userReducer from "@/features/user/userSlice";
-
+import { rootReducer } from "./root-reducer";
 import { configureStore } from "@reduxjs/toolkit";
 
 export const makeStore = () => {
   return configureStore({
-    reducer: {
-      user: userReducer,
-    },
+    reducer: rootReducer,
   });
 };
 

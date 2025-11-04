@@ -170,7 +170,9 @@ export default function CreateUserDialog() {
                             id="create-user-form-role"
                             aria-invalid={fieldState.invalid}
                           >
-                            <SelectValue placeholder="Select" />
+                            <div className="max-w-14 sm:max-w-none truncate">
+                              <SelectValue placeholder="Select" />
+                            </div>
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="doctor">Doctor</SelectItem>
@@ -190,12 +192,17 @@ export default function CreateUserDialog() {
               </div>
             </FieldGroup>
           </div>
-          <DialogFooter className="sm:flex-row-reverse">
+          <DialogFooter className="sm:justify-between">
+            <DialogClose asChild>
+              <Button type="button" variant="secondary">
+                Close
+              </Button>
+            </DialogClose>
             <Button
-              disabled={formState.isSubmitting}
               type="submit"
               form="create-user-form"
-              className="w-[100px]"
+              disabled={formState.isSubmitting}
+              className="sm:w-[100px]"
             >
               {formState.isSubmitting ? (
                 <Spinner className="size-5" />
@@ -203,11 +210,6 @@ export default function CreateUserDialog() {
                 "Create"
               )}
             </Button>
-            <DialogClose asChild>
-              <Button type="button" variant="secondary" className="mr-auto">
-                Close
-              </Button>
-            </DialogClose>
           </DialogFooter>
         </DialogContent>
       </form>

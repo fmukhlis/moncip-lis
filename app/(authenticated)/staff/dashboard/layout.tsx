@@ -2,7 +2,6 @@ import React from "react";
 
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import { SessionProvider } from "next-auth/react";
 
 export default async function AdminLayout({
   children,
@@ -10,9 +9,10 @@ export default async function AdminLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
-  if (session?.user?.role !== "admin") {
-    redirect("/dashboard");
+
+  if (session?.user?.role === "admin") {
+    redirect("/admin/dashboard");
   }
 
-  return <SessionProvider>{children}</SessionProvider>;
+  return children;
 }

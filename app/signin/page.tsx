@@ -5,10 +5,10 @@ import LoginWithCredentialsForm from "@/components/authentication/signin-with-cr
 import { Field } from "@/components/ui/field";
 import { roboto } from "@/lib/fonts";
 import { Button } from "@/components/ui/button";
+import { Hospital } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { type Metadata } from "next";
 import { providerMap, signIn } from "@/auth";
-
-import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Sign In",
@@ -21,15 +21,16 @@ async function Signin(props: {
   const callbackUrl = (await props.searchParams).callbackUrl;
 
   return (
-    <div className="h-screen flex justify-center items-center">
-      <main className="bg-card w-4/5 max-w-lg border border-input p-6 rounded-md shadow-sm shadow-input">
+    <div className="min-h-screen flex flex-col justify-center items-center py-10 px-4">
+      <Hospital size={64} className="mb-6" />
+      <main className="bg-card w-full max-w-lg border border-input p-6 rounded-md shadow-sm shadow-input">
         <h1 className="text-2xl font-black text-center mb-2">
           Sign In to Moncip LIS
         </h1>
 
-        <p className="mb-2 text-center">Login with credentials</p>
+        <p className="mb-4 text-center">Login with credentials</p>
 
-        <div className="w-[70%] mx-auto">
+        <div className="max-w-52 md:max-w-72 mx-auto">
           <LoginWithCredentialsForm callbackUrl={callbackUrl} />
         </div>
 
@@ -48,7 +49,7 @@ async function Signin(props: {
                 "use server";
                 try {
                   await signIn(provider.id, {
-                    redirectTo: callbackUrl ?? "/dashboard",
+                    redirectTo: callbackUrl ?? "/admin/dashboard",
                   });
                 } catch (error) {
                   throw error;

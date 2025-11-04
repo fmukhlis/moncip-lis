@@ -73,7 +73,7 @@ export default function DeleteUserDialog() {
               form="delete-user-form"
               variant={"destructive"}
               disabled={formState.isSubmitting}
-              className="w-[100px]"
+              className="sm:w-[100px]"
             >
               {formState.isSubmitting ? (
                 <Spinner className="size-5" />

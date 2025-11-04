@@ -72,6 +72,43 @@ export function DataTableForCard<TData, TValue>({
     getPaginationRowModel: getPaginationRowModel(),
   });
 
+  const rowPlaceholder = React.useMemo(() => {
+    return table.getRowModel().rows.length &&
+      table.getRowModel().rows.length < 5 ? (
+      Array.from({ length: 5 - table.getRowModel().rows.length }, (_, i) => (
+        <TableRow key={`${i}`} className="pointer-events-none opacity-70">
+          <TableCell>
+            <div
+              className="ml-1.5 h-5 bg-accent rounded-md max-w-(--skeleton-width)"
+              style={
+                {
+                  "--skeleton-width": `${Math.floor(Math.random() * 30) + 60}%`,
+                } as React.CSSProperties
+              }
+            ></div>
+          </TableCell>
+          <TableCell>
+            <div
+              className="h-5 bg-accent rounded-md max-w-(--skeleton-width)"
+              style={
+                {
+                  "--skeleton-width": `${Math.floor(Math.random() * 30) + 60}%`,
+                } as React.CSSProperties
+              }
+            ></div>
+          </TableCell>
+          <TableCell>
+            <Button variant="ghost" disabled className="size-8 flex">
+              <EllipsisVertical className="h-4 w-4" />
+            </Button>
+          </TableCell>
+        </TableRow>
+      ))
+    ) : (
+      <></>
+    );
+  }, [table.getRowModel().rows.length]);
+
   return (
     <>
       <div className="flex items-center pb-5 gap-3">
@@ -142,59 +179,34 @@ export function DataTableForCard<TData, TValue>({
                 </TableRow>
               </>
             )}
-            {table.getRowModel().rows.length
-              ? table.getRowModel().rows.length < 5 &&
-                Array.from(
-                  { length: 5 - table.getRowModel().rows.length },
-                  (_, i) => (
-                    <TableRow
-                      key={`${i}`}
-                      className="pointer-events-none opacity-70"
-                    >
-                      <TableCell>
-                        <div className="ml-1.5 h-5 w-[186px] rounded-md bg-muted"></div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="h-5 w-20 rounded-md bg-muted"></div>
-                      </TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          disabled
-                          className="size-8 flex"
-                        >
-                          <EllipsisVertical className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ),
-                )
-              : null}
+            {rowPlaceholder}
           </TableBody>
         </Table>
       </div>
       <div className="flex items-center pt-5 gap-3">
         <CreateUserDialog />
         <Button
+          aria-label="Previous"
           variant={"secondary"}
           onClick={() => {
             table.previousPage();
           }}
           disabled={!table.getCanPreviousPage()}
-          className="w-[90px] ml-auto"
+          className="max-w-[90px] ml-auto flex-1"
         >
           <ArrowBigLeft />
-          Prev
+          <span className="hidden sm:inline">Prev</span>
         </Button>
         <Button
+          aria-label="Next"
           variant={"secondary"}
           onClick={() => {
             table.nextPage();
           }}
           disabled={!table.getCanNextPage()}
-          className="w-[90px] -auto"
+          className="max-w-[90px] flex-1"
         >
-          Next
+          <span className="hidden sm:inline">Next</span>
           <ArrowBigRight />
         </Button>
       </div>

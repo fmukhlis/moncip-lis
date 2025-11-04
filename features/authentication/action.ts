@@ -2,7 +2,7 @@
 
 import z from "zod";
 
-import { signIn } from "@/auth";
+import { signIn, signOut } from "@/auth";
 import { SignInWithCredentialsSchema } from "./schema";
 
 export async function signInWithCredentials({
@@ -21,9 +21,13 @@ export async function signInWithCredentials({
   try {
     await signIn("credentials", {
       ...data,
-      redirectTo: callbackUrl ?? "/dashboard",
+      redirectTo: callbackUrl ?? "/staff/dashboard",
     });
   } catch (error) {
     throw error;
   }
+}
+
+export async function signOutAction() {
+  await signOut({ redirectTo: "/signin" });
 }

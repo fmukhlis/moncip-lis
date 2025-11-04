@@ -11,12 +11,12 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { UpdateUserSchema } from "@/features/user/schema";
 import { updateUserAction } from "@/features/user/action";
 import { Controller, useForm } from "react-hook-form";
+import { useAppDispatch, useAppSelector } from "@/hooks";
+import { Field, FieldError, FieldGroup, FieldLabel } from "../ui/field";
 import {
   setSelectedUser,
   setShowUpdateUserDialog,
 } from "@/features/user/userSlice";
-import { useAppDispatch, useAppSelector } from "@/hooks";
-import { Field, FieldError, FieldGroup, FieldLabel } from "../ui/field";
 import {
   Select,
   SelectItem,
@@ -185,7 +185,9 @@ export default function UpdateUserDialog() {
                             id={`update-user-form-role`}
                             aria-invalid={fieldState.invalid}
                           >
-                            <SelectValue placeholder="Select" />
+                            <div className="max-w-14 sm:max-w-none truncate">
+                              <SelectValue placeholder="Select" />
+                            </div>
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="doctor">Doctor</SelectItem>
@@ -205,12 +207,17 @@ export default function UpdateUserDialog() {
               </div>
             </FieldGroup>
           </div>
-          <DialogFooter className="sm:flex-row-reverse">
+          <DialogFooter className="sm:justify-between">
+            <DialogClose asChild>
+              <Button type="button" variant="secondary">
+                Close
+              </Button>
+            </DialogClose>
             <Button
               type="submit"
               form={`update-user-form`}
               disabled={formState.isSubmitting}
-              className="w-[100px]"
+              className="sm:w-[100px]"
             >
               {formState.isSubmitting ? (
                 <Spinner className="size-5" />
@@ -218,12 +225,6 @@ export default function UpdateUserDialog() {
                 "Update"
               )}
             </Button>
-
-            <DialogClose asChild>
-              <Button type="button" variant="secondary" className="mr-auto">
-                Close
-              </Button>
-            </DialogClose>
           </DialogFooter>
         </DialogContent>
       </form>

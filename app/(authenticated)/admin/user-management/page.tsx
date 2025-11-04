@@ -10,10 +10,10 @@ export const metadata: Metadata = {
 
 export default async function AdminDashboard() {
   return (
-    <main>
+    <div className="p-4">
       <Suspense key={`${Math.random()}`} fallback={<LabMemberSkeleton />}>
         <LabMember />
       </Suspense>
-    </main>
+    </div>
   );
 }

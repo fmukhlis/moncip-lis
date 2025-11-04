@@ -10,8 +10,22 @@ export async function getUserCredentials(username: string) {
 
   return user?.username && user.password
     ? {
+        id: user.id,
         username: user.username,
         password: user.password,
+      }
+    : null;
+}
+
+export async function getUserPublic(id: string) {
+  const user = await prisma.user.findUnique({ where: { id } });
+
+  return user
+    ? {
+        name: user.name,
+        role: user.role,
+        image: user.image,
+        laboratoryId: user.laboratoryId,
       }
     : null;
 }
@@ -58,5 +72,15 @@ export async function deleteUser(tx: Prisma.TransactionClient, userId: string) {
     where: {
       id: userId,
     },
+  });
+}
+
+export async function updateUserImage(
+  userId: string,
+  { image }: Pick<z.infer<typeof UpdateUserSchema>, "image">,
+) {
+  await prisma.user.update({
+    where: { id: userId },
+    data: { image },
   });
 }

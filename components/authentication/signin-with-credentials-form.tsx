@@ -51,7 +51,6 @@ export default function LoginWithCredentialsForm({
                   required
                   className="h-[50px] text-base"
                   aria-invalid={fieldState.invalid}
-                  placeholder="Your username..."
                 />
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />

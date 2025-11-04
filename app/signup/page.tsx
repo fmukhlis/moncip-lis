@@ -1,11 +1,11 @@
 import Link from "next/link";
 import LOGOS from "@/components/logos";
 
-import type { Metadata } from "next";
-
 import { Field } from "@/components/ui/field";
 import { Button } from "@/components/ui/button";
 import { roboto } from "@/lib/fonts";
+import { Hospital } from "lucide-react";
+import { type Metadata } from "next";
 import { providerMap, signIn } from "@/auth";
 
 export const metadata: Metadata = {
@@ -19,8 +19,9 @@ async function Signup(props: {
   const callbackUrl = (await props.searchParams).callbackUrl;
 
   return (
-    <div className="h-screen flex justify-center items-center">
-      <main className="bg-card w-4/5  md:w-[500px] border border-input p-6 rounded-md shadow-sm shadow-input">
+    <div className="min-h-screen flex flex-col justify-center items-center py-10 px-4">
+      <Hospital size={64} className="mb-6" />
+      <main className="bg-card w-full max-w-lg border border-input p-6 rounded-md shadow-sm shadow-input">
         <h1 className="text-2xl font-black text-center mb-2">
           Sign Up to Moncip LIS
         </h1>
