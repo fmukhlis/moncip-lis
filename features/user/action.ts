@@ -96,6 +96,10 @@ export async function importOAuthUserImageAction(user: Session["user"]) {
       }
     }
 
-    return { success: false, message: "Already imported", data: null };
+    return {
+      success: false,
+      message: "Image doesn't exist or has already been imported.",
+      data: null,
+    };
   }
 }
