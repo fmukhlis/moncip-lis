@@ -1,12 +1,10 @@
-"use client";
-
 import Link from "next/link";
 import NavMain from "./nav-main";
 import NavUser from "./nav-user";
-import NavMainSkeleton from "./nav-main-skeleton";
 
-import { useSession } from "next-auth/react";
-import { UserCog, Hospital, FlaskConical, LayoutDashboard } from "lucide-react";
+import { auth } from "@/auth";
+import { Hospital } from "lucide-react";
+import { LoadedIcons } from "./nav-main";
 import {
   Sidebar,
   SidebarMenu,
@@ -23,19 +21,19 @@ const data = {
       {
         title: "Dashboard",
         url: "/admin/dashboard",
-        icon: LayoutDashboard,
+        icon: "LayoutDashboard" as LoadedIcons,
       },
       {
         title: "User Management",
         url: "/admin/user-management",
-        icon: UserCog,
+        icon: "UserCog" as LoadedIcons,
       },
     ],
     masterData: [
       {
         title: "Laboratory Tests",
         url: "/admin/master-data/laboratory-tests",
-        icon: FlaskConical,
+        icon: "FlaskConical" as LoadedIcons,
       },
     ],
   },
@@ -44,14 +42,14 @@ const data = {
       {
         title: "Dashboard",
         url: "/staff/dashboard",
-        icon: LayoutDashboard,
+        icon: "LayoutDashboard" as LoadedIcons,
       },
     ],
   },
 };
 
-export default function AppSidebar() {
-  const session = useSession();
+export default async function AppSidebar() {
+  const session = await auth();
 
   return (
     <Sidebar
@@ -79,9 +77,7 @@ export default function AppSidebar() {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {!session.data ? (
-          <NavMainSkeleton />
-        ) : session.data.user?.role === "admin" ? (
+        {session?.user?.role === "admin" ? (
           <>
             <NavMain groupLabel="Laboratory" items={data.admin.laboratory} />
             <NavMain groupLabel="Master Data" items={data.admin.masterData} />

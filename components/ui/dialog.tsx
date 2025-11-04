@@ -13,6 +13,7 @@ function Dialog({
 }
 
 function DialogTrigger({
+  id,
   ...props
 }: React.ComponentProps<typeof DialogPrimitive.Trigger>) {
   const [isMounted, setIsMounted] = React.useState(false);
@@ -21,11 +22,11 @@ function DialogTrigger({
     setIsMounted(true);
   }, []);
 
-  if (!isMounted) {
-    const { children } = props;
-    return children;
-  }
-  return <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />;
+  return isMounted ? (
+    <DialogPrimitive.Trigger id={id} data-slot="dialog-trigger" {...props} />
+  ) : (
+    <DialogPrimitive.Trigger data-slot="dialog-trigger" {...props} />
+  );
 }
 
 function DialogPortal({
