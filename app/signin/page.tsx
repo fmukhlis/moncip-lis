@@ -1,10 +1,8 @@
 import Link from "next/link";
-import LOGOS from "@/components/logos";
 import LoginWithCredentialsForm from "@/components/authentication/signin-with-credentials-form";
+import SigninWithOAuthProviderButton from "@/components/authentication/signin-with-oauth-provider-button";
 
 import { Field } from "@/components/ui/field";
-import { roboto } from "@/lib/fonts";
-import { Button } from "@/components/ui/button";
 import { Hospital } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { type Metadata } from "next";
@@ -57,20 +55,9 @@ async function Signin(props: {
               }}
             >
               <Field>
-                <Button
-                  variant={"google-spec"}
-                  size={"google-spec"}
-                  type="submit"
-                >
-                  <div className="flex items-center">
-                    <div className="w-[25px] h-[25px] mr-[10px]">
-                      {LOGOS[provider.name as "Google" | "GitHub"]}
-                    </div>
-                    <span className={`${roboto.className}`}>
-                      Sign in with {provider.name}
-                    </span>
-                  </div>
-                </Button>
+                <SigninWithOAuthProviderButton
+                  providerName={provider.name as "Google" | "GitHub"}
+                />
               </Field>
             </form>
           ))}

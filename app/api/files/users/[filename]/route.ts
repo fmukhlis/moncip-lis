@@ -24,7 +24,7 @@ export async function GET(
           "Content-Length": fileBuffer.length.toString(),
         },
       });
-    } catch (error) {
+    } catch {
       return NextResponse.json({ error: "Asset not found" }, { status: 404 });
     }
   }

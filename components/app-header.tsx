@@ -27,7 +27,8 @@ const routeCrumbs = {
   "/admin/master-data/laboratory-tests": [
     { label: "Laboratory Tests", href: "" },
   ],
-  "/staff/dashboard": [{ label: "Dashboard", href: "" }],
+  "/doctor/dashboard": [{ label: "Dashboard", href: "" }],
+  "/lab-tech/dashboard": [{ label: "Dashboard", href: "" }],
 } satisfies Partial<Record<AppRoutes, { label: string; href: string }[]>>;
 
 export function AppHeader() {

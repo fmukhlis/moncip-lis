@@ -72,10 +72,11 @@ export function DataTableForCard<TData, TValue>({
     getPaginationRowModel: getPaginationRowModel(),
   });
 
+  const rowsLength = table.getRowModel().rows.length;
+
   const rowPlaceholder = React.useMemo(() => {
-    return table.getRowModel().rows.length &&
-      table.getRowModel().rows.length < 5 ? (
-      Array.from({ length: 5 - table.getRowModel().rows.length }, (_, i) => (
+    return rowsLength && rowsLength < 5 ? (
+      Array.from({ length: 5 - rowsLength }, (_, i) => (
         <TableRow key={`${i}`} className="pointer-events-none opacity-70">
           <TableCell>
             <div
@@ -107,7 +108,7 @@ export function DataTableForCard<TData, TValue>({
     ) : (
       <></>
     );
-  }, [table.getRowModel().rows.length]);
+  }, [rowsLength]);
 
   return (
     <>

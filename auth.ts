@@ -8,6 +8,7 @@ import Credentials from "next-auth/providers/credentials";
 import { Provider } from "next-auth/providers";
 import { randomUUID } from "crypto";
 import { PrismaAdapter } from "@auth/prisma-adapter";
+import { CredentialsSignin } from "next-auth";
 import { getUserCredentials } from "./features/user/dal/query";
 import { createLaboratoryAction } from "./features/lab/action";
 import { encode as defaultEncode } from "next-auth/jwt";
@@ -36,7 +37,7 @@ const providers: Provider[] = [
         }
       }
 
-      throw new Error("Invalid credentials.");
+      throw new CredentialsSignin("Invalid credentials.");
     },
   }),
   Google,

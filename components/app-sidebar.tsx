@@ -1,10 +1,10 @@
 import Link from "next/link";
 import NavMain from "./nav-main";
 import NavUser from "./nav-user";
+import NavSecondary from "./nav-secondary";
 
 import { auth } from "@/auth";
 import { Hospital } from "lucide-react";
-import { LoadedIcons } from "./nav-main";
 import {
   Sidebar,
   SidebarMenu,
@@ -14,39 +14,6 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from "./ui/sidebar";
-
-const data = {
-  admin: {
-    laboratory: [
-      {
-        title: "Dashboard",
-        url: "/admin/dashboard",
-        icon: "LayoutDashboard" as LoadedIcons,
-      },
-      {
-        title: "User Management",
-        url: "/admin/user-management",
-        icon: "UserCog" as LoadedIcons,
-      },
-    ],
-    masterData: [
-      {
-        title: "Laboratory Tests",
-        url: "/admin/master-data/laboratory-tests",
-        icon: "FlaskConical" as LoadedIcons,
-      },
-    ],
-  },
-  staff: {
-    laboratory: [
-      {
-        title: "Dashboard",
-        url: "/staff/dashboard",
-        icon: "LayoutDashboard" as LoadedIcons,
-      },
-    ],
-  },
-};
 
 export default async function AppSidebar() {
   const session = await auth();
@@ -77,14 +44,10 @@ export default async function AppSidebar() {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {session?.user?.role === "admin" ? (
+        {!!session?.user?.role && (
           <>
-            <NavMain groupLabel="Laboratory" items={data.admin.laboratory} />
-            <NavMain groupLabel="Master Data" items={data.admin.masterData} />
-          </>
-        ) : (
-          <>
-            <NavMain groupLabel="Laboratory" items={data.staff.laboratory} />
+            <NavSecondary role={session.user.role} />
+            <NavMain role={session.user.role} />
           </>
         )}
       </SidebarContent>

@@ -266,20 +266,6 @@ describe("updateUserAction", () => {
 });
 
 describe("deleteUserAction", () => {
-  const validUserPayload = {
-    name: "Dr. Crocus",
-    password: "dr_crocus_password",
-    role: "doctor" as const,
-    username: "dr_crocus",
-  };
-
-  const invalidUserPayload = {
-    name: "Garp",
-    password: "garp", // Password rule violation
-    role: "lab_tech" as const,
-    username: "garp",
-  };
-
   beforeAll(async () => {
     await prisma.user.create({
       data: {

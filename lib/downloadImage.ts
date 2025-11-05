@@ -30,7 +30,7 @@ export async function downloadImage(url: string, filename: string) {
         message: `Image downloaded successfully.`,
         data: `/api/files/users/${filename}`,
       };
-    } catch (error) {
+    } catch {
       return {
         success: false,
         message: `I/O error`,

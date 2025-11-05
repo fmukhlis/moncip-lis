@@ -3,6 +3,7 @@
 import z from "zod";
 
 import { signIn, signOut } from "@/auth";
+import { CredentialsSignin } from "next-auth";
 import { SignInWithCredentialsSchema } from "./schema";
 
 export async function signInWithCredentials({
@@ -24,7 +25,11 @@ export async function signInWithCredentials({
       redirectTo: callbackUrl ?? "/staff/dashboard",
     });
   } catch (error) {
-    throw error;
+    if (error instanceof CredentialsSignin) {
+      return { success: false, message: "Invalid credentials.", data };
+    } else {
+      throw error;
+    }
   }
 }
 
