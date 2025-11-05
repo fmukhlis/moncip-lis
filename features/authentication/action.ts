@@ -22,7 +22,7 @@ export async function signInWithCredentials({
   try {
     await signIn("credentials", {
       ...data,
-      redirectTo: callbackUrl ?? "/staff/dashboard",
+      redirectTo: callbackUrl ?? "/admin/dashboard",
     });
   } catch (error) {
     if (error instanceof CredentialsSignin) {
