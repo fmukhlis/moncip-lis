@@ -37,12 +37,14 @@ export default function NavUser() {
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-md">
-                <AvatarImage
-                  src={session.data?.user?.image ?? ""}
-                  alt={session.data?.user?.name ?? "User name"}
-                  width={32}
-                  height={32}
-                />
+                {session.data?.user?.image && session.data?.user?.name && (
+                  <AvatarImage
+                    src={session.data.user.image}
+                    alt={session.data.user.name}
+                    width={32}
+                    height={32}
+                  />
+                )}
                 <AvatarFallback className="rounded-md">
                   {(session.data?.user?.name ?? "US")
                     .substring(0, 2)
@@ -67,12 +69,14 @@ export default function NavUser() {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-md">
-                  <AvatarImage
-                    src={session.data?.user?.image ?? ""}
-                    alt={session.data?.user?.name ?? "User name"}
-                    width={32}
-                    height={32}
-                  />
+                  {session.data?.user?.image && session.data?.user?.name && (
+                    <AvatarImage
+                      src={session.data.user.image}
+                      alt={session.data.user.name}
+                      width={32}
+                      height={32}
+                    />
+                  )}
                   <AvatarFallback className="rounded-md">
                     {session.data?.user?.name?.substring(0, 2).toUpperCase() ??
                       "US"}
