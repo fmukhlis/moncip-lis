@@ -44,7 +44,7 @@ const NAV_MAIN_DATA: Record<
     Laboratory: [
       {
         title: "User Management",
-        url: "/admin/user-management",
+        url: "/admin/laboratory/user-management",
         icon: UserCog,
       },
     ],
@@ -73,73 +73,72 @@ export default function NavMain({
 
   return (
     <>
-      {Object.keys(NAV_MAIN_DATA[role]).map(
-        (groupLabel, index) =>
-          NAV_MAIN_DATA[role][groupLabel].length && (
-            <SidebarGroup key={index}>
-              <SidebarGroupLabel>{groupLabel}</SidebarGroupLabel>
-              <SidebarGroupContent>
-                <SidebarMenu>
-                  {NAV_MAIN_DATA[role][groupLabel].map((item) => {
-                    return item.items ? (
-                      <Collapsible
-                        key={item.title}
-                        asChild
-                        defaultOpen={item.items.some((subItem) =>
-                          pathname.startsWith(subItem.url),
-                        )}
-                        className="group/collapsible"
-                      >
-                        <SidebarMenuItem>
-                          <CollapsibleTrigger asChild>
-                            <SidebarMenuButton tooltip={item.title}>
-                              {item.icon && <item.icon />}
-                              <span>{item.title}</span>
-                              <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                            </SidebarMenuButton>
-                          </CollapsibleTrigger>
-                          <CollapsibleContent>
-                            <SidebarMenuSub>
-                              {item.items.map((subItem) => {
-                                return (
-                                  <SidebarMenuSubItem key={subItem.title}>
-                                    <SidebarMenuSubButton
-                                      isActive={pathname.startsWith(
-                                        subItem.url,
-                                      )}
-                                      asChild
-                                    >
-                                      <Link href={subItem.url}>
-                                        {subItem.icon && <subItem.icon />}
-                                        <span>{subItem.title}</span>
-                                      </Link>
-                                    </SidebarMenuSubButton>
-                                  </SidebarMenuSubItem>
-                                );
-                              })}
-                            </SidebarMenuSub>
-                          </CollapsibleContent>
-                        </SidebarMenuItem>
-                      </Collapsible>
-                    ) : (
-                      <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton
-                          tooltip={item.title}
-                          isActive={pathname.startsWith(item.url)}
-                          asChild
-                        >
-                          <Link href={item.url}>
+      {Object.keys(NAV_MAIN_DATA[role]).map((groupLabel, groupLabelIndex) =>
+        NAV_MAIN_DATA[role][groupLabel].length ? (
+          <SidebarGroup key={groupLabelIndex}>
+            <SidebarGroupLabel>{groupLabel}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {NAV_MAIN_DATA[role][groupLabel].map((item, itemIndex) => {
+                  return item.items ? (
+                    <Collapsible
+                      key={itemIndex}
+                      asChild
+                      defaultOpen={item.items.some((subItem) =>
+                        pathname.startsWith(subItem.url),
+                      )}
+                      className="group/collapsible"
+                    >
+                      <SidebarMenuItem>
+                        <CollapsibleTrigger asChild>
+                          <SidebarMenuButton tooltip={item.title}>
                             {item.icon && <item.icon />}
-                            <span>{item.title}</span>
-                          </Link>
-                        </SidebarMenuButton>
+                            <span className="text-nowrap">{item.title}</span>
+                            <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                          </SidebarMenuButton>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <SidebarMenuSub>
+                            {item.items.map((subItem) => {
+                              return (
+                                <SidebarMenuSubItem key={subItem.title}>
+                                  <SidebarMenuSubButton
+                                    isActive={pathname.startsWith(subItem.url)}
+                                    asChild
+                                  >
+                                    <Link href={subItem.url}>
+                                      {subItem.icon && <subItem.icon />}
+                                      <span className="text-nowrap">
+                                        {subItem.title}
+                                      </span>
+                                    </Link>
+                                  </SidebarMenuSubButton>
+                                </SidebarMenuSubItem>
+                              );
+                            })}
+                          </SidebarMenuSub>
+                        </CollapsibleContent>
                       </SidebarMenuItem>
-                    );
-                  })}
-                </SidebarMenu>
-              </SidebarGroupContent>
-            </SidebarGroup>
-          ),
+                    </Collapsible>
+                  ) : (
+                    <SidebarMenuItem key={item.title}>
+                      <SidebarMenuButton
+                        tooltip={item.title}
+                        isActive={pathname.startsWith(item.url)}
+                        asChild
+                      >
+                        <Link href={item.url}>
+                          {item.icon && <item.icon />}
+                          <span className="text-nowrap">{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ) : null,
       )}
     </>
   );

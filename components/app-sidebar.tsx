@@ -33,8 +33,8 @@ export default async function AppSidebar() {
                   <Hospital className="size-5" />
                 </div>
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">Moncip</span>
-                  <span className="truncate text-xs">
+                  <span className="text-nowrap font-semibold">Moncip</span>
+                  <span className="text-nowrap text-xs">
                     Laboratory Information System
                   </span>
                 </div>
@@ -46,7 +46,9 @@ export default async function AppSidebar() {
       <SidebarContent>
         {!!session?.user?.role && (
           <>
-            <NavSecondary role={session.user.role} />
+            <div className="mt-2">
+              <NavSecondary role={session.user.role} />
+            </div>
             <NavMain role={session.user.role} />
           </>
         )}
