@@ -96,48 +96,46 @@ model Authenticator {
 }
 
 model Laboratory {
-  id      String    @id @default(cuid(2))
-  users   User[]
+  id              String            @id @default(cuid(2))
+  users           User[]
+  labTests        LabTest[]
+  labTestGroups   LabTestGroup[]    
 }
 
 model LabTest {
   categoryId        String
   methodId          String?
-  specimenId        String
-  unitId            String
-  id                String            @id @default(cuid(2))
-  code              String            @unique
+  defaultUnitId     String
+  scaleId           String
+  id                String              @id @default(cuid(2))
+  code              String              @unique
   name              String
-  resultType        ResultType    
-  possibleValues    String[]          @default([])
-  isActive          Boolean           @default(true)
+  possibleValues    String[]            @default([])
+  isActive          Boolean             @default(true)
   
-  category          Category          @relation(fields: [categoryId], references: [id])
-  method            Method?           @relation(fields: [methodId], references: [id])
-  specimen          Specimen          @relation(fields: [specimenId], references: [id])
-  unit              Unit              @relation(fields: [unitId], references: [id])
+  scale             Scale               @relation(fields: [scaleId], references: [id])
+  category          Category            @relation(fields: [categoryId], references: [id])
+  method            Method?             @relation(fields: [methodId], references: [id])
+  specimens         Specimen[]          
+  defaultUnit       Unit                @relation("defaultUnit", fields: [defaultUnitId], references: [id])
+  units             Unit[]              @relation("units")
   labTestGroups     LabTestGroup[]    
-  referenceRanges   ReferenceRange[]
+  referenceRanges   ReferenceRange[]    
   prices            Price[]
-}
-
-enum ResultType {
-  boolean
-  numeric
-  ordinal
-  text
+  laboratories      Laboratory[]
 }
 
 model LabTestGroup {
-  categoryId    String
-  id            String        @id @default(cuid(2))
-  code          String        @unique
-  name          String
-  description   String?
-  isActive      Boolean       @default(true)
+  categoryId      String
+  id              String          @id @default(cuid(2))
+  code            String          @unique
+  name            String
+  description     String?
+  isActive        Boolean         @default(true)
 
-  categories    Category[]    
-  labTests      LabTest[]     
+  categories      Category[]    
+  labTests        LabTest[]     
+  laboratories    Laboratory[]    
 }
 
 model ReferenceRange {
@@ -160,12 +158,13 @@ enum Gender {
 }
 
 model Specimen {
-  id            String      @id @default(cuid(2))
-  code          String      @unique
-  name          String
-  description   String?
+  id              String      @id @default(cuid(2))
+  code            String      @unique
+  abbreviation    String
+  name            String
+  description     String?
 
-  labTests      LabTest[]   
+  labTests        LabTest[]   
 }
 
 model Category {
@@ -179,24 +178,37 @@ model Category {
 }
 
 model Method {
-  id            String      @id @default(cuid(2))
-  code          String      @unique
-  name          String
-  description   String?
+  id              String      @id @default(cuid(2))
+  code            String      @unique
+  abbreviation    String      
+  name            String
+  description     String?
 
-  labTests      LabTest[]
+  labTests        LabTest[]
 }
 
 model Unit {
-  id                String              @id @default(cuid(2))
-  code              String              @unique
-  name              String
-  description       String?
+  id                  String              @id @default(cuid(2))
+  code                String              @unique
+  displayCode         String
+  name                String
+  description         String?
 
-  labTests          LabTest[]
-  referenceRanges   ReferenceRange[]    
-  conversionsFrom   UnitConversion[]    @relation("fromUnit")
-  conversionTo      UnitConversion[]    @relation("toUnit")
+  usedAsDefaultFor    LabTest[]           @relation("defaultUnit")
+  labTests            LabTest[]           @relation("units")
+  referenceRanges     ReferenceRange[]    
+  conversionsFrom     UnitConversion[]    @relation("fromUnit")
+  conversionTo        UnitConversion[]    @relation("toUnit")
+}
+
+model Scale {
+  id              String      @id @default(cuid(2))
+  code            String      @unique
+  abbreviation    String
+  name            String
+  description     String?
+
+  labTests        LabTest[]   
 }
 
 model UnitConversion {
