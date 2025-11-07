@@ -51,8 +51,26 @@ const NAV_MAIN_DATA: Record<
     "Master Data": [
       {
         title: "Laboratory Tests",
-        url: "/admin/master-data/laboratory-tests",
+        url: "#",
         icon: FlaskConical,
+        items: [
+          {
+            title: "Test Availability",
+            url: "/admin/master-data/laboratory-tests/test-availability",
+          },
+          {
+            title: "Test Pricing",
+            url: "/admin/master-data/laboratory-tests/test-pricing",
+          },
+          {
+            title: "Test Panels",
+            url: "/admin/master-data/laboratory-tests/test-panels",
+          },
+          {
+            title: "Reference Ranges",
+            url: "/admin/master-data/laboratory-tests/reference-ranges",
+          },
+        ],
       },
     ],
   },

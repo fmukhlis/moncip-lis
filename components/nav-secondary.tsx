@@ -95,7 +95,9 @@ export default function NavSecondary({
                             >
                               <Link href={subItem.url}>
                                 {subItem.icon && <subItem.icon />}
-                                <span>{subItem.title}</span>
+                                <span className="text-nowrap">
+                                  {subItem.title}
+                                </span>
                               </Link>
                             </SidebarMenuSubButton>
                           </SidebarMenuSubItem>

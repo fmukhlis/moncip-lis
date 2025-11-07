@@ -503,6 +503,7 @@ function SidebarMenuButton({
   tooltip,
   className,
   id,
+  "aria-controls": ariaControls,
   ...props
 }: React.ComponentProps<"button"> & {
   asChild?: boolean;
@@ -520,6 +521,7 @@ function SidebarMenuButton({
 
   const button = isMounted ? (
     <Comp
+      aria-controls={ariaControls}
       id={id}
       data-slot="sidebar-menu-button"
       data-sidebar="menu-button"
@@ -689,6 +691,7 @@ function SidebarMenuSubButton({
   isActive = false,
   className,
   id,
+  "aria-controls": ariaControls,
   ...props
 }: React.ComponentProps<"a"> & {
   asChild?: boolean;
@@ -706,6 +709,7 @@ function SidebarMenuSubButton({
   return isMounted ? (
     <Comp
       id={id}
+      aria-controls={ariaControls}
       data-slot="sidebar-menu-sub-button"
       data-sidebar="menu-sub-button"
       data-size={size}
