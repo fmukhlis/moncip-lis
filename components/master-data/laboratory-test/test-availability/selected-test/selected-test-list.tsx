@@ -3,10 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { TestTube2, X } from "lucide-react";
 import { useAppDispatch, useAppSelector } from "@/hooks";
-import {
-  setIsDirty,
-  unselectMainTableRow,
-} from "@/features/master-data/test-availability-slice";
+import { unselectMainTableRow } from "@/features/master-data/test-availability-slice";
 import {
   Item,
   ItemMedia,
@@ -48,7 +45,6 @@ export default function SelectedTestList() {
                 size={"icon-sm"}
                 className="bg-destructive/10 ml-auto"
                 onClick={() => {
-                  dispatch(setIsDirty(true));
                   dispatch(unselectMainTableRow([test.code]));
                 }}
               >

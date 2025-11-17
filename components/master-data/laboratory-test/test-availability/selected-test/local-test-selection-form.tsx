@@ -7,20 +7,17 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useForm } from "react-hook-form";
-import { setIsDirty } from "@/features/master-data/test-availability-slice";
 import { FieldError } from "@/components/ui/field";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useAppSelector } from "@/hooks";
 import { saveLocalTestsAction } from "@/features/master-data/action";
 import { SaveLocalTestsSchema } from "@/features/master-data/schema";
-import { useAppDispatch, useAppSelector } from "@/hooks";
 
 export default function LocalTestSelectionForm() {
   const selectedMasterLabTests = useAppSelector(
     (state) => state.testAvailability.selectedMasterLabTests,
   );
   const isDirty = useAppSelector((state) => state.testAvailability.isDirty);
-
-  const dispatch = useAppDispatch();
 
   const { setValue, formState, handleSubmit } = useForm({
     mode: "onSubmit",
@@ -32,7 +29,6 @@ export default function LocalTestSelectionForm() {
 
     if (response.success) {
       toast.success(response.message);
-      dispatch(setIsDirty(false));
     } else {
       toast.error(response.message);
     }

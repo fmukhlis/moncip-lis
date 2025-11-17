@@ -8,7 +8,6 @@ import { useAppDispatch } from "@/hooks";
 import { CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown, ListCollapse } from "lucide-react";
 import {
-  setIsDirty,
   selectMainTableRow,
   unselectMainTableRow,
 } from "@/features/master-data/test-availability-slice";
@@ -42,8 +41,6 @@ export default function Category({ cellContext }: CategoryProps) {
               disabled={!cellContext.row.subRows.length}
               className="size-7 rounded-md"
               onCheckedChange={() => {
-                dispatch(setIsDirty(true));
-
                 if (cellContext.row.getIsAllSubRowsSelected()) {
                   dispatch(
                     unselectMainTableRow(

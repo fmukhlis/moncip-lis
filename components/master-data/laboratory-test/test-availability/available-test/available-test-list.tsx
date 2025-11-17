@@ -7,6 +7,7 @@ import { useAppDispatch, useAppSelector } from "@/hooks";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import { LocalTest, MasterCategory, MasterTest } from "../types";
 import {
+  setIsDirty,
   setMainTableRowSelection,
   setSelectedMasterLabTests,
 } from "@/features/master-data/test-availability-slice";
@@ -74,8 +75,14 @@ export default function AvailableTestList({
       }
     }
 
+    dispatch(
+      setIsDirty(
+        !(selectedTests.length === Object.values(rowSelection).length) ||
+          !selectedTests.every(({ code }) => rowSelection[code]),
+      ),
+    );
     dispatch(setSelectedMasterLabTests(selected));
-  }, [dispatch, rowSelection, data]);
+  }, [dispatch, rowSelection, data, selectedTests]);
 
   React.useEffect(() => {
     dispatch(

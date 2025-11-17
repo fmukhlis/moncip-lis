@@ -6,8 +6,6 @@ import { Table } from "@tanstack/react-table";
 import { Toggle } from "@/components/ui/toggle";
 import { Spinner } from "@/components/ui/spinner";
 import { Checkbox } from "@/components/ui/checkbox";
-import { setIsDirty } from "@/features/master-data/test-availability-slice";
-import { useAppDispatch } from "@/hooks";
 import { useDebouncedCallback } from "use-debounce";
 import { ChevronDown, Search, X } from "lucide-react";
 import { MasterCategory, MasterTest } from "../types";
@@ -31,8 +29,6 @@ export default function AvailableTestListHeader({
   table,
 }: DataTableHeaderProps) {
   const [filterUIText, setFilterUIText] = React.useState("");
-
-  const dispatch = useAppDispatch();
 
   const filterChangeHandler = useDebouncedCallback((value: string) => {
     table.getColumn("name")?.setFilterValue(value);
@@ -79,7 +75,6 @@ export default function AvailableTestListHeader({
                 className="size-9 bg-input rounded-md"
                 checked={table.getIsAllRowsSelected()}
                 onCheckedChange={() => {
-                  dispatch(setIsDirty(true));
                   table.toggleAllRowsSelected();
                 }}
               />
