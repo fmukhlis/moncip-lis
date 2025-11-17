@@ -61,17 +61,29 @@ export default function AvailableTestList({
   });
 
   React.useEffect(() => {
-    const labTests = table
-      .getSelectedRowModel()
-      .flatRows.map(({ original }) => original) as MasterTest[];
+    const selected: MasterTest[] = [];
 
-    dispatch(setSelectedMasterLabTests(labTests));
-  }, [rowSelection]);
+    for (const d of data) {
+      if (!("labTests" in d)) {
+        continue;
+      }
+      for (const test of d.labTests) {
+        if (rowSelection[test.code]) {
+          selected.push(test);
+        }
+      }
+    }
+
+    dispatch(setSelectedMasterLabTests(selected));
+  }, [dispatch, rowSelection, data]);
 
   React.useEffect(() => {
-    table.setRowSelection(
-      Object.fromEntries(selectedTests.map(({ code }) => [code, true])),
+    dispatch(
+      setMainTableRowSelection(
+        Object.fromEntries(selectedTests.map(({ code }) => [code, true])),
+      ),
     );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

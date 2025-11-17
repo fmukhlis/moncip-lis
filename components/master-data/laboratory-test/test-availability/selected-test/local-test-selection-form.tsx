@@ -58,9 +58,9 @@ export default function LocalTestSelectionForm() {
           size={"lg"}
           type="submit"
           variant={"default"}
-          // disabled={
-          //   !selectedMasterLabTests.length || !isDirty || formState.isSubmitting
-          // }
+          disabled={
+            !selectedMasterLabTests.length || !isDirty || formState.isSubmitting
+          }
           className="w-full font-semibold"
         >
           {formState.isSubmitting ? (
