@@ -62,7 +62,7 @@ describe("createLaboratoryAction", () => {
 
     expect(response).toEqual({
       success: true,
-      message: "Laboratory created successfully.",
+      message: "Laboratory was created successfully.",
       data: null,
     });
   });

@@ -95,7 +95,7 @@ describe("createUserAction", () => {
 
     expect(response).toEqual({
       success: true,
-      message: "User created successfully.",
+      message: "User was created successfully.",
       data: validUserPayload,
     });
   });
@@ -215,7 +215,7 @@ describe("updateUserAction", () => {
 
     expect(response).toEqual({
       success: true,
-      message: "User updated successfully.",
+      message: "User was updated successfully.",
       data: validUserPayload,
     });
   });
@@ -333,7 +333,7 @@ describe("deleteUserAction", () => {
 
     expect(response).toEqual({
       success: true,
-      message: "User deleted successfully.",
+      message: "User was deleted successfully.",
       data: null,
     });
   });
@@ -398,7 +398,7 @@ describe("importOAuthUserImageAction", () => {
   it("downloads user image locally, updates user image path in database and returns a success response", async () => {
     (downloadImage as unknown as jest.Mock).mockImplementationOnce(() => ({
       success: true,
-      message: `Image downloaded successfully.`,
+      message: `Image was downloaded successfully.`,
       data: `/api/files/users/admin_1_id.jpg`,
     }));
 
@@ -419,7 +419,7 @@ describe("importOAuthUserImageAction", () => {
 
     expect(response).toEqual({
       success: true,
-      message: "Imported successfully.",
+      message: "Image was imported successfully.",
       data: null,
     });
   });

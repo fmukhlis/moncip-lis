@@ -11,7 +11,7 @@ import { useAppDispatch, useAppSelector } from "@/hooks";
 import {
   setSelectedUser,
   setShowDeleteUserDialog,
-} from "@/features/user/userSlice";
+} from "@/features/user/user-slice";
 import {
   AlertDialog,
   AlertDialogTitle,

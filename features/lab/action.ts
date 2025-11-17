@@ -6,7 +6,7 @@ export async function createLaboratoryAction(user: Session["user"]) {
     await createLaboratory(user.id);
     return {
       success: true,
-      message: "Laboratory created successfully.",
+      message: "Laboratory was created successfully.",
       data: null,
     };
   }

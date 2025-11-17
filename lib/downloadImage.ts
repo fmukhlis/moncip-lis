@@ -27,7 +27,7 @@ export async function downloadImage(url: string, filename: string) {
 
       return {
         success: true,
-        message: `Image downloaded successfully.`,
+        message: `Image was downloaded successfully.`,
         data: `/api/files/users/${filename}`,
       };
     } catch {

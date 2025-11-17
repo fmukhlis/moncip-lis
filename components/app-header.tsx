@@ -25,16 +25,13 @@ const routeCrumbs = {
   "/admin/dashboard": [{ label: "Dashboard", href: "" }],
   "/admin/laboratory/user-management": [{ label: "User Management", href: "" }],
   "/admin/master-data/laboratory-tests/test-availability": [
-    { label: "Test Availability Management", href: "" },
+    { label: "Test Availability", href: "" },
   ],
   "/admin/master-data/laboratory-tests/test-pricing": [
-    { label: "Test Pricing Management", href: "" },
-  ],
-  "/admin/master-data/laboratory-tests/test-panels": [
-    { label: "Test Panel Management", href: "" },
+    { label: "Test Pricing", href: "" },
   ],
   "/admin/master-data/laboratory-tests/reference-ranges": [
-    { label: "Reference Range Management", href: "" },
+    { label: "Reference Range", href: "" },
   ],
   "/doctor/dashboard": [{ label: "Dashboard", href: "" }],
   "/lab-tech/dashboard": [{ label: "Dashboard", href: "" }],

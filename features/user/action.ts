@@ -33,7 +33,11 @@ export async function createUserAction(data: z.infer<typeof CreateUserSchema>) {
 
   revalidatePath("/admin/dashboard");
 
-  return { success: true, message: "User created successfully.", data: data };
+  return {
+    success: true,
+    message: "User was created successfully.",
+    data: data,
+  };
 }
 
 export async function updateUserAction(
@@ -55,11 +59,17 @@ export async function updateUserAction(
       if (user.laboratoryId !== session?.user?.laboratoryId) {
         throw new Error();
       }
+
+      return user;
     });
 
     revalidatePath("/admin/dashboard");
 
-    return { success: true, message: "User updated successfully.", data: data };
+    return {
+      success: true,
+      message: "User was updated successfully.",
+      data: data,
+    };
   } catch {
     return { success: false, message: "Authorization violations.", data: data };
   }
@@ -75,11 +85,17 @@ export async function deleteUserAction(userId: string) {
       if (user.laboratoryId !== session?.user?.laboratoryId) {
         throw new Error();
       }
+
+      return user;
     });
 
     revalidatePath("/admin/dashboard");
 
-    return { success: true, message: "User deleted successfully.", data: null };
+    return {
+      success: true,
+      message: "User was deleted successfully.",
+      data: null,
+    };
   } catch {
     return { success: false, message: "Authorization violations.", data: null };
   }
@@ -92,7 +108,11 @@ export async function importOAuthUserImageAction(user: Session["user"]) {
 
       if (data) {
         await updateUserImage(user.id, { image: data });
-        return { success: true, message: "Imported successfully.", data: null };
+        return {
+          success: true,
+          message: "Image was imported successfully.",
+          data: null,
+        };
       }
     }
 

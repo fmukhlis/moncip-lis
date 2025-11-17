@@ -16,7 +16,7 @@ import { Field, FieldError, FieldGroup, FieldLabel } from "../ui/field";
 import {
   setSelectedUser,
   setShowUpdateUserDialog,
-} from "@/features/user/userSlice";
+} from "@/features/user/user-slice";
 import {
   Select,
   SelectItem,
