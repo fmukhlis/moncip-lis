@@ -131,7 +131,7 @@ model LabTestGroup {
   code            String          @unique
   name            String
   description     String?
-  isActive        Boolean         @default(true)
+  isOrderable     Boolean         @default(true)
 
   categories      Category[]    
   labTests        LabTest[]     
@@ -141,15 +141,17 @@ model LabTestGroup {
 model ReferenceRange {
   labTestId   String
   unitId      String
-  id          String    @id @default(cuid(2))
+  id          String      @id @default(cuid(2))
   gender      Gender
   ageMin      Int
   ageMax      Int
   valueLow    Decimal
   valueHigh   Decimal
+  validFrom   DateTime    @default(now())
+  validTo     DateTime?   
 
-  labTest     LabTest   @relation(fields: [labTestId], references: [id])
-  unit        Unit      @relation(fields: [unitId], references: [id])
+  labTest     LabTest     @relation(fields: [labTestId], references: [id])
+  unit        Unit        @relation(fields: [unitId], references: [id])
 }
 
 enum Gender {
@@ -240,7 +242,6 @@ model Price {
   price           Decimal   
   validFrom       DateTime      @default(now())
   validTo         DateTime?
-  isActive        Boolean       @default(true)
 
   tariffGroup     TariffGroup   @relation(fields: [tariffGroupId], references: [id])
   labTest         LabTest       @relation(fields: [labTestId], references: [id])

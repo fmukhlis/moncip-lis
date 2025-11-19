@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "ReferenceRange" ADD COLUMN     "validFrom" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN     "validTo" TIMESTAMP(3);
