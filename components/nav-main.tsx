@@ -63,10 +63,6 @@ const NAV_MAIN_DATA: Record<
             url: "/admin/master-data/laboratory-tests/test-pricing",
           },
           {
-            title: "Test Panels",
-            url: "/admin/master-data/laboratory-tests/test-panels",
-          },
-          {
             title: "Reference Ranges",
             url: "/admin/master-data/laboratory-tests/reference-ranges",
           },
