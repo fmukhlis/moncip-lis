@@ -139,24 +139,26 @@ model LabTestGroup {
 }
 
 model ReferenceRange {
-  labTestId   String
-  unitId      String
-  id          String      @id @default(cuid(2))
-  gender      Gender
-  ageMin      Int
-  ageMax      Int
-  valueLow    Decimal
-  valueHigh   Decimal
-  validFrom   DateTime    @default(now())
-  validTo     DateTime?   
+  labTestId       String
+  unitId          String
+  id              String      @id @default(cuid(2))
+  gender          Gender
+  ageMin          Int
+  ageMax          Int
+  valueLow        Decimal?
+  valueHigh       Decimal?
+  normalValues    String[]    @default([])
+  validFrom       DateTime    @default(now())
+  validTo         DateTime?   
 
-  labTest     LabTest     @relation(fields: [labTestId], references: [id])
-  unit        Unit        @relation(fields: [unitId], references: [id])
+  labTest         LabTest     @relation(fields: [labTestId], references: [id])
+  unit            Unit        @relation(fields: [unitId], references: [id])
 }
 
 enum Gender {
   M
   F
+  B
 }
 
 model Specimen {
