@@ -105,7 +105,7 @@ model Laboratory {
 model LabTest {
   categoryId        String
   methodId          String?
-  defaultUnitId     String
+  defaultUnitId     String?
   scaleId           String
   id                String              @id @default(cuid(2))
   code              String              @unique
@@ -117,7 +117,7 @@ model LabTest {
   category          Category            @relation(fields: [categoryId], references: [id])
   method            Method?             @relation(fields: [methodId], references: [id])
   specimens         Specimen[]          
-  defaultUnit       Unit                @relation("defaultUnit", fields: [defaultUnitId], references: [id])
+  defaultUnit       Unit?               @relation("defaultUnit", fields: [defaultUnitId], references: [id])
   units             Unit[]              @relation("units")
   labTestGroups     LabTestGroup[]    
   referenceRanges   ReferenceRange[]    
@@ -140,7 +140,7 @@ model LabTestGroup {
 
 model ReferenceRange {
   labTestId       String
-  unitId          String
+  unitId          String?
   id              String      @id @default(cuid(2))
   gender          Gender
   ageMin          Int
@@ -152,7 +152,7 @@ model ReferenceRange {
   validTo         DateTime?   
 
   labTest         LabTest     @relation(fields: [labTestId], references: [id])
-  unit            Unit        @relation(fields: [unitId], references: [id])
+  unit            Unit?       @relation(fields: [unitId], references: [id])
 }
 
 enum Gender {
