@@ -4,7 +4,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "CLINICAL_CHEMISTRY" } },
     code: "FASTING_GLUCOSE",
-    defaultUnit: { connect: { code: "mg/dL" } },
     name: "Fasting Glucose",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "SERUM" }, { code: "PLASMA" }] },
@@ -13,7 +12,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "CLINICAL_CHEMISTRY" } },
     code: "RANDOM_GLUCOSE",
-    defaultUnit: { connect: { code: "mg/dL" } },
     name: "Random Glucose",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "SERUM" }, { code: "PLASMA" }] },
@@ -22,7 +20,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "CLINICAL_CHEMISTRY" } },
     code: "SERUM_CREATININE",
-    defaultUnit: { connect: { code: "mg/dL" } },
     name: "Serum Creatinine",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "SERUM" }, { code: "PLASMA" }] },
@@ -31,7 +28,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "CLINICAL_CHEMISTRY" } },
     code: "SERUM_UREA_NITROGEN",
-    defaultUnit: { connect: { code: "mg/dL" } },
     name: "Serum Urea Nitrogen (BUN)",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "SERUM" }, { code: "PLASMA" }] },
@@ -40,7 +36,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "CLINICAL_CHEMISTRY" } },
     code: "SERUM_URIC_ACID",
-    defaultUnit: { connect: { code: "mg/dL" } },
     name: "Serum Uric Acid",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "SERUM" }, { code: "PLASMA" }] },
@@ -49,7 +44,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "CLINICAL_CHEMISTRY" } },
     code: "SERUM_SODIUM",
-    defaultUnit: { connect: { code: "mmol/L" } },
     name: "Serum Sodium",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "SERUM" }, { code: "PLASMA" }] },
@@ -58,7 +52,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "CLINICAL_CHEMISTRY" } },
     code: "SERUM_POTASSIUM",
-    defaultUnit: { connect: { code: "mmol/L" } },
     name: "Serum Potassium",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "SERUM" }, { code: "PLASMA" }] },
@@ -67,7 +60,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "CLINICAL_CHEMISTRY" } },
     code: "SERUM_CHLORIDE",
-    defaultUnit: { connect: { code: "mmol/L" } },
     name: "Serum Chloride",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "SERUM" }, { code: "PLASMA" }] },
@@ -76,7 +68,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "CLINICAL_CHEMISTRY" } },
     code: "SERUM_CALCIUM",
-    defaultUnit: { connect: { code: "mg/dL" } },
     name: "Serum Calcium",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "SERUM" }, { code: "PLASMA" }] },
@@ -85,7 +76,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "CLINICAL_CHEMISTRY" } },
     code: "SERUM_PHOSPHATE",
-    defaultUnit: { connect: { code: "mg/dL" } },
     name: "Serum Phosphate",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "SERUM" }, { code: "PLASMA" }] },
@@ -94,7 +84,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "CLINICAL_CHEMISTRY" } },
     code: "SERUM_MAGNESIUM",
-    defaultUnit: { connect: { code: "mg/dL" } },
     name: "Serum Magnesium",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "SERUM" }, { code: "PLASMA" }] },
@@ -103,7 +92,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "CLINICAL_CHEMISTRY" } },
     code: "TOTAL_PROTEIN",
-    defaultUnit: { connect: { code: "g/dL" } },
     name: "Total Protein",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "SERUM" }, { code: "PLASMA" }] },
@@ -112,7 +100,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "CLINICAL_CHEMISTRY" } },
     code: "SERUM_ALBUMIN",
-    defaultUnit: { connect: { code: "g/dL" } },
     name: "Serum Albumin",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "SERUM" }, { code: "PLASMA" }] },
@@ -121,7 +108,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "CLINICAL_CHEMISTRY" } },
     code: "SERUM_GLOBULIN",
-    defaultUnit: { connect: { code: "g/dL" } },
     name: "Serum Globulin",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "SERUM" }, { code: "PLASMA" }] },
@@ -130,7 +116,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "CLINICAL_CHEMISTRY" } },
     code: "TOTAL_BILIRUBIN",
-    defaultUnit: { connect: { code: "mg/dL" } },
     name: "Total Bilirubin",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "SERUM" }, { code: "PLASMA" }] },
@@ -139,7 +124,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "CLINICAL_CHEMISTRY" } },
     code: "DIRECT_BILIRUBIN",
-    defaultUnit: { connect: { code: "mg/dL" } },
     name: "Direct Bilirubin",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "SERUM" }, { code: "PLASMA" }] },
@@ -148,7 +132,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "CLINICAL_CHEMISTRY" } },
     code: "ALT",
-    defaultUnit: { connect: { code: "{U}/L" } },
     name: "Alanine Aminotransferase (ALT)",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "SERUM" }, { code: "PLASMA" }] },
@@ -157,7 +140,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "CLINICAL_CHEMISTRY" } },
     code: "AST",
-    defaultUnit: { connect: { code: "{U}/L" } },
     name: "Aspartate Aminotransferase (AST)",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "SERUM" }, { code: "PLASMA" }] },
@@ -166,7 +148,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "CLINICAL_CHEMISTRY" } },
     code: "ALP",
-    defaultUnit: { connect: { code: "{U}/L" } },
     name: "Alkaline Phosphatase (ALP)",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "SERUM" }, { code: "PLASMA" }] },
@@ -175,7 +156,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "CLINICAL_CHEMISTRY" } },
     code: "GGT",
-    defaultUnit: { connect: { code: "{U}/L" } },
     name: "Gamma Glutamyl Transferase (GGT)",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "SERUM" }, { code: "PLASMA" }] },
@@ -184,7 +164,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "CLINICAL_CHEMISTRY" } },
     code: "TOTAL_CHOLESTEROL",
-    defaultUnit: { connect: { code: "mg/dL" } },
     name: "Total Cholesterol",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "SERUM" }, { code: "PLASMA" }] },
@@ -193,7 +172,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "CLINICAL_CHEMISTRY" } },
     code: "HDL_CHOLESTEROL",
-    defaultUnit: { connect: { code: "mg/dL" } },
     name: "HDL Cholesterol",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "SERUM" }, { code: "PLASMA" }] },
@@ -202,7 +180,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "CLINICAL_CHEMISTRY" } },
     code: "LDL_CHOLESTEROL",
-    defaultUnit: { connect: { code: "mg/dL" } },
     name: "LDL Cholesterol",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "SERUM" }, { code: "PLASMA" }] },
@@ -211,7 +188,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "CLINICAL_CHEMISTRY" } },
     code: "TRIGLYCERIDES",
-    defaultUnit: { connect: { code: "mg/dL" } },
     name: "Triglycerides",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "SERUM" }, { code: "PLASMA" }] },
@@ -220,7 +196,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "HEMATOLOGY" } },
     code: "HEMOGLOBIN",
-    defaultUnit: { connect: { code: "g/dL" } },
     name: "Hemoglobin",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "WHOLE_BLOOD" }] },
@@ -229,7 +204,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "HEMATOLOGY" } },
     code: "HEMATOCRIT",
-    defaultUnit: { connect: { code: "%" } },
     name: "Hematocrit",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "WHOLE_BLOOD" }] },
@@ -238,7 +212,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "HEMATOLOGY" } },
     code: "RBC_COUNT",
-    defaultUnit: { connect: { code: "10*6/uL" } },
     name: "Red Blood Cell Count",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "WHOLE_BLOOD" }] },
@@ -247,7 +220,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "HEMATOLOGY" } },
     code: "WBC_COUNT",
-    defaultUnit: { connect: { code: "10*3/uL" } },
     name: "White Blood Cell Count",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "WHOLE_BLOOD" }] },
@@ -256,7 +228,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "HEMATOLOGY" } },
     code: "PLATELET_COUNT",
-    defaultUnit: { connect: { code: "10*3/uL" } },
     name: "Platelet Count",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "WHOLE_BLOOD" }] },
@@ -265,7 +236,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "HEMATOLOGY" } },
     code: "MCV",
-    defaultUnit: { connect: { code: "fL" } },
     name: "Mean Corpuscular Volume (MCV)",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "WHOLE_BLOOD" }] },
@@ -274,7 +244,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "HEMATOLOGY" } },
     code: "MCH",
-    defaultUnit: { connect: { code: "pg" } },
     name: "Mean Corpuscular Hemoglobin (MCH)",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "WHOLE_BLOOD" }] },
@@ -283,7 +252,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "HEMATOLOGY" } },
     code: "MCHC",
-    defaultUnit: { connect: { code: "g/dL" } },
     name: "Mean Corpuscular Hemoglobin Concentration (MCHC)",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "WHOLE_BLOOD" }] },
@@ -292,7 +260,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "HEMATOLOGY" } },
     code: "DIFFERENTIAL_COUNT",
-    defaultUnit: { connect: { code: "%" } },
     name: "Differential Count",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "WHOLE_BLOOD" }] },
@@ -301,7 +268,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "URINALYSIS" } },
     code: "URINE_GLUCOSE",
-    defaultUnit: { connect: { code: "mg/dL" } },
     name: "Urine Glucose",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "URINE" }] },
@@ -310,17 +276,14 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "URINALYSIS" } },
     code: "URINE_GLUCOSE_DIPSTICK",
-    defaultUnit: { connect: { code: "{ratio}" } },
     name: "Urine Glucose Dipstick",
     scale: { connect: { code: "SEMI_QUANTITATIVE" } },
     specimens: { connect: [{ code: "URINE" }] },
-    units: { connect: [{ code: "{ratio}" }] },
     possibleValues: ["Negative", "Trace", "1+", "2+", "3+", "4+"],
   },
   {
     category: { connect: { code: "URINALYSIS" } },
     code: "URINE_PROTEIN",
-    defaultUnit: { connect: { code: "mg/dL" } },
     name: "Urine Protein",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "URINE" }] },
@@ -329,35 +292,30 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "URINALYSIS" } },
     code: "URINE_PROTEIN_DIPSTICK",
-    defaultUnit: { connect: { code: "{ratio}" } },
     name: "Urine Protein Dipstick",
     scale: { connect: { code: "SEMI_QUANTITATIVE" } },
     specimens: { connect: [{ code: "URINE" }] },
-    units: { connect: [{ code: "{ratio}" }] },
     possibleValues: ["Negative", "Trace", "1+", "2+", "3+", "4+"],
   },
   {
     category: { connect: { code: "URINALYSIS" } },
     code: "URINE_PH",
-    defaultUnit: { connect: { code: "{numeric}" } },
     name: "Urine pH",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "URINE" }] },
-    units: { connect: [{ code: "{numeric}" }] },
+    units: { connect: [{ code: "{ratio}" }] },
   },
   {
     category: { connect: { code: "URINALYSIS" } },
     code: "URINE_SPECIFIC_GRAVITY",
-    defaultUnit: { connect: { code: "{numeric}" } },
     name: "Urine Specific Gravity",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "URINE" }] },
-    units: { connect: [{ code: "{numeric}" }] },
+    units: { connect: [{ code: "{ratio}" }] },
   },
   {
     category: { connect: { code: "CLINICAL_CHEMISTRY" } },
     code: "HBA1C",
-    defaultUnit: { connect: { code: "%" } },
     name: "Hemoglobin A1c",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "WHOLE_BLOOD" }] },
@@ -366,7 +324,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "IMMUNOLOGY" } },
     code: "TSH",
-    defaultUnit: { connect: { code: "u{IU}/mL" } },
     name: "Thyroid Stimulating Hormone (TSH)",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "SERUM" }, { code: "PLASMA" }] },
@@ -375,7 +332,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "IMMUNOLOGY" } },
     code: "FREE_T3",
-    defaultUnit: { connect: { code: "pg/mL" } },
     name: "Free Triiodothyronine (Free T3)",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "SERUM" }, { code: "PLASMA" }] },
@@ -384,7 +340,6 @@ const labTestData: Prisma.LabTestCreateInput[] = [
   {
     category: { connect: { code: "IMMUNOLOGY" } },
     code: "FREE_T4",
-    defaultUnit: { connect: { code: "ng/dL" } },
     name: "Free Thyroxine (Free T4)",
     scale: { connect: { code: "QUANTITATIVE" } },
     specimens: { connect: [{ code: "SERUM" }, { code: "PLASMA" }] },

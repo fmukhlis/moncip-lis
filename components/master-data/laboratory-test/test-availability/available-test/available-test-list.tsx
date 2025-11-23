@@ -43,7 +43,7 @@ export default function AvailableTestList({
     data,
     state: { rowSelection },
     columns,
-    getRowId: (row) => row.code,
+    getRowId: (row) => row.id,
     getSubRows: (row) =>
       "labTests" in row && !!row.labTests.length ? row.labTests : undefined,
     initialState: { sorting: [{ id: "name", desc: false }] },
@@ -69,7 +69,7 @@ export default function AvailableTestList({
         continue;
       }
       for (const test of d.labTests) {
-        if (rowSelection[test.code]) {
+        if (rowSelection[test.id]) {
           selected.push(test);
         }
       }
@@ -78,7 +78,7 @@ export default function AvailableTestList({
     dispatch(
       setIsDirty(
         !(selectedTests.length === Object.values(rowSelection).length) ||
-          !selectedTests.every(({ code }) => rowSelection[code]),
+          !selectedTests.every(({ id }) => rowSelection[id]),
       ),
     );
     dispatch(setSelectedMasterLabTests(selected));
@@ -87,7 +87,7 @@ export default function AvailableTestList({
   React.useEffect(() => {
     dispatch(
       setMainTableRowSelection(
-        Object.fromEntries(selectedTests.map(({ code }) => [code, true])),
+        Object.fromEntries(selectedTests.map(({ id }) => [id, true])),
       ),
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps

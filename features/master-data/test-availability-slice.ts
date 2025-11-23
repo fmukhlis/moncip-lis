@@ -1,10 +1,8 @@
+import { MasterCategory } from "@/components/master-data/laboratory-test/test-availability/types";
 import { RowSelectionState } from "@tanstack/react-table";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { getMasterTestCategoriesDeepAction } from "./action";
 
-type LabTests = Awaited<
-  ReturnType<typeof getMasterTestCategoriesDeepAction>
->["data"][number]["labTests"];
+type LabTests = MasterCategory["labTests"];
 
 type TestAvailabilityState = {
   isDirty: boolean;

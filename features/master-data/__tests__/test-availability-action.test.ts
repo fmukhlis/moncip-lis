@@ -11,8 +11,10 @@ import {
 } from "@/lib/seed-master-test";
 import {
   saveLocalTestsAction,
-  getMasterTestCategoriesDeepAction,
-} from "../action";
+  getTestCategoriesWithTestsAction,
+  getLocalTestsAction,
+} from "../action/test-availability-action";
+import { getTests } from "../dal/test-availability-query";
 
 jest.mock("@/auth", () => {
   return {
@@ -57,7 +59,7 @@ afterAll(async () => {
   }
 });
 
-describe("getMasterTestCategoriesDeepAction", () => {
+describe("getTestCategoriesWithTestsAction", () => {
   it("returns a success response", async () => {
     (auth as jest.Mock).mockImplementationOnce(() => ({
       user: {
@@ -67,17 +69,17 @@ describe("getMasterTestCategoriesDeepAction", () => {
       },
     }));
 
-    const response = await getMasterTestCategoriesDeepAction();
+    const response = await getTestCategoriesWithTestsAction();
 
     expect(response).toEqual({
       success: true,
-      message: "Success to fetch data.",
+      message: "Data was fetched successfully.",
       data: response.data,
     });
   });
 
   it("returns a failed response when unauthorized", async () => {
-    const response = await getMasterTestCategoriesDeepAction();
+    const response = await getTestCategoriesWithTestsAction();
 
     expect(response).toEqual({
       success: false,
@@ -107,9 +109,9 @@ describe("saveLocalTestsAction", () => {
       },
     }));
 
-    const response = await saveLocalTestsAction({
-      labTestCodes: ["FASTING_GLUCOSE", "RANDOM_GLUCOSE"],
-    });
+    const labTestIds = (await getTests()).map(({ id }) => id);
+
+    const response = await saveLocalTestsAction({ labTestIds });
 
     expect(response).toEqual({
       success: true,
@@ -128,20 +130,50 @@ describe("saveLocalTestsAction", () => {
     }));
 
     const response = await saveLocalTestsAction({
-      labTestCodes: ["NON_EXISTING_CODE"],
+      labTestIds: ["NON_EXISTING_ID"],
     });
 
     expect(response).toEqual({
       success: false,
       message: "Invalid data.",
-      data: [],
+      data: 0,
     });
   });
 
   it("returns a failed response when unauthorized", async () => {
-    const response = await saveLocalTestsAction({
-      labTestCodes: ["FASTING_GLUCOSE", "RANDOM_GLUCOSE"],
+    const labTestIds = (await getTests()).map(({ id }) => id);
+
+    const response = await saveLocalTestsAction({ labTestIds });
+
+    expect(response).toEqual({
+      success: false,
+      message: "Authorization violations.",
+      data: 0,
     });
+  });
+});
+
+describe("getLocalTestsAction", () => {
+  it("returns a success response", async () => {
+    (auth as jest.Mock).mockImplementationOnce(() => ({
+      user: {
+        name: "Admin 1",
+        role: "admin",
+        laboratoryId: "lab_id_1",
+      },
+    }));
+
+    const response = await getLocalTestsAction();
+
+    expect(response).toEqual({
+      success: true,
+      message: "Data was fetched successfully.",
+      data: response.data,
+    });
+  });
+
+  it("returns a failed response when unauthorized", async () => {
+    const response = await getLocalTestsAction();
 
     expect(response).toEqual({
       success: false,

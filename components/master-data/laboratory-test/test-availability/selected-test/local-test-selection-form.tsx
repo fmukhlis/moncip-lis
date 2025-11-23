@@ -7,28 +7,33 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { useForm } from "react-hook-form";
+import { setIsDirty } from "@/features/master-data/test-availability-slice";
 import { FieldError } from "@/components/ui/field";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useAppSelector } from "@/hooks";
-import { saveLocalTestsAction } from "@/features/master-data/action";
-import { SaveLocalTestsSchema } from "@/features/master-data/schema";
+import { saveLocalTestsAction } from "@/features/master-data/action/test-availability-action";
+import { SaveLocalTestsActionSchema } from "@/features/master-data/schema";
+import { useAppDispatch, useAppSelector } from "@/hooks";
 
 export default function LocalTestSelectionForm() {
   const selectedMasterLabTests = useAppSelector(
     (state) => state.testAvailability.selectedMasterLabTests,
   );
+
   const isDirty = useAppSelector((state) => state.testAvailability.isDirty);
+
+  const dispatch = useAppDispatch();
 
   const { setValue, formState, handleSubmit } = useForm({
     mode: "onSubmit",
-    resolver: zodResolver(SaveLocalTestsSchema),
+    resolver: zodResolver(SaveLocalTestsActionSchema),
   });
 
-  const onSubmit = async (data: z.infer<typeof SaveLocalTestsSchema>) => {
+  const onSubmit = async (data: z.infer<typeof SaveLocalTestsActionSchema>) => {
     const response = await saveLocalTestsAction(data);
 
     if (response.success) {
       toast.success(response.message);
+      dispatch(setIsDirty(false));
     } else {
       toast.error(response.message);
     }
@@ -36,17 +41,17 @@ export default function LocalTestSelectionForm() {
 
   React.useEffect(() => {
     setValue(
-      "labTestCodes",
-      selectedMasterLabTests.map(({ code }) => code),
+      "labTestIds",
+      selectedMasterLabTests.map(({ id }) => id),
     );
   }, [setValue, selectedMasterLabTests]);
 
   return (
     <form className="w-full" onSubmit={handleSubmit(onSubmit)}>
       <div className="flex flex-col gap-2">
-        {formState.errors.labTestCodes && (
+        {formState.errors.labTestIds && (
           <FieldError
-            errors={[formState.errors.labTestCodes]}
+            errors={[formState.errors.labTestIds]}
             className="text-center"
           />
         )}

@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { CellContext } from "@tanstack/react-table";
@@ -32,6 +33,12 @@ export default function Category({ cellContext }: CategoryProps) {
         {cellContext.getValue()}
       </span>
 
+      {cellContext.row.original.labTests.length ? (
+        <Badge variant={"secondary"}>
+          {cellContext.row.original.labTests.length}
+        </Badge>
+      ) : null}
+
       <Tooltip delayDuration={500}>
         <TooltipTrigger asChild>
           <div className="flex m-1">
@@ -45,7 +52,7 @@ export default function Category({ cellContext }: CategoryProps) {
                   dispatch(
                     unselectMainTableRow(
                       cellContext.row.subRows.map(
-                        ({ original }) => original.code,
+                        ({ original }) => original.id,
                       ),
                     ),
                   );
@@ -53,7 +60,7 @@ export default function Category({ cellContext }: CategoryProps) {
                   dispatch(
                     selectMainTableRow(
                       cellContext.row.subRows.map(
-                        ({ original }) => original.code,
+                        ({ original }) => original.id,
                       ),
                     ),
                   );

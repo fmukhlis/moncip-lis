@@ -4,8 +4,8 @@ import AvailableTestList from "./available-test-list";
 import { testAvailabilityColumns } from "../columns";
 import {
   getLocalTestsAction,
-  getMasterTestCategoriesDeepAction,
-} from "@/features/master-data/action";
+  getTestCategoriesWithTestsAction,
+} from "@/features/master-data/action/test-availability-action";
 import {
   Card,
   CardTitle,
@@ -15,14 +15,8 @@ import {
 } from "@/components/ui/card";
 
 export default async function AvailableTestCard() {
-  const masterTestCategoriesDeep = await getMasterTestCategoriesDeepAction();
+  const testCategoriesWithTests = await getTestCategoriesWithTestsAction();
   const localTests = await getLocalTestsAction();
-
-  await new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(true);
-    }, 5000);
-  });
 
   return (
     <div className="basis-[450px] flex-2 min-w-0">
@@ -36,9 +30,13 @@ export default async function AvailableTestCard() {
         </CardHeader>
         <CardContent className="px-5">
           <AvailableTestList
-            data={masterTestCategoriesDeep.data}
+            data={testCategoriesWithTests.data}
             columns={testAvailabilityColumns}
-            selectedTests={localTests.data ? localTests.data.labTests : []}
+            selectedTests={
+              localTests.data
+                ? localTests.data.map(({ labTest }) => labTest)
+                : []
+            }
           />
         </CardContent>
       </Card>

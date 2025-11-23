@@ -24,7 +24,7 @@ export default function SelectedTestList() {
       {selectedMasterLabTests.length ? (
         selectedMasterLabTests.map((test) => (
           <Item
-            key={test.code}
+            key={test.id}
             size="sm"
             variant="outline"
             className="group items-center gap-1 flex-nowrap animate-fade-in origin-top"
@@ -45,7 +45,7 @@ export default function SelectedTestList() {
                 size={"icon-sm"}
                 className="bg-destructive/10 ml-auto"
                 onClick={() => {
-                  dispatch(unselectMainTableRow([test.code]));
+                  dispatch(unselectMainTableRow([test.id]));
                 }}
               >
                 <X className="size-4 text-destructive" />
