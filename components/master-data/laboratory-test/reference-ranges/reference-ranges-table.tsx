@@ -196,7 +196,7 @@ function ReferenceRangesTableBody({
   showOption,
   tableContainerRef,
 }: ReferenceRangesTableBodyProps) {
-  const forceRerender = React.useReducer((x) => x + 1, 0)[1];
+  const [, forceRerender] = React.useReducer((x) => x + 1, 0);
 
   const { rows } = table.getRowModel();
 
@@ -234,7 +234,7 @@ function ReferenceRangesTableBody({
   React.useEffect(() => {
     forceRerender();
     virtualizer.scrollBy(0);
-  }, [showOption]);
+  }, [showOption, virtualizer]);
 
   return (
     <TableBody

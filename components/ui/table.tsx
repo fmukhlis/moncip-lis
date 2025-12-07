@@ -137,4 +137,5 @@ export {
   TableRow,
   TableCell,
   TableCaption,
+  DefaultTable,
 };

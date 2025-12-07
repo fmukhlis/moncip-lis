@@ -199,21 +199,24 @@ export default function ConfigureReferenceRangesDialog() {
     return grouped;
   }, [fields]);
 
-  const onSubmit = React.useCallback(async function (
-    data: z.infer<typeof SaveLocalTestReferenceRangesActionSchema>,
-  ) {
-    const response = await saveLocalTestReferenceRangesAction(data);
+  const onSubmit = React.useCallback(
+    async function (
+      data: z.infer<typeof SaveLocalTestReferenceRangesActionSchema>,
+    ) {
+      const response = await saveLocalTestReferenceRangesAction(data);
 
-    if (response.success) {
-      toast.success(response.message);
-      dispatch(setShowConfigureReferenceRangesDialog(false));
-      React.startTransition(() => {
-        refresh();
-      });
-    } else {
-      toast.error(response.message);
-    }
-  }, []);
+      if (response.success) {
+        toast.success(response.message);
+        dispatch(setShowConfigureReferenceRangesDialog(false));
+        React.startTransition(() => {
+          refresh();
+        });
+      } else {
+        toast.error(response.message);
+      }
+    },
+    [dispatch, refresh],
+  );
 
   React.useEffect(() => {
     if (showConfigureReferenceRangesDialog && selectedLocalTests) {
@@ -798,7 +801,7 @@ const MinNormal = ({
     if (!prevUnitId.current || prevUnitId.current !== unit?.id) {
       onValueChange("");
     }
-  }, [unit?.id]);
+  }, [unit?.id, onValueChange]);
 
   return (
     <Field className="">
@@ -849,7 +852,7 @@ const MaxNormal = ({
     if (!prevUnitId.current || prevUnitId.current !== unit?.id) {
       onValueChange("");
     }
-  }, [unit?.id]);
+  }, [unit?.id, onValueChange]);
 
   return (
     <Field className="">
