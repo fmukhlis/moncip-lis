@@ -16,9 +16,9 @@ const initialState: TestAvailabilityState = {
   selectedMasterLabTests: [],
 };
 
-const masterDataSlice = createSlice({
+const testAvailabilitySlice = createSlice({
   initialState,
-  name: "masterData",
+  name: "testAvailability",
   reducers: {
     setIsDirty: (state, action: PayloadAction<boolean>) => {
       state.isDirty = action.payload;
@@ -51,6 +51,6 @@ export const {
   unselectMainTableRow,
   setMainTableRowSelection,
   setSelectedMasterLabTests,
-} = masterDataSlice.actions;
+} = testAvailabilitySlice.actions;
 
-export default masterDataSlice.reducer;
+export default testAvailabilitySlice.reducer;

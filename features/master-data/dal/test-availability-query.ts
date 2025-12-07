@@ -33,6 +33,9 @@ export async function getTestCategoriesWithTests(
       description: true,
     },
     take: options?.count,
+    orderBy: {
+      name: "asc",
+    },
   });
 }
 
@@ -52,6 +55,9 @@ export async function getTests(options?: z.infer<typeof GetTestsSchema>) {
       },
     },
     take: options?.count,
+    orderBy: {
+      name: "asc",
+    },
   });
 }
 
@@ -109,5 +115,10 @@ export async function getLocalTests({
       },
     },
     take: count,
+    orderBy: {
+      labTest: {
+        name: "asc",
+      },
+    },
   });
 }

@@ -41,7 +41,7 @@ const NAV_MAIN_DATA: Record<
   >
 > = {
   admin: {
-    Laboratory: [
+    "System Administration": [
       {
         title: "User Management",
         url: "/admin/laboratory/user-management",

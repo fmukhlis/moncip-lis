@@ -57,7 +57,7 @@ function AvailableTestListHeaderSkeleton() {
       </InputGroup>
       <div className="flex flex-1 gap-3 justify-center items-center sm:justify-end">
         <div className="flex">
-          <Checkbox disabled className="size-9 bg-input rounded-md" />
+          <Checkbox disabled className="size-9 rounded-md" />
         </div>
         <div>
           <Toggle

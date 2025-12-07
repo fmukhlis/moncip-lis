@@ -7,6 +7,7 @@ import { Input } from "../ui/input";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Spinner } from "../ui/spinner";
+import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createUserAction } from "@/features/user/action";
 import { CreateUserSchema } from "@/features/user/schema";
@@ -45,11 +46,16 @@ export default function CreateUserDialog() {
     resolver: zodResolver(CreateUserSchema),
   });
 
+  const { refresh } = useRouter();
+
   async function onSubmit(data: z.infer<typeof CreateUserSchema>) {
     const response = await createUserAction(data);
     if (response.success) {
       toast.success(response.message);
       setIsOpen(false);
+      React.startTransition(() => {
+        refresh();
+      });
     } else {
       toast.error(response.message);
     }

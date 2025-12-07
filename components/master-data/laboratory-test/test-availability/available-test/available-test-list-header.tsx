@@ -72,7 +72,7 @@ export default function AvailableTestListHeader({
           <TooltipTrigger asChild>
             <div className="flex">
               <Checkbox
-                className="size-9 bg-input rounded-md"
+                className="size-9 rounded-md"
                 checked={table.getIsAllRowsSelected()}
                 onCheckedChange={() => {
                   table.toggleAllRowsSelected();

@@ -3,7 +3,6 @@
 import z from "zod";
 
 import { auth } from "@/auth";
-import { revalidatePath } from "next/cache";
 import { SaveLocalTestsActionSchema } from "../schema";
 import {
   getTests,
@@ -64,8 +63,6 @@ export async function saveLocalTestsAction(
     labTestIds: parsedData.data.labTestIds,
     laboratoryId: session.user.laboratoryId,
   });
-
-  revalidatePath("/admin/master-data/laboratory-tests/test-availability");
 
   return {
     success: true,

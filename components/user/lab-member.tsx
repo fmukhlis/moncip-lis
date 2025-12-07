@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import { getLabMembers } from "@/features/lab/dal/query";
-import { DataTableForCard } from "@/components/data-table";
+import { DataTableForCard } from "@/components/user/data-table";
 import { labMemberColumns } from "@/components/user/columns";
 import {
   Card,
@@ -21,10 +21,8 @@ export default async function LabMember() {
 
   const users = await getLabMembers(session.user.laboratoryId);
 
-  await new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(true);
-    }, 3000);
+  await new Promise((r) => {
+    setTimeout(r, 3000);
   });
 
   return (

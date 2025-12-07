@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import CreateUserDialog from "./user/create-user-dialog";
-import UpdateUserDialog from "./user/update-user-dialog";
-import DeleteUserDialog from "./user/delete-user-dialog";
+import CreateUserDialog from "./create-user-dialog";
+import UpdateUserDialog from "./update-user-dialog";
+import DeleteUserDialog from "./delete-user-dialog";
 
 import type {
   SortingState,
@@ -11,8 +11,8 @@ import type {
   ColumnFiltersState,
 } from "@tanstack/react-table";
 
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
 import { X, ArrowBigLeft, ArrowBigRight, EllipsisVertical } from "lucide-react";
 import {
   ColumnDef,
@@ -30,7 +30,7 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-} from "./ui/table";
+} from "../ui/table";
 
 type DataTableProps<TData, TValue> = {
   data: TData[];

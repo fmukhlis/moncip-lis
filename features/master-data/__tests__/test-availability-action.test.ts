@@ -25,13 +25,6 @@ jest.mock("@/auth", () => {
   };
 });
 
-jest.mock("next/cache", () => {
-  return {
-    __esModule: true,
-    revalidatePath: jest.fn(),
-  };
-});
-
 beforeAll(async () => {
   await seedSpecimens();
   await seedMethods();

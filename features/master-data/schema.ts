@@ -27,6 +27,12 @@ export const GetLocalTestsWithReferenceRangesSchema = z.object({
   laboratoryId: z.string(),
 });
 
+const genderLabel = {
+  B: "Both",
+  M: "Male",
+  F: "Female",
+} as const;
+
 export const SaveLocalTestReferenceRangesSchema = z.object({
   refRanges: z
     .array(
@@ -34,16 +40,11 @@ export const SaveLocalTestReferenceRangesSchema = z.object({
         z
           .object({
             kind: z.literal("numeric"),
-            ageMax: z.number(),
-            ageMin: z.number(),
+            ageMax: z.coerce.number(),
+            ageMin: z.coerce.number(),
             gender: z.enum(["M", "F", "B"]),
-            unitId: z.string(),
-            valueLow: z
-              .string()
-              .regex(/^-?\d+(\.\d+)?$/, "Value low is invalid."),
-            valueHigh: z
-              .string()
-              .regex(/^-?\d+(\.\d+)?$/, "Value low is invalid."),
+            valueLow: z.coerce.number(),
+            valueHigh: z.coerce.number(),
           })
           .superRefine((val, ctx) => {
             if (val.ageMax < val.ageMin) {
@@ -53,7 +54,7 @@ export const SaveLocalTestReferenceRangesSchema = z.object({
                 path: ["ageMax"],
               });
             }
-            if (Number(val.valueHigh) < Number(val.valueLow)) {
+            if (val.valueHigh < val.valueLow) {
               ctx.addIssue({
                 code: "custom",
                 message: "Value high must be greater than value low",
@@ -63,14 +64,44 @@ export const SaveLocalTestReferenceRangesSchema = z.object({
           }),
         z.object({
           kind: z.literal("non-numeric"),
-          ageMax: z.number(),
-          ageMin: z.number(),
+          ageMax: z.coerce.number(),
+          ageMin: z.coerce.number(),
           gender: z.enum(["M", "F", "B"]),
           normalValues: z.array(z.string()).min(1),
         }),
       ]),
     )
-    .min(1),
+    .min(1)
+    .superRefine((val, ctx) => {
+      const grouped = val.reduce(
+        (prev, curr, i) => {
+          (prev[curr.gender] ??= []).push({ ...curr, __i: i });
+          return prev;
+        },
+        {} as Record<string, ((typeof val)[number] & { __i: number })[]>,
+      );
+
+      for (const gender of ["B", "M", "F"]) {
+        const valByGender = grouped[gender];
+
+        if (valByGender) {
+          valByGender.sort((a, b) => a.ageMin - b.ageMin);
+
+          for (let i = 1; i < valByGender.length; i++) {
+            const prev = valByGender[i - 1];
+            const curr = valByGender[i];
+
+            if (curr.ageMin <= prev.ageMax) {
+              ctx.addIssue({
+                code: "custom",
+                message: `Age ranges for "${genderLabel[gender as "B" | "M" | "F"]}" overlap.`,
+                path: [curr.__i, "ageMin"],
+              });
+            }
+          }
+        }
+      }
+    }),
   defaultUnitId: z.string().optional(),
   laboratoriesOnLabTestsId: z.string(),
 });

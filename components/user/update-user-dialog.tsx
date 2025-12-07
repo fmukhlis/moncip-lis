@@ -7,6 +7,7 @@ import { Input } from "../ui/input";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Spinner } from "../ui/spinner";
+import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UpdateUserSchema } from "@/features/user/schema";
 import { updateUserAction } from "@/features/user/action";
@@ -41,6 +42,8 @@ export default function UpdateUserDialog() {
 
   const dispatch = useAppDispatch();
 
+  const { refresh } = useRouter();
+
   const { reset, control, handleSubmit, formState } = useForm<
     z.infer<typeof UpdateUserSchema>
   >({
@@ -54,6 +57,9 @@ export default function UpdateUserDialog() {
       if (response.success) {
         toast.success(response.message);
         dispatch(setShowUpdateUserDialog(false));
+        React.startTransition(() => {
+          refresh();
+        });
       } else {
         toast.error(response.message);
       }

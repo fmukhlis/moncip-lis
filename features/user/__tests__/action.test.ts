@@ -18,13 +18,6 @@ jest.mock("@/auth", () => {
   };
 });
 
-jest.mock("next/cache", () => {
-  return {
-    __esModule: true,
-    revalidatePath: jest.fn(),
-  };
-});
-
 jest.mock("@/lib/downloadImage", () => {
   return {
     __esModule: true,

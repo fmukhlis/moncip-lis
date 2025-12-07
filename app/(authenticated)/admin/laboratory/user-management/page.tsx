@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default async function AdminDashboard() {
   return (
     <div className="p-4">
-      <Suspense key={`${Math.random()}`} fallback={<LabMemberSkeleton />}>
+      <Suspense fallback={<LabMemberSkeleton />}>
         <LabMember />
       </Suspense>
     </div>

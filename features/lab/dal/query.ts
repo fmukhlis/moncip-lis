@@ -10,6 +10,9 @@ export async function getLabMembers(laboratoryId: string) {
       },
       laboratoryId,
     },
+    orderBy: {
+      name: "asc",
+    },
   });
 
   return users.map((user) => ({

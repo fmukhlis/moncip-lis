@@ -7,7 +7,6 @@ import { type Session } from "next-auth";
 
 import { auth } from "@/auth";
 import { downloadImage } from "@/lib/downloadImage";
-import { revalidatePath } from "next/cache";
 import { CreateUserSchema, UpdateUserSchema } from "./schema";
 import {
   createUser,
@@ -30,8 +29,6 @@ export async function createUserAction(data: z.infer<typeof CreateUserSchema>) {
   }
 
   await createUser(session.user.laboratoryId, parsedData.data);
-
-  revalidatePath("/admin/dashboard");
 
   return {
     success: true,
@@ -63,8 +60,6 @@ export async function updateUserAction(
       return user;
     });
 
-    revalidatePath("/admin/dashboard");
-
     return {
       success: true,
       message: "User was updated successfully.",
@@ -88,8 +83,6 @@ export async function deleteUserAction(userId: string) {
 
       return user;
     });
-
-    revalidatePath("/admin/dashboard");
 
     return {
       success: true,

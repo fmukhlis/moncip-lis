@@ -4,11 +4,35 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-function Table({ className, ...props }: React.ComponentProps<"table">) {
+function DefaultTable({ className, ...props }: React.ComponentProps<"table">) {
   return (
     <div
       data-slot="table-container"
-      className="relative w-full overflow-x-auto"
+      className={"relative w-full overflow-x-auto"}
+    >
+      <table
+        data-slot="table"
+        className={cn("w-full caption-bottom text-sm", className)}
+        {...props}
+      />
+    </div>
+  );
+}
+
+function Table({
+  className,
+  containerRef,
+  containerClassName,
+  ...props
+}: React.ComponentProps<"table"> & {
+  containerRef?: React.Ref<HTMLDivElement>;
+  containerClassName?: string;
+}) {
+  return (
+    <div
+      ref={containerRef}
+      data-slot="table-container"
+      className={cn("relative w-full overflow-x-auto", containerClassName)}
     >
       <table
         data-slot="table"
@@ -57,7 +81,7 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
     <tr
       data-slot="table-row"
       className={cn(
-        "hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors",
+        "hover:bg-muted/50 data-[state=selected]:bg-muted data-[state=expanded]:bg-muted/50 border-b transition-colors",
         className,
       )}
       {...props}
