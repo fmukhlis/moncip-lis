@@ -1,5 +1,6 @@
 import prisma from "@/lib/prisma";
 
+import { seedTariffGroup } from "@/lib/seed-master-tariff-group";
 import {
   seedUnits,
   seedScales,
@@ -16,6 +17,8 @@ export async function main() {
   await seedCategories();
   await seedScales();
   await seedLabTests();
+
+  await seedTariffGroup();
 }
 
 main()
