@@ -98,42 +98,58 @@ model Authenticator {
 model Laboratory {
   id                          String                        @id @default(cuid(2))
 
+  // Relationships
   users                       User[]
   labTestGroups               LabTestGroup[]
-  laboratoriesOnLabTests      LaboratoriesOnLabTests[]    
+  laboratoriesOnLabTests      LaboratoriesOnLabTests[]      
+
+  // Timestamps
+  createdAt                   DateTime                      @default(now())
+  updatedAt                   DateTime                      @updatedAt
 }
 
 model LaboratoriesOnLabTests {
-  id                  String                @id @default(cuid(2))
-  isActive            Boolean               @default(true)
+  id                      String                @id @default(cuid(2))
+  notOrderableReason      String?
 
-  labTest             LabTest               @relation(fields: [labTestId], references: [id])
-  labTestId           String
+  // Relationships
+  labTest                 LabTest               @relation(fields: [labTestId], references: [id])
+  labTestId               String
+  laboratory              Laboratory            @relation(fields: [laboratoryId], references: [id])
+  laboratoryId            String
+  defaultUnit             Unit?                 @relation("defaultUnit", fields: [defaultUnitId], references: [id])
+  defaultUnitId           String?
+  prices                  Price[]
+  referenceRanges         ReferenceRange[]
+  labTestGroups           LabTestGroup[]
 
-  laboratory          Laboratory            @relation(fields: [laboratoryId], references: [id])
-  laboratoryId        String
-
-  defaultUnit         Unit?                 @relation("defaultUnit", fields: [defaultUnitId], references: [id])
-  defaultUnitId       String?
-
-  prices              Price[]
-  referenceRanges     ReferenceRange[]
+  // Timestamps
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
+  deletedAt               DateTime?
 
   @@unique([labTestId, laboratoryId])
 }
 
 model LabTestGroup {
-  id                String                        @id @default(cuid(2))
-  code              String                        @unique
-  name              String
-  description       String?
-  isOrderable       Boolean                       @default(true)
+  id                          String                        @id @default(cuid(2))
+  code                        String                        
+  name                        String
+  description                 String?
+  notOrderableReason          String?
 
-  laboratory        Laboratory                    @relation(fields: [laboratoryId], references: [id])
-  laboratoryId      String
+  // Relationships
+  laboratory                  Laboratory                    @relation(fields: [laboratoryId], references: [id])
+  laboratoryId                String
+  prices                      Price[]
+  laboratoriesOnLabTests      LaboratoriesOnLabTests[]
 
-  prices            Price[]
-  labTests          LabTest[]
+  // Timestamps
+  validFrom                   DateTime                      @default(now())
+  validTo                     DateTime?
+  createdAt                   DateTime                      @default(now())
+  updatedAt                   DateTime                      @updatedAt
+  deletedAt                   DateTime?
 }
 
 model ReferenceRange {
@@ -141,17 +157,21 @@ model ReferenceRange {
   gender                        Gender
   ageMin                        Int
   ageMax                        Int
-  validTo                       DateTime?   
   valueLow                      Decimal?
   valueHigh                     Decimal?
-  validFrom                     DateTime                    @default(now())
   normalValues                  String[]                    @default([])
 
+  // Relationships
   unit                          Unit?                       @relation(fields: [unitId], references: [id])
   unitId                        String?
-
   laboratoriesOnLabTests        LaboratoriesOnLabTests      @relation(fields: [laboratoriesOnLabTestsId], references: [id])
   laboratoriesOnLabTestsId      String
+  
+  // Timestamps
+  validFrom                     DateTime                    @default(now())
+  validTo                       DateTime?
+  createdAt                     DateTime                    @default(now())
+  updatedAt                     DateTime                    @updatedAt
 }
 
 enum Gender {
@@ -163,17 +183,23 @@ enum Gender {
 model Price {
   id                            String                      @id @default(cuid(2))
   price                         Decimal   
-  validTo                       DateTime?
-  validFrom                     DateTime                    @default(now())
   
+  // Relationships
   tariffGroup                   TariffGroup                 @relation(fields: [tariffGroupId], references: [id])
   tariffGroupId                 String
-
   labTestGroup                  LabTestGroup?               @relation(fields: [labTestGroupId], references: [id])
   labTestGroupId                String?
-
   laboratoriesOnLabTests        LaboratoriesOnLabTests?     @relation(fields: [laboratoriesOnLabTestsId], references: [id])
   laboratoriesOnLabTestsId      String?
+
+  // Timestamps
+  validFrom                     DateTime                    @default(now())
+  validTo                       DateTime?
+  createdAt                     DateTime                    @default(now())
+  updatedAt                     DateTime                    @updatedAt
+  
+  @@unique([labTestGroupId, tariffGroupId])
+  @@unique([laboratoriesOnLabTestsId, tariffGroupId])
 }
 
 // -------------------------- Statically Generated Data -------------------------- //
@@ -195,7 +221,6 @@ model LabTest {
   
   units                       Unit[]                      @relation("units")
   specimens                   Specimen[]          
-  labTestGroups               LabTestGroup[]
   laboratoriesOnLabTests      LaboratoriesOnLabTests[]
 }
 
