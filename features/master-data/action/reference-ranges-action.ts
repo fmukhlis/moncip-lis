@@ -3,14 +3,19 @@
 import z from "zod";
 
 import { auth } from "@/auth";
-import { SaveLocalTestReferenceRangesActionSchema } from "../schema";
 import {
-  getLocalTestsWithReferenceRanges,
   getSupportedUnitsForTest,
   saveLocalTestReferenceRanges,
+  getLocalTestsWithReferenceRanges,
 } from "../dal/reference-ranges-query";
+import {
+  SaveLocalTestReferenceRangesActionSchema,
+  GetLocalTestsWithReferenceRangesActionSchema,
+} from "../schema/reference-ranges-schema";
 
-export async function getLocalTestsWithReferenceRangesAction() {
+export async function getLocalTestsWithReferenceRangesAction(
+  payload?: z.input<typeof GetLocalTestsWithReferenceRangesActionSchema>,
+) {
   const session = await auth();
 
   if (!session || !session.user || !session.user.laboratoryId) {
@@ -22,6 +27,7 @@ export async function getLocalTestsWithReferenceRangesAction() {
   }
 
   const testsWithReferenceRanges = await getLocalTestsWithReferenceRanges({
+    ...payload,
     laboratoryId: session.user.laboratoryId,
   });
 

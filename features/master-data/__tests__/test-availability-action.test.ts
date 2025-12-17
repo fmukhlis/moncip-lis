@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 
 import { auth } from "@/auth";
+import { getTests } from "../dal/test-availability-query";
 import {
   seedUnits,
   seedScales,
@@ -10,11 +11,10 @@ import {
   seedCategories,
 } from "@/lib/seed-master-test";
 import {
+  getLocalTestsAction,
   saveLocalTestsAction,
   getTestCategoriesWithTestsAction,
-  getLocalTestsAction,
 } from "../action/test-availability-action";
-import { getTests } from "../dal/test-availability-query";
 
 jest.mock("@/auth", () => {
   return {
@@ -104,7 +104,9 @@ describe("saveLocalTestsAction", () => {
 
     const labTestIds = (await getTests()).map(({ id }) => id);
 
-    const response = await saveLocalTestsAction({ labTestIds });
+    const response = await saveLocalTestsAction({
+      labTestIds,
+    });
 
     expect(response).toEqual({
       success: true,
@@ -136,7 +138,9 @@ describe("saveLocalTestsAction", () => {
   it("returns a failed response when unauthorized", async () => {
     const labTestIds = (await getTests()).map(({ id }) => id);
 
-    const response = await saveLocalTestsAction({ labTestIds });
+    const response = await saveLocalTestsAction({
+      labTestIds,
+    });
 
     expect(response).toEqual({
       success: false,

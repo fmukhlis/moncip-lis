@@ -2,14 +2,14 @@ import z from "zod";
 import prisma from "@/lib/prisma";
 
 import {
-  GetLocalTestsSchema,
-  GetTestCategoriesWithTests,
   GetTestsSchema,
+  GetLocalTestsSchema,
   SaveLocalTestsSchema,
-} from "../schema";
+  GetTestCategoriesWithTestsSchema,
+} from "../schema/test-availability-schema";
 
 export async function getTestCategoriesWithTests(
-  options?: z.infer<typeof GetTestCategoriesWithTests>,
+  payload?: z.infer<typeof GetTestCategoriesWithTestsSchema>,
 ) {
   return await prisma.category.findMany({
     select: {
@@ -32,70 +32,16 @@ export async function getTestCategoriesWithTests(
       },
       description: true,
     },
-    take: options?.count,
-    orderBy: {
-      name: "asc",
-    },
+    take: payload?.count,
+    orderBy: { name: "asc" },
   });
 }
 
-export async function getTests(options?: z.infer<typeof GetTestsSchema>) {
-  return await prisma.labTest.findMany({
-    select: {
-      id: true,
-      code: true,
-      name: true,
-      units: {
-        select: {
-          id: true,
-          code: true,
-          name: true,
-          displayCode: true,
-        },
-      },
-    },
-    take: options?.count,
-    orderBy: {
-      name: "asc",
-    },
-  });
-}
-
-export async function saveLocalTests({
-  labTestIds,
-  laboratoryId,
-}: z.infer<typeof SaveLocalTestsSchema>) {
-  await prisma.laboratoriesOnLabTests.updateManyAndReturn({
-    where: { laboratoryId },
-    data: { isActive: false },
-    select: { id: true },
-  });
-
-  await prisma.laboratoriesOnLabTests.createMany({
-    data: labTestIds.map((testId) => ({
-      laboratoryId,
-      labTestId: testId,
-    })),
-    skipDuplicates: true,
-  });
-
-  const validPivotIds = (
-    await prisma.laboratoriesOnLabTests.updateManyAndReturn({
-      where: { labTestId: { in: labTestIds } },
-      data: { isActive: true },
-      select: { id: true },
-    })
-  ).map(({ id }) => id);
-
-  return validPivotIds.length;
-}
-
-export async function getLocalTests({
-  count,
-  laboratoryId,
-}: z.infer<typeof GetLocalTestsSchema>) {
+export async function getLocalTests(
+  payload: z.infer<typeof GetLocalTestsSchema>,
+) {
   return await prisma.laboratoriesOnLabTests.findMany({
-    where: { laboratoryId, isActive: true },
+    where: { laboratoryId: payload.laboratoryId, deletedAt: null },
     select: {
       id: true,
       labTest: {
@@ -114,11 +60,57 @@ export async function getLocalTests({
         },
       },
     },
-    take: count,
-    orderBy: {
-      labTest: {
-        name: "asc",
+    take: payload.count,
+    orderBy: { labTest: { name: "asc" } },
+  });
+}
+
+export async function saveLocalTests(
+  payload: z.infer<typeof SaveLocalTestsSchema>,
+) {
+  await prisma.laboratoriesOnLabTests.updateManyAndReturn({
+    where: { laboratoryId: payload.laboratoryId },
+    data: { deletedAt: new Date() },
+    select: { id: true },
+  });
+
+  await prisma.laboratoriesOnLabTests.createMany({
+    data: payload.labTestIds.map((testId) => ({
+      labTestId: testId,
+      laboratoryId: payload.laboratoryId,
+    })),
+    skipDuplicates: true,
+  });
+
+  const validPivotIds = (
+    await prisma.laboratoriesOnLabTests.updateManyAndReturn({
+      where: { labTestId: { in: payload.labTestIds } },
+      data: { deletedAt: null },
+      select: { id: true },
+    })
+  ).map(({ id }) => id);
+
+  return validPivotIds.length;
+}
+
+// ---------------------- Helper -----------------------
+
+export async function getTests(payload?: z.infer<typeof GetTestsSchema>) {
+  return await prisma.labTest.findMany({
+    select: {
+      id: true,
+      code: true,
+      name: true,
+      units: {
+        select: {
+          id: true,
+          code: true,
+          name: true,
+          displayCode: true,
+        },
       },
     },
+    take: payload?.count,
+    orderBy: { name: "asc" },
   });
 }

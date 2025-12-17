@@ -3,7 +3,11 @@
 import z from "zod";
 
 import { auth } from "@/auth";
-import { SaveLocalTestsActionSchema } from "../schema";
+import {
+  GetLocalTestsActionSchema,
+  SaveLocalTestsActionSchema,
+  GetTestCategoriesWithTestsActionSchema,
+} from "../schema/test-availability-schema";
 import {
   getTests,
   getLocalTests,
@@ -11,7 +15,9 @@ import {
   getTestCategoriesWithTests,
 } from "../dal/test-availability-query";
 
-export async function getTestCategoriesWithTestsAction() {
+export async function getTestCategoriesWithTestsAction(
+  payload?: z.input<typeof GetTestCategoriesWithTestsActionSchema>,
+) {
   const session = await auth();
 
   if (!session || !session.user) {
@@ -22,7 +28,7 @@ export async function getTestCategoriesWithTestsAction() {
     };
   }
 
-  const data = await getTestCategoriesWithTests();
+  const data = await getTestCategoriesWithTests(payload);
 
   return {
     success: true,
@@ -31,8 +37,33 @@ export async function getTestCategoriesWithTestsAction() {
   };
 }
 
+export async function getLocalTestsAction(
+  payload?: z.input<typeof GetLocalTestsActionSchema>,
+) {
+  const session = await auth();
+
+  if (!session || !session.user || !session.user.laboratoryId) {
+    return {
+      success: false,
+      message: "Authorization violations.",
+      data: [],
+    };
+  }
+
+  const localTests = await getLocalTests({
+    ...payload,
+    laboratoryId: session.user.laboratoryId,
+  });
+
+  return {
+    success: true,
+    message: "Data was fetched successfully.",
+    data: localTests,
+  };
+}
+
 export async function saveLocalTestsAction(
-  data: z.infer<typeof SaveLocalTestsActionSchema>,
+  data: z.input<typeof SaveLocalTestsActionSchema>,
 ) {
   const session = await auth();
 
@@ -68,27 +99,5 @@ export async function saveLocalTestsAction(
     success: true,
     message: "Laboratory tests were saved successfully.",
     data: validLocalTestsCount,
-  };
-}
-
-export async function getLocalTestsAction() {
-  const session = await auth();
-
-  if (!session || !session.user || !session.user.laboratoryId) {
-    return {
-      success: false,
-      message: "Authorization violations.",
-      data: [],
-    };
-  }
-
-  const localTests = await getLocalTests({
-    laboratoryId: session.user.laboratoryId,
-  });
-
-  return {
-    success: true,
-    message: "Data was fetched successfully.",
-    data: localTests,
   };
 }

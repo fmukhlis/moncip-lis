@@ -1,37 +1,17 @@
 import z from "zod";
 
-export const GetTestCategoriesWithTests = z.object({
-  count: z.number().optional(),
-});
-
-export const GetTestsSchema = z.object({
-  count: z.number().optional(),
-});
-
-export const GetLocalTestsSchema = z.object({
-  count: z.number().optional(),
-  laboratoryId: z.string(),
-});
-
-export const SaveLocalTestsSchema = z.object({
-  labTestIds: z.array(z.string()).min(1, "No tests are selected."),
-  laboratoryId: z.string(),
-});
-
-export const SaveLocalTestsActionSchema = SaveLocalTestsSchema.omit({
-  laboratoryId: true,
-});
-
-export const GetLocalTestsWithReferenceRangesSchema = z.object({
-  count: z.number().optional(),
-  laboratoryId: z.string(),
-});
-
 const genderLabel = {
   B: "Both",
   M: "Male",
   F: "Female",
 } as const;
+
+// ----------------- Data Access Layer -----------------
+
+export const GetLocalTestsWithReferenceRangesSchema = z.object({
+  count: z.number().positive().optional(),
+  laboratoryId: z.string().trim().min(1),
+});
 
 export const SaveLocalTestReferenceRangesSchema = z.object({
   refRanges: z
@@ -67,7 +47,7 @@ export const SaveLocalTestReferenceRangesSchema = z.object({
           ageMax: z.coerce.number(),
           ageMin: z.coerce.number(),
           gender: z.enum(["M", "F", "B"]),
-          normalValues: z.array(z.string()).min(1),
+          normalValues: z.array(z.string().trim().min(1)).min(1),
         }),
       ]),
     )
@@ -103,12 +83,19 @@ export const SaveLocalTestReferenceRangesSchema = z.object({
       }
     }),
   defaultUnitId: z.string().optional(),
-  laboratoriesOnLabTestsId: z.string(),
+  laboratoriesOnLabTestsId: z.string().trim().min(1),
 });
+
+// ------------------ Server Function ------------------
+
+export const GetLocalTestsWithReferenceRangesActionSchema =
+  GetLocalTestsWithReferenceRangesSchema.omit({ laboratoryId: true });
 
 export const SaveLocalTestReferenceRangesActionSchema =
   SaveLocalTestReferenceRangesSchema;
 
-export const GetSupportedUnitsForTest = z.object({
-  laboratoriesOnLabTestsId: z.string(),
+// ---------------------- Helper -----------------------
+
+export const GetSupportedUnitsForTestSchema = z.object({
+  laboratoriesOnLabTestsId: z.string().trim().min(1),
 });

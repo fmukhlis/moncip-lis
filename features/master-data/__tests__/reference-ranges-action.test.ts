@@ -1,21 +1,22 @@
+import z from "zod";
+import prisma from "@/lib/prisma";
+
 import { auth } from "@/auth";
+import { getTests } from "../dal/test-availability-query";
+import { saveLocalTestsAction } from "../action/test-availability-action";
 import {
   saveLocalTestReferenceRangesAction,
   getLocalTestsWithReferenceRangesAction,
 } from "../action/reference-ranges-action";
 import {
-  seedCategories,
-  seedLabTests,
-  seedMethods,
-  seedScales,
-  seedSpecimens,
   seedUnits,
+  seedScales,
+  seedMethods,
+  seedLabTests,
+  seedSpecimens,
+  seedCategories,
 } from "@/lib/seed-master-test";
-import prisma from "@/lib/prisma";
-import { getTests } from "../dal/test-availability-query";
-import { saveLocalTestsAction } from "../action/test-availability-action";
-import z from "zod";
-import { SaveLocalTestReferenceRangesActionSchema } from "../schema";
+import { SaveLocalTestReferenceRangesActionSchema } from "../schema/reference-ranges-schema";
 
 jest.mock("@/auth", () => {
   return {
