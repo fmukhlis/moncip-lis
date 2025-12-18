@@ -40,7 +40,9 @@ const getDummyNumericRefRanges = () =>
     {
       kind: "numeric",
       ageMax: "150",
+      ageMaxUnit: "M",
       ageMin: "0",
+      ageMinUnit: "M",
       gender: "M",
       valueLow: "13.0",
       valueHigh: "17.0",
@@ -48,7 +50,9 @@ const getDummyNumericRefRanges = () =>
     {
       kind: "numeric",
       ageMax: "150",
+      ageMaxUnit: "M",
       ageMin: "0",
+      ageMinUnit: "M",
       gender: "F",
       valueLow: "12.0",
       valueHigh: "16.0",
@@ -62,7 +66,9 @@ const getDummyNonNumericRefRanges = () =>
     {
       kind: "non-numeric",
       ageMax: "150",
+      ageMaxUnit: "M",
       ageMin: "0",
+      ageMinUnit: "M",
       gender: "B",
       normalValues: ["Negative"],
     },
