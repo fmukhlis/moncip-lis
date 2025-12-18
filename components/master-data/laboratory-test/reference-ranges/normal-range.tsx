@@ -14,7 +14,6 @@ import { Controller, FieldArrayWithId, useFormContext } from "react-hook-form";
 const NormalRange = ({
   index,
   field,
-  gender,
   defaultUnitId,
 }: {
   index: number;
@@ -25,7 +24,6 @@ const NormalRange = ({
   > & {
     __index: number;
   };
-  gender: "M" | "F" | "B";
   defaultUnitId?: string;
 }) => {
   const { control } =

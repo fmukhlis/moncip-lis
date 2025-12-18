@@ -371,16 +371,11 @@ export default function ConfigureReferenceRangesDialog() {
                           groupedFields[gender].map((field, index) => {
                             return (
                               <React.Fragment key={field.id}>
-                                <AgeRange
-                                  field={field}
-                                  index={index}
-                                  gender={gender}
-                                />
+                                <AgeRange field={field} index={index} />
                                 {field.kind === "numeric" ? (
                                   <NormalRange
                                     field={field}
                                     index={index}
-                                    gender={gender}
                                     defaultUnitId={defaultUnitId}
                                   />
                                 ) : (

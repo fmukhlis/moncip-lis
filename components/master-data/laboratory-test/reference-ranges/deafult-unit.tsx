@@ -18,7 +18,7 @@ const DefaultUnit = ({
 }: {
   units?: { id: string; code: string; displayCode: string }[];
 }) => {
-  const { control, setValue } =
+  const { control } =
     useFormContext<z.input<typeof SaveLocalTestReferenceRangesActionSchema>>();
 
   return (

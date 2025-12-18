@@ -29,7 +29,6 @@ const ageUnitLabel = {
 const AgeRange = ({
   index,
   field,
-  gender,
 }: {
   index: number;
   field: FieldArrayWithId<
@@ -39,7 +38,6 @@ const AgeRange = ({
   > & {
     __index: number;
   };
-  gender: "M" | "F" | "B";
 }) => {
   const { control, setValue } =
     useFormContext<z.input<typeof SaveLocalTestReferenceRangesActionSchema>>();
@@ -221,7 +219,7 @@ const MinAgeUnit = ({
 
   React.useEffect(() => {
     onValueChange(uiLabel);
-  }, [uiLabel]);
+  }, [uiLabel, onValueChange]);
 
   return (
     <Select
@@ -308,7 +306,7 @@ const MaxAgeUnit = ({
 
   React.useEffect(() => {
     onValueChange(uiLabel);
-  }, [uiLabel]);
+  }, [uiLabel, onValueChange]);
 
   return (
     <Select
