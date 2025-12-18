@@ -11,7 +11,7 @@ import { setIsDirty } from "@/features/master-data/test-availability-slice";
 import { FieldError } from "@/components/ui/field";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { saveLocalTestsAction } from "@/features/master-data/action/test-availability-action";
-import { SaveLocalTestsActionSchema } from "@/features/master-data/schema";
+import { SaveLocalTestsActionSchema } from "@/features/master-data/schema/test-availability-schema";
 import { useAppDispatch, useAppSelector } from "@/hooks";
 
 export default function LocalTestSelectionForm() {

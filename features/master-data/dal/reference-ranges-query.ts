@@ -62,6 +62,8 @@ export async function getLocalTestsWithReferenceRanges(
           valueLow: true,
           valueHigh: true,
           validFrom: true,
+          ageMaxUnit: true,
+          ageMinUnit: true,
           normalValues: true,
         },
       },
@@ -121,14 +123,18 @@ export async function saveLocalTestReferenceRanges(
                 ? {
                     unitId: payload.defaultUnitId,
                     ageMax: refRange.ageMax,
+                    ageMaxUnit: refRange.ageMaxUnit,
                     ageMin: refRange.ageMin,
+                    ageMinUnit: refRange.ageMinUnit,
                     gender: refRange.gender,
                     normalValues: refRange.normalValues,
                   }
                 : {
                     unitId: payload.defaultUnitId,
                     ageMax: refRange.ageMax,
+                    ageMaxUnit: refRange.ageMaxUnit,
                     ageMin: refRange.ageMin,
+                    ageMinUnit: refRange.ageMinUnit,
                     gender: refRange.gender,
                     valueLow: refRange.valueLow,
                     valueHigh: refRange.valueHigh,

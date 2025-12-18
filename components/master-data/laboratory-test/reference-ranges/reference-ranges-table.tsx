@@ -60,9 +60,13 @@ export default function ReferenceRangesTable({
   const memoizedData = React.useMemo(() => {
     switch (showLocalTests) {
       case "Active":
-        return data.filter(({ isActive }) => isActive);
+        return data.filter(({ deletedAt }) => !deletedAt);
       case "Inactive":
-        return data.filter(({ isActive }) => !isActive);
+        return data.filter(({ deletedAt }) => !!deletedAt);
+      case "Orderable":
+        return data.filter(({ notOrderableReason }) => !notOrderableReason);
+      case "Not Orderable":
+        return data.filter(({ notOrderableReason }) => !!notOrderableReason);
       default:
         return data;
     }
@@ -136,6 +140,10 @@ export default function ReferenceRangesTable({
                   <SelectItem value="All">Show All</SelectItem>
                   <SelectItem value="Active">Show Active</SelectItem>
                   <SelectItem value="Inactive">Show Inactive</SelectItem>
+                  <SelectItem value="Orderable">Show Orderable</SelectItem>
+                  <SelectItem value="Not Orderable">
+                    Show Not Orderable
+                  </SelectItem>
                 </SelectContent>
               </SelectTrigger>
             </Select>
@@ -255,11 +263,11 @@ function ReferenceRangesTableBody({
               {visualRow.row.getVisibleCells().map((cell) => (
                 <TableCell
                   key={cell.id}
-                  className="h-11 flex items-center"
                   style={{
                     width: cell.column.getSize(),
                     flex: cell.column.getSize() > 300 ? 1 : "none",
                   }}
+                  className="h-11 flex items-center"
                 >
                   {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>

@@ -21,7 +21,9 @@ export const SaveLocalTestReferenceRangesSchema = z.object({
           .object({
             kind: z.literal("numeric"),
             ageMax: z.coerce.number(),
+            ageMaxUnit: z.enum(["M", "Y"]),
             ageMin: z.coerce.number(),
+            ageMinUnit: z.enum(["M", "Y"]),
             gender: z.enum(["M", "F", "B"]),
             valueLow: z.coerce.number(),
             valueHigh: z.coerce.number(),
@@ -45,7 +47,9 @@ export const SaveLocalTestReferenceRangesSchema = z.object({
         z.object({
           kind: z.literal("non-numeric"),
           ageMax: z.coerce.number(),
+          ageMaxUnit: z.enum(["M", "Y"]),
           ageMin: z.coerce.number(),
+          ageMinUnit: z.enum(["M", "Y"]),
           gender: z.enum(["M", "F", "B"]),
           normalValues: z.array(z.string().trim().min(1)).min(1),
         }),

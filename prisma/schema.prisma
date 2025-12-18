@@ -152,11 +152,18 @@ model LabTestGroup {
   deletedAt                   DateTime?
 }
 
+enum AgeUnit {
+  M
+  Y
+}
+
 model ReferenceRange {
   id                            String                      @id @default(cuid(2))
   gender                        Gender
   ageMin                        Int
+  ageMinUnit                    AgeUnit
   ageMax                        Int
+  ageMaxUnit                    AgeUnit
   valueLow                      Decimal?
   valueHigh                     Decimal?
   normalValues                  String[]                    @default([])

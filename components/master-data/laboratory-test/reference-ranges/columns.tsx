@@ -4,8 +4,16 @@ import ConfigureReferenceRangesDialogTrigger from "./configure-reference-ranges-
 
 import { Button } from "@/components/ui/button";
 import { LocalTest } from "./types";
+import { format, parseISO, set } from "date-fns";
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
-import { ArrowUpDown, CircleSmall, ChevronRight } from "lucide-react";
+import {
+  ArrowUpZA,
+  BadgeCheck,
+  ArrowDownAZ,
+  CircleSmall,
+  ArrowUpDown,
+  ChevronRight,
+} from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -134,21 +142,30 @@ export const referenceRangesColumns = [
     },
     size: 170,
   }),
-  columnHelper.accessor("isActive", {
+  columnHelper.display({
     id: "status",
     header: () => <div className="px-1.5 text-center w-full">Status</div>,
-    cell: ({ getValue }) => {
+    cell: ({ row }) => {
       return (
         <div className="flex justify-center px-1.5 w-full">
           <Tooltip delayDuration={300}>
             <TooltipTrigger asChild>
               <CircleSmall
                 size={20}
-                className={`${getValue() ? "text-green-600 fill-emerald-600" : "text-red-600 fill-rose-600"}`}
+                className={`${!row.original.deletedAt && !row.original.notOrderableReason ? "text-green-600 fill-emerald-600" : "text-red-600 fill-rose-600"}`}
               />
             </TooltipTrigger>
             <TooltipContent>
-              {getValue() ? "Active" : "Inactive"}
+              <div className="flex flex-col gap-0.5 items-center p-0.5">
+                <span className="font-bold">
+                  {!row.original.deletedAt ? "Active" : "Inactive"}
+                </span>
+                <span>
+                  {!row.original.notOrderableReason
+                    ? "Ready"
+                    : `Not Orderable: ${row.original.notOrderableReason}`}
+                </span>
+              </div>
             </TooltipContent>
           </Tooltip>
         </div>
@@ -174,25 +191,38 @@ const genderLabel = {
   F: "Female",
 } as const;
 
+const ageUnitLabel = {
+  M: "Months",
+  Y: "Years",
+} as const;
+
 const columnHelperSub =
   createColumnHelper<LocalTest["referenceRanges"][number]>();
 
 export const referenceRangesSubColumns = [
   columnHelperSub.accessor("gender", {
     header: ({ column }) => (
-      <div className="px-1.5 flex items-center justify-between">
+      <div className="px-1.5 flex items-center justify-between w-full">
         <div>Gender</div>
         <Tooltip delayDuration={500}>
           <TooltipTrigger asChild>
             <Button
               size={"icon-sm"}
-              variant={column.getIsSorted() ? "default" : "outline"}
+              variant={"outline"}
               className="size-6"
               onClick={() => {
-                column.toggleSorting(column.getIsSorted() === "asc");
+                column.toggleSorting(undefined, true);
               }}
             >
-              <ArrowUpDown className="size-[14px]" />
+              {column.getIsSorted() ? (
+                column.getIsSorted() === "asc" ? (
+                  <ArrowDownAZ className="size-[14px]" />
+                ) : (
+                  <ArrowUpZA className="size-[14px]" />
+                )
+              ) : (
+                <ArrowUpDown className="size-[14px]" />
+              )}
             </Button>
           </TooltipTrigger>
           <TooltipContent>Toggle Sorting</TooltipContent>
@@ -200,34 +230,20 @@ export const referenceRangesSubColumns = [
       </div>
     ),
     cell: ({ getValue }) => {
-      return <div className="px-1.5">{genderLabel[getValue()]}</div>;
+      return <div className="px-1.5 w-full">{genderLabel[getValue()]}</div>;
     },
+    size: 150,
   }),
   columnHelperSub.accessor("ageMin", {
     id: "ageRange",
-    header: ({ column }) => (
-      <div className="px-1.5 flex items-center justify-between">
+    header: () => (
+      <div className="px-1.5 w-full">
         <div>Age Range</div>
-        <Tooltip delayDuration={500}>
-          <TooltipTrigger asChild>
-            <Button
-              size={"icon-sm"}
-              variant={column.getIsSorted() ? "default" : "outline"}
-              className={`size-6`}
-              onClick={() => {
-                column.toggleSorting(column.getIsSorted() === "asc");
-              }}
-            >
-              <ArrowUpDown className="size-[14px]" />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Toggle Sorting</TooltipContent>
-        </Tooltip>
       </div>
     ),
     cell: ({ row }) => {
       return (
-        <div className="px-1.5">
+        <div className="px-1.5 w-full">
           {row.original.ageMin === 0 ? (
             row.original.ageMax === 9999 ? (
               "All ages"
@@ -235,27 +251,25 @@ export const referenceRangesSubColumns = [
               <Tooltip delayDuration={500}>
                 <TooltipTrigger asChild>
                   <span>
-                    {row.original.ageMax < 12
-                      ? `≤ ${row.original.ageMax} months`
-                      : `≤ ${Math.floor(row.original.ageMax / 12)} years`}
+                    {`≤ ${row.original.ageMax} ${ageUnitLabel[row.original.ageMaxUnit]}`}
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  {`${Math.floor(row.original.ageMax / 12)} years ${row.original.ageMax % 12} months (${row.original.ageMax} months)`}
+                  {row.original.ageMaxUnit === "M"
+                    ? `${Math.floor(row.original.ageMax / 12)} years ${row.original.ageMax % 12} months`
+                    : `${row.original.ageMax * 12} months`}
                 </TooltipContent>
               </Tooltip>
             )
           ) : row.original.ageMax === 9999 ? (
             <Tooltip delayDuration={500}>
               <TooltipTrigger asChild>
-                <span>
-                  {row.original.ageMin < 12
-                    ? `≥ ${row.original.ageMin} months`
-                    : `≥ ${Math.floor(row.original.ageMin / 12)} years`}
-                </span>
+                <span>{`≥ ${row.original.ageMin} ${ageUnitLabel[row.original.ageMinUnit]}`}</span>
               </TooltipTrigger>
               <TooltipContent>
-                {`${Math.floor(row.original.ageMin / 12)} years ${row.original.ageMin % 12} months (${row.original.ageMin} months)`}
+                {row.original.ageMinUnit === "M"
+                  ? `${Math.floor(row.original.ageMin / 12)} years ${row.original.ageMin % 12} months`
+                  : `${row.original.ageMin * 12} months`}
               </TooltipContent>
             </Tooltip>
           ) : (
@@ -263,26 +277,26 @@ export const referenceRangesSubColumns = [
               <Tooltip delayDuration={500}>
                 <TooltipTrigger asChild>
                   <span>
-                    {row.original.ageMin < 12
-                      ? `${row.original.ageMin} months`
-                      : `${Math.floor(row.original.ageMin / 12)}`}
+                    {`${row.original.ageMin} ${ageUnitLabel[row.original.ageMinUnit]}`}
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  {`${Math.floor(row.original.ageMin / 12)} years ${row.original.ageMin % 12} months (${row.original.ageMin} months)`}
+                  {row.original.ageMinUnit === "M"
+                    ? `${Math.floor(row.original.ageMin / 12)} years ${row.original.ageMin % 12} months`
+                    : `${row.original.ageMin * 12} months`}
                 </TooltipContent>
               </Tooltip>
               {` - `}
               <Tooltip delayDuration={500}>
                 <TooltipTrigger asChild>
                   <span>
-                    {row.original.ageMax < 12
-                      ? `${row.original.ageMax} months`
-                      : `${Math.floor(row.original.ageMax / 12)} years`}
+                    {`${row.original.ageMax} ${ageUnitLabel[row.original.ageMaxUnit]}`}
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>
-                  {`${Math.floor(row.original.ageMax / 12)} years ${row.original.ageMax % 12} months (${row.original.ageMax} months)`}
+                  {row.original.ageMaxUnit === "M"
+                    ? `${Math.floor(row.original.ageMax / 12)} years ${row.original.ageMax % 12} months`
+                    : `${row.original.ageMax * 12} months`}
                 </TooltipContent>
               </Tooltip>
             </>
@@ -290,28 +304,65 @@ export const referenceRangesSubColumns = [
         </div>
       );
     },
+    size: 350,
   }),
   columnHelperSub.display({
     id: "normalValueRange",
-    header: () => <div className="px-1.5">Normal Value Range</div>,
+    header: () => <div className="px-1.5 w-full">Normal Value Range</div>,
     cell: ({ row }) => {
       return (
-        <div className="px-1.5">
+        <div className="px-1.5 w-full">
           {row.original.unit
             ? `${row.original.valueLow} - ${row.original.valueHigh}`
             : row.original.normalValues.join(", ")}
         </div>
       );
     },
+    size: 350,
   }),
   columnHelperSub.accessor("unit.code", {
-    header: () => <div className="px-1.5">Unit</div>,
+    header: () => <div className="px-1.5 w-full">Unit</div>,
     cell: ({ row }) => {
       return (
-        <div className="px-1.5">
-          {row.original.unit ? row.original.unit.displayCode : "-"}{" "}
+        <div className="px-1.5 w-full">
+          {row.original.unit ? row.original.unit.displayCode : "-"}
         </div>
       );
     },
+    size: 100,
   }),
+  columnHelperSub.accessor(
+    (row) =>
+      row.validTo
+        ? set(parseISO(row.validTo), {
+            hours: 0,
+            minutes: 0,
+            seconds: 0,
+            milliseconds: 0,
+          }).toISOString()
+        : `${Infinity}`,
+    {
+      id: "validTo",
+      header: () => <div className="px-1.5 w-full">Validity Period</div>,
+      cell: ({ row }) => {
+        return (
+          <div className="px-1.5 flex gap-3 items-center w-full">
+            {`${format(parseISO(row.original.validFrom), "PP")} - `}
+            {!row.original.validTo ? (
+              <>
+                Present
+                <BadgeCheck
+                  size={17}
+                  className="fill-green-200 text-green-600"
+                />
+              </>
+            ) : (
+              <>{format(parseISO(row.original.validTo), "PP")}</>
+            )}
+          </div>
+        );
+      },
+      size: 250,
+    },
+  ),
 ] as ColumnDef<LocalTest["referenceRanges"][number]>[];

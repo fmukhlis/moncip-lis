@@ -64,7 +64,7 @@ const COLUMN = [
 
         <Button
           size={"icon-sm"}
-          variant={"default"}
+          variant={"outline"}
           disabled
           className="size-6"
         >

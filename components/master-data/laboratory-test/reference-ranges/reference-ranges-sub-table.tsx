@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 
 import { LocalTest } from "./types";
@@ -29,22 +31,33 @@ export default function ReferenceRangesSubTable({
   const table = useReactTable({
     data,
     columns,
+    initialState: {
+      sorting: [{ id: "validTo", desc: true }],
+    },
     getRowId: ({ id }) => id,
     getCoreRowModel: getCoreRowModel(),
+    enableMultiSort: true,
     getSortedRowModel: getSortedRowModel(),
   });
 
   return (
     <div className="overflow-hidden border">
-      <Table>
-        <TableHeader>
+      <Table className="grid">
+        <TableHeader className="grid">
           {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id} className="bg-muted hover:bg-muted">
+            <TableRow
+              key={headerGroup.id}
+              className="bg-muted hover:bg-muted flex w-full"
+            >
               {headerGroup.headers.map((header) => (
                 <TableHead
                   key={header.id}
+                  style={{
+                    width: header.getSize(),
+                    flex: header.getSize() > 300 ? 1 : "none",
+                  }}
                   colSpan={header.colSpan}
-                  className={`font-semibold border-x`}
+                  className={`font-semibold h-11 border-x flex items-center`}
                 >
                   {flexRender(
                     header.column.columnDef.header,
@@ -55,21 +68,28 @@ export default function ReferenceRangesSubTable({
             </TableRow>
           ))}
         </TableHeader>
-        <TableBody>
+        <TableBody className="grid">
           {table.getRowModel().rows.length ? (
             table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id}>
+              <TableRow key={row.id} className="flex w-full">
                 {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
+                  <TableCell
+                    key={cell.id}
+                    style={{
+                      width: cell.column.getSize(),
+                      flex: cell.column.getSize() > 300 ? 1 : "none",
+                    }}
+                    className="h-11 flex items-center"
+                  >
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}
               </TableRow>
             ))
           ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length}>
-                <div className="text-center text-muted-foreground">
+            <TableRow className="flex w-full">
+              <TableCell colSpan={columns.length} className="w-full">
+                <div className="text-center text-muted-foreground w-full">
                   No results.
                 </div>
               </TableCell>
