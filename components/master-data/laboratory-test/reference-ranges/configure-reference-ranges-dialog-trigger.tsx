@@ -2,7 +2,7 @@
 
 import { Row } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
-import { SquarePen } from "lucide-react";
+import { Settings2 } from "lucide-react";
 import { LocalTest } from "./types";
 import { useAppDispatch } from "@/hooks";
 import {
@@ -33,10 +33,10 @@ export default function ConfigureReferenceRangesDialogTrigger({
             dispatch(setShowConfigureReferenceRangesDialog(true));
           }}
         >
-          <SquarePen className="size-[14px]" />
+          <Settings2 className="size-[14px]" />
         </Button>
       </TooltipTrigger>
-      <TooltipContent>Edit local [{row.original.labTest.name}]</TooltipContent>
+      <TooltipContent>Edit reference ranges</TooltipContent>
     </Tooltip>
   );
 }

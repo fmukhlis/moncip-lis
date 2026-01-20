@@ -41,7 +41,7 @@ export async function getLocalTests(
   payload: z.infer<typeof GetLocalTestsSchema>,
 ) {
   return await prisma.laboratoriesOnLabTests.findMany({
-    where: { laboratoryId: payload.laboratoryId, deletedAt: null },
+    where: { laboratoryId: payload.laboratoryId },
     select: {
       id: true,
       labTest: {

@@ -87,10 +87,10 @@ const COLUMN = [
 export default function ReferenceRangesTableSkeleton() {
   return (
     <>
-      <div className="flex flex-col overflow-uto flex-1 gap-4 p-1">
+      <div className="flex flex-col flex-1 gap-4 p-1">
         <div className="grid items-center gap-3 grid-cols-[repeat(auto-fit,minmax(150px,1fr))]">
           <InputGroup className="h-10 col-span-2">
-            <InputGroupInput disabled placeholder="Search by name or code..." />
+            <InputGroupInput disabled placeholder="Search by name..." />
             <InputGroupAddon>
               <Search />
             </InputGroupAddon>
@@ -112,7 +112,7 @@ export default function ReferenceRangesTableSkeleton() {
             </div>
             <Select disabled>
               <SelectTrigger className="w-[135px]">
-                <SelectValue placeholder="Show All" />
+                <SelectValue placeholder="Show Active" />
                 <SelectContent>
                   <SelectItem value="All">Show All</SelectItem>
                   <SelectItem value="Active">Show Active</SelectItem>

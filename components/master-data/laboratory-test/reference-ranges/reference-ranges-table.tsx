@@ -55,7 +55,7 @@ export default function ReferenceRangesTable({
 
   const [searchValue, setSearchValue] = React.useState("");
 
-  const [showLocalTests, setShowLocalTests] = React.useState("All");
+  const [showLocalTests, setShowLocalTests] = React.useState("Active");
 
   const memoizedData = React.useMemo(() => {
     switch (showLocalTests) {
@@ -96,11 +96,11 @@ export default function ReferenceRangesTable({
 
   return (
     <>
-      <div className="flex flex-col overflow-uto flex-1 gap-4 p-1">
+      <div className="flex flex-col flex-1 gap-4 p-1">
         <div className="grid items-center gap-3 grid-cols-[repeat(auto-fit,minmax(150px,1fr))]">
           <InputGroup className="h-10 col-span-2">
             <InputGroupInput
-              placeholder="Search by name or code..."
+              placeholder="Search by name..."
               value={searchValue}
               onChange={(e) => {
                 setSearchValue(e.target.value);
@@ -135,7 +135,7 @@ export default function ReferenceRangesTable({
             <ConfigureReferenceRangesDialog />
             <Select value={showLocalTests} onValueChange={setShowLocalTests}>
               <SelectTrigger className="w-[135px]">
-                <SelectValue placeholder="Show All" />
+                <SelectValue placeholder="Show Active" />
                 <SelectContent>
                   <SelectItem value="All">Show All</SelectItem>
                   <SelectItem value="Active">Show Active</SelectItem>
@@ -220,6 +220,7 @@ function ReferenceRangesTableBody({
         newVisualRows.push({ type: "details", row });
       }
     }
+
     return newVisualRows;
   }, [expandedState, rows]);
 

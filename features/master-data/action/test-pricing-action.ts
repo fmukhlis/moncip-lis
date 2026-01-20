@@ -4,59 +4,142 @@ import z from "zod";
 
 import { auth } from "@/auth";
 import {
+  getLocalTest,
+  getLocalTests,
+  getLocalTestGroup,
+  getLocalTestGroups,
   saveLocalTestPrices,
   createLocalTestGroup,
   archiveLocalTestGroup,
-  getLocalTestGroupById,
-  getLocalTestsWithPrices,
+  markLocalTestOrderable,
   unarchiveLocalTestGroup,
   getSupportedTariffGroups,
   saveLocalTestGroupPrices,
   getLocalTestGroupsByCode,
-  getLocalTestGroupsWithPrices,
+  markLocalTestNotOrderable,
+  markLocalTestGroupOrderable,
+  markLocalTestGroupNotOrderable,
 } from "../dal/test-pricing-query";
 import {
+  GetLocalTestActionSchema,
+  GetLocalTestsActionSchema,
+  GetLocalTestGroupActionSchema,
+  GetLocalTestGroupsActionSchema,
   SaveLocalTestPricesActionSchema,
   CreateLocalTestGroupActionSchema,
-  UpdateLocalTestGroupActionSchema,
   ArchiveLocalTestGroupActionSchema,
-  GetLocalTestsWithPricesActionSchema,
+  MarkLocalTestOrderableActionSchema,
   UnarchiveLocalTestGroupActionSchema,
   SaveLocalTestGroupPricesActionSchema,
-  GetLocalTestGroupsWithPricesActionSchema,
+  MarkLocalTestNotOrderableActionSchema,
+  MarkLocalTestGroupOrderableActionSchema,
+  MarkLocalTestGroupNotOrderableActionSchema,
 } from "../schema/test-pricing-schema";
 
-export async function getLocalTestsWithPricesAction(
-  payload: z.input<typeof GetLocalTestsWithPricesActionSchema>,
+// Local Test ------------------------------------------->
+export async function getLocalTestsAction(
+  payload?: z.input<typeof GetLocalTestsActionSchema>,
 ) {
   const session = await auth();
 
   if (!session || !session.user || !session.user.laboratoryId) {
-    return {
-      success: false,
-      message: "Authorization violations.",
-      data: [],
-    };
+    throw new Error("Authorization violations.");
   }
 
-  const parsedData = GetLocalTestsWithPricesActionSchema.safeParse(payload);
+  const parsedData = GetLocalTestsActionSchema.safeParse(payload);
 
   if (!parsedData.success) {
-    return {
-      success: false,
-      message: "Invalid data.",
-      data: [],
-    };
+    throw new Error("Invalid data.");
   }
 
-  const queryResponse = await getLocalTestsWithPrices({
+  const queryResponse = await getLocalTests({
     laboratoryId: session.user.laboratoryId,
-    count: parsedData.data.count,
+    count: parsedData.data?.count,
   });
 
   return {
     success: true,
-    message: "Data was fetched successfully.",
+    message: "Data were fetched successfully.",
+    data: queryResponse,
+  };
+}
+
+export async function getLocalTestAction(
+  payload: z.input<typeof GetLocalTestActionSchema>,
+) {
+  const session = await auth();
+
+  if (!session || !session.user) {
+    throw new Error("Authorization violations.");
+  }
+
+  const parsedData = GetLocalTestActionSchema.safeParse(payload);
+
+  if (!parsedData.success) {
+    throw new Error("Invalid data.");
+  }
+
+  const queryResponse = await getLocalTest({
+    id: parsedData.data.id,
+    priceCount: parsedData.data.priceCount,
+  });
+
+  return {
+    success: true,
+    message: "Data were fetched successfully.",
+    data: queryResponse,
+  };
+}
+
+export async function markLocalTestOrderableAction(
+  payload: z.input<typeof MarkLocalTestOrderableActionSchema>,
+) {
+  const session = await auth();
+
+  if (!session || !session.user) {
+    throw new Error("Authorization violations.");
+  }
+
+  const parsedData = MarkLocalTestOrderableActionSchema.safeParse(payload);
+
+  if (!parsedData.success) {
+    throw new Error("Invalid data.");
+  }
+
+  const queryResponse = await markLocalTestOrderable({
+    id: parsedData.data.id,
+  });
+
+  return {
+    success: true,
+    message: "Test has been marked as orderable.",
+    data: queryResponse,
+  };
+}
+
+export async function markLocalTestNotOrderableAction(
+  payload: z.input<typeof MarkLocalTestNotOrderableActionSchema>,
+) {
+  const session = await auth();
+
+  if (!session || !session.user) {
+    throw new Error("Authorization violations.");
+  }
+
+  const parsedData = MarkLocalTestNotOrderableActionSchema.safeParse(payload);
+
+  if (!parsedData.success) {
+    throw new Error("Invalid data.");
+  }
+
+  const queryResponse = await markLocalTestNotOrderable({
+    id: parsedData.data.id,
+    reason: parsedData.data.reason,
+  });
+
+  return {
+    success: true,
+    message: "Test has been marked as not orderable.",
     data: queryResponse,
   };
 }
@@ -67,21 +150,13 @@ export async function saveLocalTestPricesAction(
   const session = await auth();
 
   if (!session || !session.user) {
-    return {
-      success: false,
-      message: "Authorization violations.",
-      data: 0,
-    };
+    throw new Error("Authorization violations.");
   }
 
   const parsedData = SaveLocalTestPricesActionSchema.safeParse(payload);
 
   if (!parsedData.success) {
-    return {
-      success: false,
-      message: "Invalid data.",
-      data: 0,
-    };
+    throw new Error("Invalid data.");
   }
 
   const supportedTariffGroupIds = new Set(
@@ -90,22 +165,76 @@ export async function saveLocalTestPricesAction(
 
   for (const i of payload.prices) {
     if (!supportedTariffGroupIds.has(i.tariffGroupId)) {
-      return {
-        success: false,
-        message: "Invalid data.",
-        data: 0,
-      };
+      throw new Error("Invalid data.");
     }
   }
 
-  const queryResponse = await saveLocalTestPrices({
-    laboratoriesOnLabTestsId: parsedData.data.laboratoriesOnLabTestsId,
+  await saveLocalTestPrices({
+    id: parsedData.data.id,
     prices: parsedData.data.prices,
+  });
+
+  const queryResponse = await getLocalTest({ id: parsedData.data.id });
+
+  return {
+    success: true,
+    message: "Test prices have been saved successfully.",
+    data: queryResponse,
+  };
+}
+// -------------------------------------------- Local Test
+
+// Local Test Group --------------------------------------
+export async function getLocalTestGroupsAction(
+  payload?: z.input<typeof GetLocalTestGroupsActionSchema>,
+) {
+  const session = await auth();
+
+  if (!session || !session.user || !session.user.laboratoryId) {
+    throw new Error("Authorization violations.");
+  }
+
+  const parsedData = GetLocalTestGroupsActionSchema.safeParse(payload);
+
+  if (!parsedData.success) {
+    throw new Error("Invalid data.");
+  }
+
+  const queryResponse = await getLocalTestGroups({
+    laboratoryId: session.user.laboratoryId,
+    count: parsedData.data?.count,
   });
 
   return {
     success: true,
-    message: "Test pricing were saved successfully.",
+    message: "Data were fetched successfully.",
+    data: queryResponse,
+  };
+}
+
+export async function getLocalTestGroupAction(
+  payload: z.input<typeof GetLocalTestGroupActionSchema>,
+) {
+  const session = await auth();
+
+  if (!session || !session.user) {
+    throw new Error("Authorization violations.");
+  }
+
+  const parsedData = GetLocalTestGroupActionSchema.safeParse(payload);
+
+  if (!parsedData.success) {
+    throw new Error("Invalid data.");
+  }
+
+  const queryResponse = await getLocalTestGroup({
+    id: parsedData.data.id,
+    priceCount: parsedData.data.priceCount,
+  });
+
+  return {
+    success: true,
+    message: "Data were fetched successfully.",
     data: queryResponse,
   };
 }
@@ -116,21 +245,13 @@ export async function createLocalTestGroupAction(
   const session = await auth();
 
   if (!session || !session.user || !session.user.laboratoryId) {
-    return {
-      success: false,
-      message: "Authorization violations.",
-      data: null,
-    };
+    throw new Error("Authorization violations.");
   }
 
   const parsedData = CreateLocalTestGroupActionSchema.safeParse(payload);
 
   if (!parsedData.success) {
-    return {
-      success: false,
-      message: "Invalid data.",
-      data: null,
-    };
+    throw new Error("Invalid data.");
   }
 
   const queryResponse = await createLocalTestGroup({
@@ -143,49 +264,7 @@ export async function createLocalTestGroupAction(
 
   return {
     success: true,
-    message: "Panel was created successfully.",
-    data: queryResponse,
-  };
-}
-
-export async function updateLocalTestGroupAction(
-  payload: z.input<typeof UpdateLocalTestGroupActionSchema>,
-) {
-  const session = await auth();
-
-  if (!session || !session.user || !session.user.laboratoryId) {
-    return {
-      success: false,
-      message: "Authorization violations.",
-      data: null,
-    };
-  }
-
-  const parsedData = UpdateLocalTestGroupActionSchema.safeParse(payload);
-
-  if (!parsedData.success) {
-    return {
-      success: false,
-      message: "Invalid data.",
-      data: null,
-    };
-  }
-
-  await archiveLocalTestGroup({
-    labTestGroupId: parsedData.data.labTestGroupId,
-  });
-
-  const queryResponse = await createLocalTestGroup({
-    code: parsedData.data.code,
-    name: parsedData.data.name,
-    description: parsedData.data.description,
-    laboratoryId: session.user.laboratoryId,
-    laboratoriesOnLabTestsIds: parsedData.data.laboratoriesOnLabTestsIds,
-  });
-
-  return {
-    success: true,
-    message: "Panel was updated successfully.",
+    message: "Panel has been created successfully.",
     data: queryResponse,
   };
 }
@@ -195,22 +274,14 @@ export async function archiveLocalTestGroupAction(
 ) {
   const session = await auth();
 
-  if (!session || !session.user || !session.user.laboratoryId) {
-    return {
-      success: false,
-      message: "Authorization violations.",
-      data: null,
-    };
+  if (!session || !session.user) {
+    throw new Error("Authorization violations.");
   }
 
   const parsedData = ArchiveLocalTestGroupActionSchema.safeParse(payload);
 
   if (!parsedData.success) {
-    return {
-      success: false,
-      message: "Invalid data.",
-      data: null,
-    };
+    throw new Error("Invalid data.");
   }
 
   await archiveLocalTestGroup({
@@ -219,7 +290,7 @@ export async function archiveLocalTestGroupAction(
 
   return {
     success: true,
-    message: "Panel was archived successfully.",
+    message: "Panel has been archived successfully.",
     data: null,
   };
 }
@@ -229,47 +300,29 @@ export async function unarchiveLocalTestGroupAction(
 ) {
   const session = await auth();
 
-  if (!session || !session.user || !session.user.laboratoryId) {
-    return {
-      success: false,
-      message: "Authorization violations.",
-      data: null,
-    };
+  if (!session || !session.user) {
+    throw new Error("Authorization violations.");
   }
 
   const parsedData = UnarchiveLocalTestGroupActionSchema.safeParse(payload);
 
   if (!parsedData.success) {
-    return {
-      success: false,
-      message: "Invalid data.",
-      data: null,
-    };
+    throw new Error("Invalid data.");
   }
 
-  const localTestGroup = await getLocalTestGroupById({
+  // This is needed to ensure the code column remains unique for active local test groups
+  const localTestGroup = await getLocalTestGroup({
     id: parsedData.data.labTestGroupId,
   });
-
-  if (!localTestGroup) {
-    return {
-      success: false,
-      message: "Nonexistent test panel.",
-      data: null,
-    };
+  if (localTestGroup) {
+    const localTestGroupsWithSameCode = await getLocalTestGroupsByCode({
+      code: localTestGroup.code,
+    });
+    if (localTestGroupsWithSameCode.length >= 1) {
+      throw new Error("The code conflicts with another test panel.");
+    }
   }
-
-  const localTestGroupsWithSameCode = await getLocalTestGroupsByCode({
-    code: localTestGroup.code,
-  });
-
-  if (localTestGroupsWithSameCode.length >= 1) {
-    return {
-      success: false,
-      message: "The code conflicts with another test panel.",
-      data: null,
-    };
-  }
+  // We let prisma throw an error if the local test group is not found
 
   await unarchiveLocalTestGroup({
     labTestGroupId: parsedData.data.labTestGroupId,
@@ -277,42 +330,61 @@ export async function unarchiveLocalTestGroupAction(
 
   return {
     success: true,
-    message: "Panel was unarchived successfully.",
+    message: "Panel has been unarchived successfully.",
     data: null,
   };
 }
 
-export async function getLocalTestGroupsWithPricesAction(
-  payload: z.input<typeof GetLocalTestGroupsWithPricesActionSchema>,
+export async function markLocalTestGroupOrderableAction(
+  payload: z.input<typeof MarkLocalTestGroupOrderableActionSchema>,
 ) {
   const session = await auth();
 
-  if (!session || !session.user || !session.user.laboratoryId) {
-    return {
-      success: false,
-      message: "Authorization violations.",
-      data: [],
-    };
+  if (!session || !session.user) {
+    throw new Error("Authorization violations.");
   }
-  const parsedData =
-    GetLocalTestGroupsWithPricesActionSchema.safeParse(payload);
+
+  const parsedData = MarkLocalTestGroupOrderableActionSchema.safeParse(payload);
 
   if (!parsedData.success) {
-    return {
-      success: false,
-      message: "Invalid data.",
-      data: [],
-    };
+    throw new Error("Invalid data.");
   }
 
-  const queryResponse = await getLocalTestGroupsWithPrices({
-    laboratoryId: session.user.laboratoryId,
-    count: parsedData.data.count,
+  const queryResponse = await markLocalTestGroupOrderable({
+    id: parsedData.data.id,
   });
 
   return {
     success: true,
-    message: "Data was fetched successfully.",
+    message: "Panel has been marked as orderable.",
+    data: queryResponse,
+  };
+}
+
+export async function markLocalTestGroupNotOrderableAction(
+  payload: z.input<typeof MarkLocalTestGroupNotOrderableActionSchema>,
+) {
+  const session = await auth();
+
+  if (!session || !session.user) {
+    throw new Error("Authorization violations.");
+  }
+
+  const parsedData =
+    MarkLocalTestGroupNotOrderableActionSchema.safeParse(payload);
+
+  if (!parsedData.success) {
+    throw new Error("Invalid data.");
+  }
+
+  const queryResponse = await markLocalTestGroupNotOrderable({
+    id: parsedData.data.id,
+    reason: parsedData.data.reason,
+  });
+
+  return {
+    success: true,
+    message: "Panel has been marked as not orderable.",
     data: queryResponse,
   };
 }
@@ -323,21 +395,13 @@ export async function saveLocalTestGroupPricesAction(
   const session = await auth();
 
   if (!session || !session.user) {
-    return {
-      success: false,
-      message: "Authorization violations.",
-      data: 0,
-    };
+    throw new Error("Authorization violations.");
   }
 
   const parsedData = SaveLocalTestGroupPricesActionSchema.safeParse(payload);
 
   if (!parsedData.success) {
-    return {
-      success: false,
-      message: "Invalid data.",
-      data: 0,
-    };
+    throw new Error("Invalid data.");
   }
 
   const supportedTariffGroupIds = new Set(
@@ -346,11 +410,7 @@ export async function saveLocalTestGroupPricesAction(
 
   for (const i of payload.prices) {
     if (!supportedTariffGroupIds.has(i.tariffGroupId)) {
-      return {
-        success: false,
-        message: "Invalid data.",
-        data: 0,
-      };
+      throw new Error("Invalid data.");
     }
   }
 
@@ -358,27 +418,26 @@ export async function saveLocalTestGroupPricesAction(
 
   return {
     success: true,
-    message: "Panel pricing were saved successfully.",
+    message: "Panel prices have been saved successfully.",
     data: queryResponse,
   };
 }
+// -------------------------------------- Local Test Group
 
+// Tariff Group ------------------------------------------
 export async function getSupportedTariffGroupsAction() {
   const session = await auth();
 
   if (!session || !session.user) {
-    return {
-      success: false,
-      message: "Authorization violations.",
-      data: [],
-    };
+    throw new Error("Authorization violations.");
   }
 
   const queryResponse = await getSupportedTariffGroups();
 
   return {
     success: true,
-    message: "Data was fetched successfully.",
+    message: "Data were fetched successfully.",
     data: queryResponse,
   };
 }
+// ------------------------------------------ Tariff Group

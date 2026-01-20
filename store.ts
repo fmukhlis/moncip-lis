@@ -1,9 +1,12 @@
 import { rootReducer } from "./root-reducer";
 import { configureStore } from "@reduxjs/toolkit";
+import { serverFunctionSlice } from "./features/api/serverFunctionSlice";
 
 export const makeStore = () => {
   return configureStore({
     reducer: rootReducer,
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware().concat(serverFunctionSlice.middleware),
   });
 };
 

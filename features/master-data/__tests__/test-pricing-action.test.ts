@@ -1,19 +1,23 @@
 import prisma from "@/lib/prisma";
 
 import { auth } from "@/auth";
-import { getTests } from "../dal/test-availability-query";
 import { seedTariffGroup } from "@/lib/seed-master-tariff-group";
-import { saveLocalTestsAction } from "../action/test-availability-action";
+import { getTests, saveLocalTests } from "../dal/test-availability-query";
 import {
+  getLocalTestAction,
+  getLocalTestsAction,
+  getLocalTestGroupAction,
+  getLocalTestGroupsAction,
   saveLocalTestPricesAction,
-  updateLocalTestGroupAction,
   createLocalTestGroupAction,
   archiveLocalTestGroupAction,
-  getLocalTestsWithPricesAction,
+  markLocalTestOrderableAction,
   unarchiveLocalTestGroupAction,
   getSupportedTariffGroupsAction,
   saveLocalTestGroupPricesAction,
-  getLocalTestGroupsWithPricesAction,
+  markLocalTestNotOrderableAction,
+  markLocalTestGroupOrderableAction,
+  markLocalTestGroupNotOrderableAction,
 } from "../action/test-pricing-action";
 import {
   seedUnits,
@@ -24,10 +28,10 @@ import {
   seedCategories,
 } from "@/lib/seed-master-test";
 import {
+  getLocalTests,
+  getLocalTestGroups,
   createLocalTestGroup,
   archiveLocalTestGroup,
-  getLocalTestsWithPrices,
-  getLocalTestGroupsByCode,
   getSupportedTariffGroups,
 } from "../dal/test-pricing-query";
 
@@ -46,6 +50,7 @@ const authenticatedUser = {
   },
 };
 
+// Prepare metadata for test, create an admin user, select all tests to user's lab, and create a dummy test group
 beforeAll(async () => {
   await seedSpecimens();
   await seedMethods();
@@ -64,15 +69,28 @@ beforeAll(async () => {
     },
   });
 
-  (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
-
   const labTestIds = (await getTests()).map(({ id }) => id);
 
-  await saveLocalTestsAction({
+  await saveLocalTests({
+    laboratoryId: authenticatedUser.user.laboratoryId,
     labTestIds,
+  });
+
+  const laboratoriesOnLabTests = await getLocalTests({
+    laboratoryId: authenticatedUser.user.laboratoryId,
+    count: 3,
+  });
+
+  await createLocalTestGroup({
+    code: Date.now().toString(),
+    name: "Panel",
+    description: "Some descriptions about panel...",
+    laboratoryId: authenticatedUser.user.laboratoryId,
+    laboratoriesOnLabTestsIds: laboratoriesOnLabTests.map(({ id }) => id),
   });
 });
 
+// Clear all tables except _prisma_migrations table
 afterAll(async () => {
   const tablenames = await prisma.$queryRaw<
     Array<{ tablename: string }>
@@ -91,37 +109,145 @@ afterAll(async () => {
   }
 });
 
-describe("getLocalTestsWithPricesAction", () => {
+// Local Test ----------------------------------------------
+describe("getLocalTestsAction", () => {
   it("returns a failure response when unauthorized", async () => {
-    const response = await getLocalTestsWithPricesAction({});
-
-    expect(response).toEqual({
-      success: false,
-      message: "Authorization violations.",
-      data: [],
-    });
+    await expect(getLocalTestsAction()).rejects.toThrow(
+      "Authorization violations.",
+    );
   });
 
   it("returns a failure response when data is invalid", async () => {
     (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
 
-    const response = await getLocalTestsWithPricesAction({ count: 0 });
-
-    expect(response).toEqual({
-      success: false,
-      message: "Invalid data.",
-      data: [],
-    });
+    await expect(getLocalTestsAction({ count: -1 })).rejects.toThrow(
+      "Invalid data.",
+    );
   });
 
   it("returns a success response", async () => {
     (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
 
-    const response = await getLocalTestsWithPricesAction({});
+    const response = await getLocalTestsAction();
 
     expect(response).toEqual({
       success: true,
-      message: "Data was fetched successfully.",
+      message: "Data were fetched successfully.",
+      data: response.data,
+    });
+  });
+});
+
+describe("getLocalTestAction", () => {
+  let labTestId = "";
+
+  beforeAll(async () => {
+    labTestId = (await getTests())[0].id;
+  });
+
+  it("returns a failure response when unauthorized", async () => {
+    await expect(getLocalTestAction({ id: labTestId })).rejects.toThrow(
+      "Authorization violations.",
+    );
+  });
+
+  it("returns a failure response when data is invalid", async () => {
+    (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
+
+    await expect(getLocalTestAction({ id: "" })).rejects.toThrow(
+      "Invalid data.",
+    );
+  });
+
+  it("returns a success response", async () => {
+    (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
+
+    const response = await getLocalTestAction({ id: labTestId });
+
+    expect(response).toEqual({
+      success: true,
+      message: "Data were fetched successfully.",
+      data: response.data,
+    });
+  });
+});
+
+describe("markLocalTestOrderableAction", () => {
+  let labTestId = "";
+
+  beforeAll(async () => {
+    labTestId = (
+      await getLocalTests({ laboratoryId: authenticatedUser.user.laboratoryId })
+    )[0].id;
+  });
+
+  it("returns a failure response when unauthorized", async () => {
+    await expect(
+      markLocalTestOrderableAction({ id: labTestId }),
+    ).rejects.toThrow("Authorization violations.");
+  });
+
+  it("returns a failure response when data is invalid", async () => {
+    (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
+
+    await expect(markLocalTestOrderableAction({ id: "" })).rejects.toThrow(
+      "Invalid data.",
+    );
+  });
+
+  it("returns a success response", async () => {
+    (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
+
+    const response = await markLocalTestOrderableAction({ id: labTestId });
+
+    expect(response).toEqual({
+      success: true,
+      message: "Test has been marked as orderable.",
+      data: response.data,
+    });
+  });
+});
+
+describe("markLocalTestNotOrderableAction", () => {
+  let labTestId = "";
+
+  beforeAll(async () => {
+    labTestId = (
+      await getLocalTests({ laboratoryId: authenticatedUser.user.laboratoryId })
+    )[0].id;
+  });
+
+  it("returns a failure response when unauthorized", async () => {
+    await expect(
+      markLocalTestNotOrderableAction({
+        id: labTestId,
+        reason: "Reagents are out of stock",
+      }),
+    ).rejects.toThrow("Authorization violations.");
+  });
+
+  it("returns a failure response when data is invalid", async () => {
+    (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
+
+    await expect(
+      markLocalTestNotOrderableAction({
+        id: "",
+        reason: "Reagents are out of stock",
+      }),
+    ).rejects.toThrow("Invalid data.");
+  });
+
+  it("returns a success response", async () => {
+    (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
+
+    const response = await markLocalTestNotOrderableAction({
+      id: labTestId,
+      reason: "Reagents are out of stock",
+    });
+
+    expect(response).toEqual({
+      success: true,
+      message: "Test has been marked as not orderable.",
       data: response.data,
     });
   });
@@ -132,13 +258,11 @@ describe("saveLocalTestPricesAction", () => {
   let supportedTariffGroup: Awaited<
     ReturnType<typeof getSupportedTariffGroups>
   >;
-  let laboratoriesOnLabTests: Awaited<
-    ReturnType<typeof getLocalTestsWithPrices>
-  >[number];
+  let laboratoriesOnLabTests: Awaited<ReturnType<typeof getLocalTests>>[number];
 
   beforeAll(async () => {
     laboratoriesOnLabTests = (
-      await getLocalTestsWithPrices({
+      await getLocalTests({
         laboratoryId: authenticatedUser.user.laboratoryId,
       })
     )[0];
@@ -152,16 +276,12 @@ describe("saveLocalTestPricesAction", () => {
   });
 
   it("returns a failure response when unauthorized", async () => {
-    const response = await saveLocalTestPricesAction({
-      laboratoriesOnLabTestsId: laboratoriesOnLabTests.id,
-      prices: pricesPayload,
-    });
-
-    expect(response).toEqual({
-      success: false,
-      message: "Authorization violations.",
-      data: 0,
-    });
+    await expect(
+      saveLocalTestPricesAction({
+        id: laboratoriesOnLabTests.id,
+        prices: pricesPayload,
+      }),
+    ).rejects.toThrow("Authorization violations.");
   });
 
   it("returns a failure response when data is invalid", async () => {
@@ -170,44 +290,104 @@ describe("saveLocalTestPricesAction", () => {
       .mockResolvedValueOnce(authenticatedUser);
 
     // Invalid tariff group id
-    const response1 = await saveLocalTestPricesAction({
-      laboratoriesOnLabTestsId: laboratoriesOnLabTests.id,
-      prices: pricesPayload.map((item) => ({
-        ...item,
-        tariffGroupId: "nonexistent_tariff_group_id",
-      })),
-    });
+    await expect(
+      saveLocalTestPricesAction({
+        id: laboratoriesOnLabTests.id,
+        prices: pricesPayload.map((item) => ({
+          ...item,
+          tariffGroupId: "nonexistent_tariff_group_id",
+        })),
+      }),
+    ).rejects.toThrow("Invalid data.");
 
     // Invalid price
-    const response2 = await saveLocalTestPricesAction({
-      laboratoriesOnLabTestsId: laboratoriesOnLabTests.id,
-      prices: pricesPayload.map((item) => ({ ...item, price: "-10000" })),
-    });
-
-    expect(response1).toEqual({
-      success: false,
-      message: "Invalid data.",
-      data: 0,
-    });
-
-    expect(response2).toEqual({
-      success: false,
-      message: "Invalid data.",
-      data: 0,
-    });
+    await expect(
+      saveLocalTestPricesAction({
+        id: laboratoriesOnLabTests.id,
+        prices: pricesPayload.map((item) => ({ ...item, price: "-10000" })),
+      }),
+    ).rejects.toThrow("Invalid data.");
   });
 
   it("returns a success response", async () => {
     (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
 
     const response = await saveLocalTestPricesAction({
-      laboratoriesOnLabTestsId: laboratoriesOnLabTests.id,
+      id: laboratoriesOnLabTests.id,
       prices: pricesPayload,
     });
 
     expect(response).toEqual({
       success: true,
-      message: "Test pricing were saved successfully.",
+      message: "Test prices have been saved successfully.",
+      data: response.data,
+    });
+  });
+});
+// ---------------------------------------------- Local Test
+
+// Local Test Group ----------------------------------------
+describe("getLocalTestGroupsAction", () => {
+  it("returns a failure response when unauthorized", async () => {
+    await expect(getLocalTestGroupsAction()).rejects.toThrow(
+      "Authorization violations.",
+    );
+  });
+
+  it("returns a failure response when data is invalid", async () => {
+    (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
+
+    await expect(getLocalTestGroupsAction({ count: -1 })).rejects.toThrow(
+      "Invalid data.",
+    );
+  });
+
+  it("returns a success response", async () => {
+    (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
+
+    const response = await getLocalTestGroupsAction();
+
+    expect(response).toEqual({
+      success: true,
+      message: "Data were fetched successfully.",
+      data: response.data,
+    });
+  });
+});
+
+describe("getLocalTestGroupAction", () => {
+  let labTestGroupId = "";
+
+  beforeAll(async () => {
+    labTestGroupId = (
+      await getLocalTestGroups({
+        laboratoryId: authenticatedUser.user.laboratoryId,
+      })
+    )[0].id;
+  });
+
+  it("returns a failure response when unauthorized", async () => {
+    await expect(
+      getLocalTestGroupAction({ id: labTestGroupId }),
+    ).rejects.toThrow("Authorization violations.");
+  });
+
+  it("returns a failure response when data is invalid", async () => {
+    (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
+
+    await expect(getLocalTestGroupAction({ id: "" })).rejects.toThrow(
+      "Invalid data.",
+    );
+  });
+
+  it("returns a success response", async () => {
+    (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
+
+    const response = await getLocalTestGroupAction({ id: labTestGroupId });
+
+    expect(response).toEqual({
+      success: true,
+      message: "Data were fetched successfully.",
       data: response.data,
     });
   });
@@ -216,14 +396,12 @@ describe("saveLocalTestPricesAction", () => {
 describe("createLocalTestGroupAction", () => {
   let payload: Parameters<typeof createLocalTestGroupAction>[0];
   let timestampString: string;
-  let laboratoriesOnLabTests: Awaited<
-    ReturnType<typeof getLocalTestsWithPrices>
-  >;
+  let laboratoriesOnLabTests: Awaited<ReturnType<typeof getLocalTests>>;
 
   beforeAll(async () => {
     timestampString = Date.now().toString();
 
-    laboratoriesOnLabTests = await getLocalTestsWithPrices({
+    laboratoriesOnLabTests = await getLocalTests({
       laboratoryId: authenticatedUser.user.laboratoryId,
       count: 3,
     });
@@ -237,28 +415,20 @@ describe("createLocalTestGroupAction", () => {
   });
 
   it("returns a failure response when unauthorized", async () => {
-    const response = await createLocalTestGroupAction(payload);
-
-    expect(response).toEqual({
-      success: false,
-      message: "Authorization violations.",
-      data: null,
-    });
+    await expect(createLocalTestGroupAction(payload)).rejects.toThrow(
+      "Authorization violations.",
+    );
   });
 
   it("returns a failure response when data is invalid", async () => {
     (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
 
-    const response = await createLocalTestGroupAction({
-      ...payload,
-      laboratoriesOnLabTestsIds: [],
-    });
-
-    expect(response).toEqual({
-      success: false,
-      message: "Invalid data.",
-      data: null,
-    });
+    await expect(
+      createLocalTestGroupAction({
+        ...payload,
+        laboratoriesOnLabTestsIds: [],
+      }),
+    ).rejects.toThrow("Invalid data.");
   });
 
   it("returns a success response", async () => {
@@ -268,143 +438,50 @@ describe("createLocalTestGroupAction", () => {
 
     expect(response).toEqual({
       success: true,
-      message: "Panel was created successfully.",
-      data: response.data,
-    });
-  });
-});
-
-describe("updateLocalTestGroupAction", () => {
-  let payload: Parameters<typeof updateLocalTestGroupAction>[0];
-  let localTestGroup: Awaited<
-    ReturnType<typeof getLocalTestGroupsByCode>
-  >[number];
-  let timestampString: string;
-  let laboratoriesOnLabTests: Awaited<
-    ReturnType<typeof getLocalTestsWithPrices>
-  >;
-
-  beforeAll(async () => {
-    timestampString = Date.now().toString();
-
-    laboratoriesOnLabTests = await getLocalTestsWithPrices({
-      laboratoryId: authenticatedUser.user.laboratoryId,
-      count: 3,
-    });
-
-    await createLocalTestGroup({
-      code: timestampString,
-      name: "Panel",
-      description: "Some descriptions about panel...",
-      laboratoryId: authenticatedUser.user.laboratoryId,
-      laboratoriesOnLabTestsIds: laboratoriesOnLabTests.map(({ id }) => id),
-    });
-
-    localTestGroup = (
-      await getLocalTestGroupsByCode({ code: timestampString })
-    )[0];
-
-    payload = {
-      code: timestampString,
-      name: "Panel",
-      description: "Some descriptions about panel...",
-      labTestGroupId: localTestGroup.id,
-      laboratoriesOnLabTestsIds: laboratoriesOnLabTests.map(({ id }) => id),
-    };
-  });
-
-  it("returns a failure response when unauthorized", async () => {
-    const response = await updateLocalTestGroupAction(payload);
-
-    expect(response).toEqual({
-      success: false,
-      message: "Authorization violations.",
-      data: null,
-    });
-  });
-
-  it("returns a failure response when data is invalid", async () => {
-    (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
-
-    const response = await updateLocalTestGroupAction({
-      ...payload,
-      laboratoriesOnLabTestsIds: [],
-    });
-
-    expect(response).toEqual({
-      success: false,
-      message: "Invalid data.",
-      data: null,
-    });
-  });
-
-  it("returns a success response", async () => {
-    (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
-
-    const response = await updateLocalTestGroupAction(payload);
-
-    expect(response).toEqual({
-      success: true,
-      message: "Panel was updated successfully.",
+      message: "Panel has been created successfully.",
       data: response.data,
     });
   });
 });
 
 describe("archiveLocalTestGroupAction", () => {
-  let localTestGroup: Awaited<
-    ReturnType<typeof getLocalTestGroupsByCode>
-  >[number];
+  let localTestGroup: Awaited<ReturnType<typeof createLocalTestGroup>>;
   let timestampString: string;
-  let laboratoriesOnLabTests: Awaited<
-    ReturnType<typeof getLocalTestsWithPrices>
-  >;
+  let laboratoriesOnLabTests: Awaited<ReturnType<typeof getLocalTests>>;
 
   beforeAll(async () => {
     timestampString = Date.now().toString();
 
-    laboratoriesOnLabTests = await getLocalTestsWithPrices({
+    laboratoriesOnLabTests = await getLocalTests({
       laboratoryId: authenticatedUser.user.laboratoryId,
       count: 3,
     });
 
-    await createLocalTestGroup({
+    localTestGroup = await createLocalTestGroup({
       code: timestampString,
       name: "Panel",
       description: "Some descriptions about panel...",
       laboratoryId: authenticatedUser.user.laboratoryId,
       laboratoriesOnLabTestsIds: laboratoriesOnLabTests.map(({ id }) => id),
     });
-
-    localTestGroup = (
-      await getLocalTestGroupsByCode({ code: timestampString })
-    )[0];
   });
 
   it("returns a failure response when unauthorized", async () => {
-    const response = await archiveLocalTestGroupAction({
-      labTestGroupId: localTestGroup.id,
-    });
-
-    expect(response).toEqual({
-      success: false,
-      message: "Authorization violations.",
-      data: null,
-    });
+    await expect(
+      archiveLocalTestGroupAction({
+        labTestGroupId: localTestGroup.id,
+      }),
+    ).rejects.toThrow("Authorization violations.");
   });
 
   it("returns a failure response when data is invalid", async () => {
     (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
 
-    const response = await archiveLocalTestGroupAction({
-      labTestGroupId: "",
-    });
-
-    expect(response).toEqual({
-      success: false,
-      message: "Invalid data.",
-      data: null,
-    });
+    await expect(
+      archiveLocalTestGroupAction({
+        labTestGroupId: "",
+      }),
+    ).rejects.toThrow("Invalid data.");
   });
 
   it("returns a success response", async () => {
@@ -416,30 +493,26 @@ describe("archiveLocalTestGroupAction", () => {
 
     expect(response).toEqual({
       success: true,
-      message: "Panel was archived successfully.",
+      message: "Panel has been archived successfully.",
       data: null,
     });
   });
 });
 
 describe("unarchiveLocalTestGroupAction", () => {
-  let localTestGroup: Awaited<
-    ReturnType<typeof getLocalTestGroupsByCode>
-  >[number];
+  let localTestGroup: Awaited<ReturnType<typeof createLocalTestGroup>>;
   let timestampString: string;
-  let laboratoriesOnLabTests: Awaited<
-    ReturnType<typeof getLocalTestsWithPrices>
-  >;
+  let laboratoriesOnLabTests: Awaited<ReturnType<typeof getLocalTests>>;
 
   beforeEach(async () => {
     timestampString = Date.now().toString();
 
-    laboratoriesOnLabTests = await getLocalTestsWithPrices({
+    laboratoriesOnLabTests = await getLocalTests({
       laboratoryId: authenticatedUser.user.laboratoryId,
       count: 3,
     });
 
-    await createLocalTestGroup({
+    localTestGroup = await createLocalTestGroup({
       code: `${timestampString}`,
       name: "Panel",
       description: "Some descriptions about panel...",
@@ -447,51 +520,25 @@ describe("unarchiveLocalTestGroupAction", () => {
       laboratoriesOnLabTestsIds: laboratoriesOnLabTests.map(({ id }) => id),
     });
 
-    localTestGroup = (
-      await getLocalTestGroupsByCode({ code: timestampString })
-    )[0];
-
     await archiveLocalTestGroup({ labTestGroupId: localTestGroup.id });
   });
 
   it("returns a failure response when unauthorized", async () => {
-    const response = await unarchiveLocalTestGroupAction({
-      labTestGroupId: localTestGroup.id,
-    });
-
-    expect(response).toEqual({
-      success: false,
-      message: "Authorization violations.",
-      data: null,
-    });
+    await expect(
+      unarchiveLocalTestGroupAction({
+        labTestGroupId: localTestGroup.id,
+      }),
+    ).rejects.toThrow("Authorization violations.");
   });
 
   it("returns a failure response when data is invalid", async () => {
     (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
 
-    const response = await unarchiveLocalTestGroupAction({
-      labTestGroupId: "",
-    });
-
-    expect(response).toEqual({
-      success: false,
-      message: "Invalid data.",
-      data: null,
-    });
-  });
-
-  it("returns a failure response when a non-existent local test group is selected", async () => {
-    (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
-
-    const response = await unarchiveLocalTestGroupAction({
-      labTestGroupId: "nonexistent_local_test_group_id",
-    });
-
-    expect(response).toEqual({
-      success: false,
-      message: "Nonexistent test panel.",
-      data: null,
-    });
+    await expect(
+      unarchiveLocalTestGroupAction({
+        labTestGroupId: "",
+      }),
+    ).rejects.toThrow("Invalid data.");
   });
 
   it("returns a failure response when the code conflicts", async () => {
@@ -505,15 +552,11 @@ describe("unarchiveLocalTestGroupAction", () => {
       laboratoriesOnLabTestsIds: laboratoriesOnLabTests.map(({ id }) => id),
     });
 
-    const response = await unarchiveLocalTestGroupAction({
-      labTestGroupId: localTestGroup.id,
-    });
-
-    expect(response).toEqual({
-      success: false,
-      message: "The code conflicts with another test panel.",
-      data: null,
-    });
+    await expect(
+      unarchiveLocalTestGroupAction({
+        labTestGroupId: localTestGroup.id,
+      }),
+    ).rejects.toThrow("The code conflicts with another test panel.");
   });
 
   it("returns a success response", async () => {
@@ -525,43 +568,94 @@ describe("unarchiveLocalTestGroupAction", () => {
 
     expect(response).toEqual({
       success: true,
-      message: "Panel was unarchived successfully.",
+      message: "Panel has been unarchived successfully.",
       data: null,
     });
   });
 });
 
-describe("getLocalTestGroupsWithPricesAction", () => {
-  it("returns a failure response when unauthorized", async () => {
-    const response = await getLocalTestGroupsWithPricesAction({});
+describe("markLocalTestGroupOrderableAction", () => {
+  let labTestGroupId = "";
 
-    expect(response).toEqual({
-      success: false,
-      message: "Authorization violations.",
-      data: [],
-    });
+  beforeAll(async () => {
+    labTestGroupId = (
+      await getLocalTestGroups({
+        laboratoryId: authenticatedUser.user.laboratoryId,
+      })
+    )[0].id;
+  });
+
+  it("returns a failure response when unauthorized", async () => {
+    await expect(
+      markLocalTestGroupOrderableAction({ id: labTestGroupId }),
+    ).rejects.toThrow("Authorization violations.");
   });
 
   it("returns a failure response when data is invalid", async () => {
     (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
 
-    const response = await getLocalTestGroupsWithPricesAction({ count: 0 });
-
-    expect(response).toEqual({
-      success: false,
-      message: "Invalid data.",
-      data: [],
-    });
+    await expect(markLocalTestGroupOrderableAction({ id: "" })).rejects.toThrow(
+      "Invalid data.",
+    );
   });
 
   it("returns a success response", async () => {
     (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
 
-    const response = await getLocalTestGroupsWithPricesAction({});
+    const response = await markLocalTestGroupOrderableAction({
+      id: labTestGroupId,
+    });
 
     expect(response).toEqual({
       success: true,
-      message: "Data was fetched successfully.",
+      message: "Panel has been marked as orderable.",
+      data: response.data,
+    });
+  });
+});
+
+describe("markLocalTestGroupNotOrderableAction", () => {
+  let labTestGroupId = "";
+
+  beforeAll(async () => {
+    labTestGroupId = (
+      await getLocalTestGroups({
+        laboratoryId: authenticatedUser.user.laboratoryId,
+      })
+    )[0].id;
+  });
+
+  it("returns a failure response when unauthorized", async () => {
+    await expect(
+      markLocalTestGroupNotOrderableAction({
+        id: labTestGroupId,
+        reason: "Reagents are out of stock",
+      }),
+    ).rejects.toThrow("Authorization violations.");
+  });
+
+  it("returns a failure response when data is invalid", async () => {
+    (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
+
+    await expect(
+      markLocalTestGroupNotOrderableAction({
+        id: "",
+        reason: "Reagents are out of stock",
+      }),
+    ).rejects.toThrow("Invalid data.");
+  });
+
+  it("returns a success response", async () => {
+    (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
+
+    const response = await markLocalTestGroupNotOrderableAction({
+      id: labTestGroupId,
+      reason: "Reagents are out of stock",
+    });
+
+    expect(response).toEqual({
+      success: true,
+      message: "Panel has been marked as not orderable.",
       data: response.data,
     });
   });
@@ -571,13 +665,9 @@ describe("saveLocalTestGroupPricesAction", () => {
   let pricesPayload: Parameters<
     typeof saveLocalTestGroupPricesAction
   >[0]["prices"];
-  let localTestGroup: Awaited<
-    ReturnType<typeof getLocalTestGroupsByCode>
-  >[number];
+  let localTestGroup: Awaited<ReturnType<typeof createLocalTestGroup>>;
   let timestampString: string;
-  let laboratoriesOnLabTests: Awaited<
-    ReturnType<typeof getLocalTestsWithPrices>
-  >;
+  let laboratoriesOnLabTests: Awaited<ReturnType<typeof getLocalTests>>;
   let supportedTariffGroup: Awaited<
     ReturnType<typeof getSupportedTariffGroups>
   >;
@@ -585,22 +675,18 @@ describe("saveLocalTestGroupPricesAction", () => {
   beforeEach(async () => {
     timestampString = Date.now().toString();
 
-    laboratoriesOnLabTests = await getLocalTestsWithPrices({
+    laboratoriesOnLabTests = await getLocalTests({
       laboratoryId: authenticatedUser.user.laboratoryId,
       count: 3,
     });
 
-    await createLocalTestGroup({
+    localTestGroup = await createLocalTestGroup({
       code: `${timestampString}`,
       name: "Panel",
       description: "Some descriptions about panel...",
       laboratoryId: authenticatedUser.user.laboratoryId,
       laboratoriesOnLabTestsIds: laboratoriesOnLabTests.map(({ id }) => id),
     });
-
-    localTestGroup = (
-      await getLocalTestGroupsByCode({ code: timestampString })
-    )[0];
 
     supportedTariffGroup = await getSupportedTariffGroups();
 
@@ -611,16 +697,12 @@ describe("saveLocalTestGroupPricesAction", () => {
   });
 
   it("returns a failure response when unauthorized", async () => {
-    const response = await saveLocalTestGroupPricesAction({
-      labTestGroupId: localTestGroup.id,
-      prices: pricesPayload,
-    });
-
-    expect(response).toEqual({
-      success: false,
-      message: "Authorization violations.",
-      data: 0,
-    });
+    await expect(
+      saveLocalTestGroupPricesAction({
+        labTestGroupId: localTestGroup.id,
+        prices: pricesPayload,
+      }),
+    ).rejects.toThrow("Authorization violations.");
   });
 
   it("returns a failure response when data is invalid", async () => {
@@ -629,34 +711,26 @@ describe("saveLocalTestGroupPricesAction", () => {
       .mockResolvedValueOnce(authenticatedUser);
 
     // Invalid tariff group id
-    const response1 = await saveLocalTestGroupPricesAction({
-      labTestGroupId: localTestGroup.id,
-      prices: pricesPayload.map((item) => ({
-        ...item,
-        tariffGroupId: "nonexistent_tariff_group_id",
-      })),
-    });
+    await expect(
+      saveLocalTestGroupPricesAction({
+        labTestGroupId: localTestGroup.id,
+        prices: pricesPayload.map((item) => ({
+          ...item,
+          tariffGroupId: "nonexistent_tariff_group_id",
+        })),
+      }),
+    ).rejects.toThrow("Invalid data.");
 
     // Invalid price
-    const response2 = await saveLocalTestGroupPricesAction({
-      labTestGroupId: localTestGroup.id,
-      prices: pricesPayload.map((item) => ({
-        ...item,
-        price: "-10000",
-      })),
-    });
-
-    expect(response1).toEqual({
-      success: false,
-      message: "Invalid data.",
-      data: 0,
-    });
-
-    expect(response2).toEqual({
-      success: false,
-      message: "Invalid data.",
-      data: 0,
-    });
+    await expect(
+      saveLocalTestGroupPricesAction({
+        labTestGroupId: localTestGroup.id,
+        prices: pricesPayload.map((item) => ({
+          ...item,
+          price: "-10000",
+        })),
+      }),
+    ).rejects.toThrow("Invalid data.");
   });
 
   it("returns a success response", async () => {
@@ -669,21 +743,19 @@ describe("saveLocalTestGroupPricesAction", () => {
 
     expect(response).toEqual({
       success: true,
-      message: "Panel pricing were saved successfully.",
+      message: "Panel prices have been saved successfully.",
       data: response.data,
     });
   });
 });
+// ---------------------------------------- Local Test Group
 
+// Tariff Group ------------------------------------------->
 describe("getSupportedTariffGroupsAction", () => {
   it("returns a failure response when unauthorized", async () => {
-    const response = await getSupportedTariffGroupsAction();
-
-    expect(response).toEqual({
-      success: false,
-      message: "Authorization violations.",
-      data: [],
-    });
+    await expect(getSupportedTariffGroupsAction()).rejects.toThrow(
+      "Authorization violations.",
+    );
   });
 
   it("returns a success response", async () => {
@@ -693,8 +765,9 @@ describe("getSupportedTariffGroupsAction", () => {
 
     expect(response).toEqual({
       success: true,
-      message: "Data was fetched successfully.",
+      message: "Data were fetched successfully.",
       data: response.data,
     });
   });
 });
+// -------------------------------------------- Tariff Group

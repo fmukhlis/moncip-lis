@@ -204,9 +204,6 @@ model Price {
   validTo                       DateTime?
   createdAt                     DateTime                    @default(now())
   updatedAt                     DateTime                    @updatedAt
-  
-  @@unique([labTestGroupId, tariffGroupId])
-  @@unique([laboratoriesOnLabTestsId, tariffGroupId])
 }
 
 // -------------------------- Statically Generated Data -------------------------- //

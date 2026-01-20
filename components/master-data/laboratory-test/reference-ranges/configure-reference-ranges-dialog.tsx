@@ -183,7 +183,7 @@ export default function ConfigureReferenceRangesDialog() {
     (state) => state.referenceRanges.referenceRangeType,
   );
 
-  const selectedLocalTests = useAppSelector(
+  const selectedLocalTest = useAppSelector(
     (state) => state.referenceRanges.selectedLocalTest,
   );
 
@@ -237,8 +237,8 @@ export default function ConfigureReferenceRangesDialog() {
   );
 
   React.useEffect(() => {
-    if (showConfigureReferenceRangesDialog && selectedLocalTests) {
-      const validReferenceRanges = selectedLocalTests.referenceRanges.filter(
+    if (showConfigureReferenceRangesDialog && selectedLocalTest) {
+      const validReferenceRanges = selectedLocalTest.referenceRanges.filter(
         ({ validTo }) => !validTo,
       );
 
@@ -266,7 +266,7 @@ export default function ConfigureReferenceRangesDialog() {
               valueHigh,
               normalValues,
             }) =>
-              selectedLocalTests.labTest.possibleValues.length
+              selectedLocalTest.labTest.possibleValues.length
                 ? {
                     kind: "non-numeric" as const,
                     gender,
@@ -288,34 +288,33 @@ export default function ConfigureReferenceRangesDialog() {
                   },
           ),
           defaultUnitId:
-            selectedLocalTests.defaultUnit?.id ??
-            selectedLocalTests.labTest?.units?.[0]?.id ??
+            selectedLocalTest.defaultUnit?.id ??
+            selectedLocalTest.labTest?.units?.[0]?.id ??
             "",
-          laboratoriesOnLabTestsId: selectedLocalTests.id,
+          laboratoriesOnLabTestsId: selectedLocalTest.id,
         });
       } else {
         // Otherwise, set the default ref ranges template
         reset({
           refRanges:
             REFERENCE_RANGE_TEMPLATES[
-              selectedLocalTests.labTest.possibleValues.length
+              selectedLocalTest.labTest.possibleValues.length
                 ? "non-numeric"
                 : "numeric"
             ].B,
           defaultUnitId:
-            selectedLocalTests.defaultUnit?.id ??
-            selectedLocalTests.labTest?.units?.[0]?.id ??
+            selectedLocalTest.defaultUnit?.id ??
+            selectedLocalTest.labTest?.units?.[0]?.id ??
             "",
-          laboratoriesOnLabTestsId: selectedLocalTests.id,
+          laboratoriesOnLabTestsId: selectedLocalTest.id,
         });
       }
     }
-  }, [showConfigureReferenceRangesDialog, selectedLocalTests, reset, dispatch]);
+  }, [showConfigureReferenceRangesDialog, selectedLocalTest, reset, dispatch]);
 
   return (
     <Dialog
       open={showConfigureReferenceRangesDialog}
-      defaultOpen={false}
       onOpenChange={(isOpen) => {
         dispatch(setShowConfigureReferenceRangesDialog(isOpen));
       }}
@@ -336,17 +335,17 @@ export default function ConfigureReferenceRangesDialog() {
             <DialogHeader>
               <DialogTitle>Configure Reference Ranges</DialogTitle>
               <DialogDescription>
-                Set the normal ranges for {selectedLocalTests?.labTest.name}.
+                Set the normal ranges for {selectedLocalTest?.labTest.name}.
               </DialogDescription>
             </DialogHeader>
             <div className="flex flex-col max-h-[350px] overflow-auto p-1">
               <FieldGroup className="gap-5">
-                <DefaultUnit units={selectedLocalTests?.labTest.units} />
+                <DefaultUnit units={selectedLocalTest?.labTest.units} />
                 <ReferenceRangeTypeFieldSet
                   onChange={(type) => {
                     replace(
                       REFERENCE_RANGE_TEMPLATES[
-                        selectedLocalTests?.labTest.possibleValues.length
+                        selectedLocalTest?.labTest.possibleValues.length
                           ? "non-numeric"
                           : "numeric"
                       ][type === "Both" ? "B" : "MF"],
@@ -396,7 +395,7 @@ export default function ConfigureReferenceRangesDialog() {
                                         insert(
                                           field.__index + 1,
                                           REFERENCE_RANGE_TEMPLATES[
-                                            selectedLocalTests?.labTest
+                                            selectedLocalTest?.labTest
                                               .possibleValues.length
                                               ? "non-numeric"
                                               : "numeric"
@@ -427,7 +426,7 @@ export default function ConfigureReferenceRangesDialog() {
                                 onClick={() => {
                                   prepend(
                                     REFERENCE_RANGE_TEMPLATES[
-                                      selectedLocalTests?.labTest.possibleValues
+                                      selectedLocalTest?.labTest.possibleValues
                                         .length
                                         ? "non-numeric"
                                         : "numeric"
