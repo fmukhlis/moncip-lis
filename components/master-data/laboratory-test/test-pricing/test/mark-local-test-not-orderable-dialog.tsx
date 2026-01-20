@@ -68,7 +68,7 @@ export default function MarkLocalTestNotOrderableDialog() {
     if (isOpen) {
       reset({ id: id ?? "", reason: "" });
     }
-  }, [isOpen]);
+  }, [isOpen, reset, id]);
 
   return (
     <AlertDialog

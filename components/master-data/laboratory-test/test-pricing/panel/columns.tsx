@@ -41,7 +41,7 @@ export const testGroupPricingColumns = [
               <Button
                 size={"icon-sm"}
                 variant={"outline"}
-                onClick={(e) => {
+                onClick={() => {
                   row.toggleExpanded();
                 }}
                 className={`size-6 rounded-full ${row.original.validPrices.length ? "bg-emerald-400/15 dark:bg-emerald-400/15 " : ""}`}

@@ -87,7 +87,7 @@ export default function ConfigureLocalTestPricingDialog() {
         }
       }
     },
-    [dispatch],
+    [dispatch, saveLocalTestPrice],
   );
 
   React.useEffect(() => {
@@ -114,7 +114,7 @@ export default function ConfigureLocalTestPricingDialog() {
         id: localTest.id,
       });
     }
-  }, [isOpen, supportedTariffGroups, localTest]);
+  }, [isOpen, supportedTariffGroups, localTest, reset]);
 
   return (
     <Dialog

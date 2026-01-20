@@ -38,9 +38,13 @@ export default function CustomPrice({}) {
       </FieldDescription>
       <FieldGroup className="gap-3">
         {fields.map((field, index) => {
-          const { id, price, tariffGroupId, ...rest } = field;
+          const { id, ...rest } = field;
 
-          const { name } = rest as { name: string };
+          const { name } = rest as {
+            name: string;
+            price: string;
+            tariffGroupId: string;
+          };
 
           return (
             <Controller

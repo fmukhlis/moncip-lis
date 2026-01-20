@@ -70,7 +70,7 @@ export default function MarkLocalTestGroupNotOrderableDialog() {
     if (isOpen) {
       reset({ id: id ?? "", reason: "" });
     }
-  }, [isOpen]);
+  }, [isOpen, reset, id]);
 
   return (
     <AlertDialog

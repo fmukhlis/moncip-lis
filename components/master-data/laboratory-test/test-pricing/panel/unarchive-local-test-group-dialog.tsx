@@ -62,7 +62,7 @@ export default function UnarchiveLocalTestGroupDialog() {
     if (isOpen) {
       reset({ labTestGroupId: id ?? "" });
     }
-  }, [isOpen]);
+  }, [isOpen, reset, id]);
 
   return (
     <AlertDialog

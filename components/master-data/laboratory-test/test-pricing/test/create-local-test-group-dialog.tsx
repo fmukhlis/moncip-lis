@@ -109,7 +109,7 @@ export default function CreateLocalTestGroupDialog() {
         ),
       });
     }
-  }, [isOpen]);
+  }, [isOpen, reset, selectedLocalTests]);
 
   return (
     <Dialog onOpenChange={setIsOpen} open={isOpen}>

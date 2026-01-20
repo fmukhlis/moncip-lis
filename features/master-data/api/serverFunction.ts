@@ -70,7 +70,7 @@ const apiSlice = serverFunctionSlice.injectEndpoints({
           };
         }
       },
-      providesTags: (result, error, arg) => {
+      providesTags: (result) => {
         if (!result) {
           return [{ type: "TestPricing", id: "LIST" }];
         }
@@ -118,7 +118,7 @@ const apiSlice = serverFunctionSlice.injectEndpoints({
           };
         }
       },
-      providesTags: (result, error, arg) => {
+      providesTags: (result) => {
         if (!result) {
           return [{ type: "PanelPricing", id: "LIST" }];
         }
@@ -227,9 +227,7 @@ const apiSlice = serverFunctionSlice.injectEndpoints({
           };
         }
       },
-      invalidatesTags: (result, error, arg) => [
-        { type: "PanelPricing", id: "LIST" },
-      ],
+      invalidatesTags: () => [{ type: "PanelPricing", id: "LIST" }],
     }),
     saveLocalTestGroupPrices: builder.mutation<
       Awaited<ReturnType<typeof saveLocalTestGroupPricesAction>>,

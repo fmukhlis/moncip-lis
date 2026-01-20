@@ -69,7 +69,7 @@ export default function MarkLocalTestGroupOrderableDialog() {
     if (isOpen) {
       reset({ id: id ?? "" });
     }
-  }, [isOpen]);
+  }, [isOpen, reset, id]);
 
   return (
     <AlertDialog

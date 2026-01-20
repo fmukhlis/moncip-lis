@@ -60,7 +60,7 @@ export default function ArchiveLocalTestGroupDialog() {
     if (isOpen) {
       reset({ labTestGroupId: id ?? "" });
     }
-  }, [isOpen]);
+  }, [isOpen, id, reset]);
 
   return (
     <AlertDialog

@@ -37,7 +37,6 @@ export default function TestGroupPricingTable({
 }: TestGroupPricingTableProps) {
   // RTK Query
   const { data: queryResponse, isLoading } = useGetLocalTestGroupsQuery({});
-  const data = queryResponse?.data ?? [];
 
   // Redux Toolkit
   const showLocalTestGroups = useAppSelector(
@@ -47,6 +46,8 @@ export default function TestGroupPricingTable({
   const tableContainerRef = React.useRef<HTMLDivElement>(null);
 
   const memoizedData = React.useMemo(() => {
+    const data = queryResponse?.data ?? [];
+
     switch (showLocalTestGroups) {
       case "Active":
         return data.filter(({ deletedAt }) => !deletedAt);
@@ -59,7 +60,7 @@ export default function TestGroupPricingTable({
       default:
         return data;
     }
-  }, [data, showLocalTestGroups]);
+  }, [queryResponse?.data, showLocalTestGroups]);
 
   const table = useReactTable({
     data: memoizedData,
@@ -173,7 +174,7 @@ const TestGroupPricingTableBody = ({
   React.useEffect(() => {
     forceRerender();
     virtualizer.scrollBy(0);
-  }, [showOption]);
+  }, [showOption, virtualizer]);
 
   return (
     <TableBody

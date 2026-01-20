@@ -90,7 +90,7 @@ export default function ConfigureLocalTestGroupPricingDialog() {
         }
       }
     },
-    [dispatch],
+    [dispatch, saveLocalTestGroupPrice],
   );
 
   React.useEffect(() => {
@@ -119,7 +119,7 @@ export default function ConfigureLocalTestGroupPricingDialog() {
         labTestGroupId: localTestGroup.id,
       });
     }
-  }, [isOpen, supportedTariffGroups, localTestGroup]);
+  }, [isOpen, supportedTariffGroups, localTestGroup, reset]);
 
   return (
     <Dialog

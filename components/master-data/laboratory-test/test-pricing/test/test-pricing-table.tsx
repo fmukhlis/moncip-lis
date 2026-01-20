@@ -37,7 +37,6 @@ type TestPricingTableProps = {
 export default function TestPricingTable({ columns }: TestPricingTableProps) {
   // RTK Query
   const { data: queryResponse, isLoading } = useGetLocalTestsQuery({});
-  const data = queryResponse?.data ?? [];
 
   // Redux Toolkit
   const rowSelection = useAppSelector(
@@ -51,6 +50,7 @@ export default function TestPricingTable({ columns }: TestPricingTableProps) {
   const tableContainerRef = React.useRef<HTMLDivElement>(null);
 
   const memoizedData = React.useMemo(() => {
+    const data = queryResponse?.data ?? [];
     switch (showLocalTests) {
       case "Active":
         return data.filter(({ deletedAt }) => !deletedAt);
@@ -63,7 +63,7 @@ export default function TestPricingTable({ columns }: TestPricingTableProps) {
       default:
         return data;
     }
-  }, [data, showLocalTests]);
+  }, [queryResponse?.data, showLocalTests]);
 
   const table = useReactTable({
     data: memoizedData,
