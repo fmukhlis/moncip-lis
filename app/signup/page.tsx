@@ -27,8 +27,8 @@ async function Signup(props: {
         </h1>
 
         <p className="mb-4 text-center">
-          Create a new <span className="font-semibold">Administrator</span>{" "}
-          account
+          Create a new{" "}
+          <span className="font-semibold">System Administrator</span> account
         </p>
 
         <div className="flex flex-col md:flex-row gap-2 justify-center items-center flex-nowrap mb-3">

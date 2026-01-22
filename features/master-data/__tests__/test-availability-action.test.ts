@@ -57,7 +57,7 @@ describe("getTestCategoriesWithTestsAction", () => {
     (auth as jest.Mock).mockImplementationOnce(() => ({
       user: {
         name: "Admin 1",
-        role: "admin",
+        role: "sys_admin",
         laboratoryId: "lab_id_1",
       },
     }));
@@ -87,7 +87,7 @@ describe("saveLocalTestsAction", () => {
     await prisma.user.create({
       data: {
         name: "Admin 1",
-        role: "admin",
+        role: "sys_admin",
         laboratory: { create: { id: "lab_id_1" } },
       },
     });
@@ -97,7 +97,7 @@ describe("saveLocalTestsAction", () => {
     (auth as jest.Mock).mockImplementationOnce(() => ({
       user: {
         name: "Admin 1",
-        role: "admin",
+        role: "sys_admin",
         laboratoryId: "lab_id_1",
       },
     }));
@@ -119,7 +119,7 @@ describe("saveLocalTestsAction", () => {
     (auth as jest.Mock).mockImplementationOnce(() => ({
       user: {
         name: "Admin 1",
-        role: "admin",
+        role: "sys_admin",
         laboratoryId: "lab_id_1",
       },
     }));
@@ -155,7 +155,7 @@ describe("getLocalTestsAction", () => {
     (auth as jest.Mock).mockImplementationOnce(() => ({
       user: {
         name: "Admin 1",
-        role: "admin",
+        role: "sys_admin",
         laboratoryId: "lab_id_1",
       },
     }));

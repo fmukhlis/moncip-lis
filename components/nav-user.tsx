@@ -20,6 +20,14 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "./ui/dropdown-menu";
+import { $Enums } from "@/generated/prisma";
+
+const ROLE_LABEL = {
+  sys_admin: "System Administrator",
+  lab_admin: "Laboratory Administrator",
+  doctor: "Doctor",
+  staff: "Staff",
+} satisfies Record<$Enums.Role, string>;
 
 export default function NavUser() {
   const session = useSession();
@@ -45,7 +53,7 @@ export default function NavUser() {
                     height={32}
                   />
                 )}
-                <AvatarFallback className="rounded-md">
+                <AvatarFallback className="rounded-md bg-sidebar-border">
                   {(session.data?.user?.name ?? "US")
                     .substring(0, 2)
                     .toUpperCase()}
@@ -87,11 +95,9 @@ export default function NavUser() {
                     {session.data?.user?.name ?? "User name"}
                   </span>
                   <span className="truncate text-xs">
-                    {session.data?.user?.email
-                      ? session.data?.user?.email
-                      : session.data?.user?.username
-                        ? "Username"
-                        : ""}
+                    {session.data?.user?.role
+                      ? ROLE_LABEL[session.data.user.role]
+                      : "-"}
                   </span>
                 </div>
               </div>

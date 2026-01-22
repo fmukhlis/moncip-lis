@@ -3,7 +3,7 @@ import z from "zod";
 import { Prisma } from "@/generated/prisma";
 
 export const CreateUserSchema = z.object({
-  role: z.enum(["lab_tech", "doctor"]),
+  role: z.enum(["staff", "doctor", "lab_admin"]),
   name: z.string().max(50).nonempty(),
   image: z
     .string()
@@ -32,7 +32,7 @@ export const CreateUserSchema = z.object({
 }) satisfies z.ZodType<Prisma.UserCreateInput>;
 
 export const UpdateUserSchema = z.object({
-  role: z.enum(["lab_tech", "doctor"]),
+  role: z.enum(["staff", "doctor", "lab_admin"]),
   name: z.union([
     z.string().max(50).nonempty().optional(),
     z.literal("").transform(() => undefined),

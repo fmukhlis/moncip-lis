@@ -2,7 +2,7 @@ import { Session } from "next-auth";
 import { createLaboratory } from "./dal/query";
 
 export async function createLaboratoryAction(user: Session["user"]) {
-  if (user?.id && !user?.laboratoryId && user?.role === "admin") {
+  if (user?.id && !user?.laboratoryId && user?.role === "sys_admin") {
     await createLaboratory(user.id);
     return {
       success: true,

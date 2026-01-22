@@ -44,7 +44,7 @@ describe("createUserAction", () => {
     await prisma.user.create({
       data: {
         name: "Admin 1",
-        role: "admin",
+        role: "sys_admin",
         username: "admin_1",
         laboratory: { create: { id: "lab_id_1" } },
       },
@@ -78,7 +78,7 @@ describe("createUserAction", () => {
     (auth as unknown as jest.Mock).mockImplementationOnce(() => ({
       user: {
         name: "Admin 1",
-        role: "admin",
+        role: "sys_admin",
         username: "admin_1",
         laboratoryId: "lab_id_1",
       },
@@ -97,7 +97,7 @@ describe("createUserAction", () => {
     (auth as unknown as jest.Mock).mockImplementationOnce(() => ({
       user: {
         name: "Admin 1",
-        role: "admin",
+        role: "sys_admin",
         username: "admin_1",
         laboratoryId: "lab_id_1",
       },
@@ -142,7 +142,7 @@ describe("updateUserAction", () => {
     await prisma.user.create({
       data: {
         name: "Admin 1",
-        role: "admin",
+        role: "sys_admin",
         username: "admin_1",
         laboratory: { create: { id: "lab_id_1" } },
       },
@@ -151,7 +151,7 @@ describe("updateUserAction", () => {
     await prisma.user.create({
       data: {
         name: "Admin 2",
-        role: "admin",
+        role: "sys_admin",
         username: "admin_2",
         laboratory: { create: { id: "lab_id_2" } },
       },
@@ -195,7 +195,7 @@ describe("updateUserAction", () => {
     (auth as unknown as jest.Mock).mockImplementationOnce(() => ({
       user: {
         name: "Admin 1",
-        role: "admin",
+        role: "sys_admin",
         username: "admin_1",
         laboratoryId: "lab_id_1",
       },
@@ -217,7 +217,7 @@ describe("updateUserAction", () => {
     (auth as unknown as jest.Mock).mockImplementationOnce(() => ({
       user: {
         name: "Admin 1",
-        role: "admin",
+        role: "sys_admin",
         username: "admin_1",
         laboratoryId: "lab_id_1",
       },
@@ -239,7 +239,7 @@ describe("updateUserAction", () => {
     (auth as unknown as jest.Mock).mockImplementationOnce(() => ({
       user: {
         name: "Admin 2",
-        role: "admin",
+        role: "sys_admin",
         username: "admin_2",
         laboratoryId: "lab_id_2",
       },
@@ -263,7 +263,7 @@ describe("deleteUserAction", () => {
     await prisma.user.create({
       data: {
         name: "Admin 1",
-        role: "admin",
+        role: "sys_admin",
         username: "admin_1",
         laboratory: { create: { id: "lab_id_1" } },
       },
@@ -272,7 +272,7 @@ describe("deleteUserAction", () => {
     await prisma.user.create({
       data: {
         name: "Admin 2",
-        role: "admin",
+        role: "sys_admin",
         username: "admin_2",
         laboratory: { create: { id: "lab_id_2" } },
       },
@@ -316,7 +316,7 @@ describe("deleteUserAction", () => {
     (auth as unknown as jest.Mock).mockImplementationOnce(() => ({
       user: {
         name: "Admin 1",
-        role: "admin",
+        role: "sys_admin",
         username: "admin_1",
         laboratoryId: "lab_id_1",
       },
@@ -335,7 +335,7 @@ describe("deleteUserAction", () => {
     (auth as unknown as jest.Mock).mockImplementationOnce(() => ({
       user: {
         name: "Admin 2",
-        role: "admin",
+        role: "sys_admin",
         username: "admin_2",
         laboratoryId: "lab_id_2",
       },
@@ -357,7 +357,7 @@ describe("importOAuthUserImageAction", () => {
       data: {
         id: "admin_1_id",
         name: "Admin 1",
-        role: "admin",
+        role: "sys_admin",
         image: "https://somedomain.com/admin_1.jpg",
         username: "admin_1",
         laboratory: { create: { id: "lab_id_1" } },
@@ -399,7 +399,7 @@ describe("importOAuthUserImageAction", () => {
       user: {
         id: "admin_1_id",
         name: "Admin 1",
-        role: "admin",
+        role: "sys_admin",
         image: "https://somedomain.com/admin_1.jpg",
         username: "admin_1",
         laboratoryId: "lab_id_1",
@@ -422,7 +422,7 @@ describe("importOAuthUserImageAction", () => {
       user: {
         id: "admin_1_id",
         name: "Admin 1",
-        role: "admin",
+        role: "sys_admin",
         image: "/api/files/users/admin_1_id.jpg",
         username: "admin_1",
         laboratoryId: "lab_id_1",

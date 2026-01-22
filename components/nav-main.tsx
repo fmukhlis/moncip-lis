@@ -3,10 +3,24 @@
 import Link from "next/link";
 
 import { $Enums } from "@/generated/prisma";
+import { AppRoutes } from "@/.next/types/routes";
 import { usePathname } from "next/navigation";
-import { ChevronRight } from "lucide-react";
-import { UserCog, LucideIcon, FlaskConical } from "lucide-react";
-
+import {
+  UserCog,
+  LucideIcon,
+  FlaskConical,
+  BookCheck,
+  FileSliders,
+  Banknote,
+} from "lucide-react";
+import {
+  BookUser,
+  FilePlus,
+  FileText,
+  TestTubes,
+  ChevronRight,
+  Workflow,
+} from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -30,51 +44,147 @@ const NAV_MAIN_DATA: Record<
     string,
     {
       title: string;
-      url: string;
+      url: AppRoutes;
       icon?: LucideIcon;
       items?: {
         title: string;
-        url: string;
+        url: AppRoutes;
         icon?: LucideIcon;
       }[];
     }[]
   >
 > = {
-  admin: {
+  sys_admin: {
     "System Administration": [
       {
         title: "User Management",
-        url: "/admin/laboratory/user-management",
+        url: "/sys-admin/system-administration/user-management",
         icon: UserCog,
+      },
+      // {
+      //   title: "Integration Settings",
+      //   url: "/sys-admin/system-administration/integration-settings",
+      //   icon: Workflow,
+      // },
+    ],
+  },
+  lab_admin: {
+    Operations: [
+      {
+        title: "Patient Registry",
+        url: "/lab-admin/operations/patient-registry",
+        icon: BookUser,
+      },
+      {
+        title: "Test Orders",
+        url: "/lab-admin/operations/test-orders",
+        icon: FilePlus,
+      },
+      {
+        title: "Samples",
+        url: "/lab-admin/operations/samples",
+        icon: TestTubes,
+      },
+      {
+        title: "Results",
+        url: "/lab-admin/operations/results",
+        icon: FileText,
       },
     ],
     "Master Data": [
       {
-        title: "Laboratory Tests",
-        url: "#",
-        icon: FlaskConical,
-        items: [
-          {
-            title: "Test Availability",
-            url: "/admin/master-data/laboratory-tests/test-availability",
-          },
-          {
-            title: "Test Pricing",
-            url: "/admin/master-data/laboratory-tests/test-pricing",
-          },
-          {
-            title: "Reference Ranges",
-            url: "/admin/master-data/laboratory-tests/reference-ranges",
-          },
-        ],
+        title: "Test Availability",
+        url: "/lab-admin/master-data/test-availability",
+        icon: BookCheck,
+      },
+      {
+        title: "Reference Ranges",
+        url: "/lab-admin/master-data/reference-ranges",
+        icon: FileSliders,
+      },
+      {
+        title: "Test Pricing",
+        url: "/lab-admin/master-data/test-pricing",
+        icon: Banknote,
       },
     ],
   },
-  lab_tech: {
-    Laboratory: [],
-  },
   doctor: {
-    Laboratory: [],
+    Operations: [
+      {
+        title: "Patient Registry",
+        url: "/doctor/operations/patient-registry",
+        icon: BookUser,
+      },
+      {
+        title: "Test Orders",
+        url: "/doctor/operations/test-orders",
+        icon: FilePlus,
+      },
+      {
+        title: "Results",
+        url: "/doctor/operations/results",
+        icon: FileText,
+      },
+    ],
+    "Master Data": [
+      {
+        title: "Test Availability",
+        url: "/doctor/master-data/test-availability",
+        icon: BookCheck,
+      },
+      {
+        title: "Reference Ranges",
+        url: "/doctor/master-data/reference-ranges",
+        icon: FileSliders,
+      },
+      {
+        title: "Test Pricing",
+        url: "/doctor/master-data/test-pricing",
+        icon: Banknote,
+      },
+    ],
+  },
+  staff: {
+    Operations: [
+      {
+        title: "Patient Registry",
+        url: "/staff/operations/patient-registry",
+        icon: BookUser,
+      },
+      {
+        title: "Test Orders",
+        url: "/staff/operations/test-orders",
+        icon: FilePlus,
+      },
+      {
+        title: "Samples",
+        url: "/staff/operations/samples",
+        icon: TestTubes,
+      },
+      {
+        title: "Results",
+        url: "/staff/operations/results",
+        icon: FileText,
+      },
+    ],
+    "Master Data": [
+      {
+        title: "Test Availability",
+        url: "/staff/master-data/test-availability",
+        icon: BookCheck,
+      },
+      {
+        title: "Reference Ranges",
+        url: "/staff/master-data/reference-ranges",
+        icon: FileSliders,
+      },
+      {
+        title: "Test Pricing",
+        url: "/staff/master-data/test-pricing",
+        icon: Banknote,
+      },
+    ],
   },
 };
 

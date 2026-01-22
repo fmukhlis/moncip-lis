@@ -38,7 +38,10 @@ export default function LoginWithCredentialsForm({
     if (response && !response.success) {
       form.resetField("password");
       toast.error(response.message, {
-        style: { backgroundColor: "var(--destructive)" },
+        style: {
+          backgroundColor: "oklch(0.704 0.191 22.216 / 0.97)",
+          color: "oklch(0.984 0.003 247.858)",
+        },
         position: "top-center",
       });
     }
@@ -46,7 +49,7 @@ export default function LoginWithCredentialsForm({
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)}>
-      <FieldGroup className="gap-2">
+      <FieldGroup className="gap-2 gray-200">
         <Controller
           name="username"
           render={({ field, fieldState }) => {

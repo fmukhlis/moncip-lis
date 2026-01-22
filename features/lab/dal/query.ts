@@ -6,7 +6,7 @@ export async function getLabMembers(laboratoryId: string) {
   const users = await prisma.user.findMany({
     where: {
       role: {
-        not: "admin",
+        not: "sys_admin",
       },
       laboratoryId,
     },
@@ -18,7 +18,7 @@ export async function getLabMembers(laboratoryId: string) {
   return users.map((user) => ({
     id: user.id,
     name: user.name,
-    role: user.role as Exclude<$Enums.Role, "admin">,
+    role: user.role as Exclude<$Enums.Role, "sys_admin">,
     username: user.username,
   }));
 }

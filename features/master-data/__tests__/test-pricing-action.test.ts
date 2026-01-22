@@ -45,7 +45,7 @@ jest.mock("@/auth", () => {
 const authenticatedUser = {
   user: {
     name: "Admin 1",
-    role: "admin" as const,
+    role: "sys_admin" as const,
     laboratoryId: "lab_id_1",
   },
 };

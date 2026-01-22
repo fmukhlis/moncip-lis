@@ -196,10 +196,9 @@ export default function UpdateUserDialog() {
                             </div>
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="staff">Staff</SelectItem>
                             <SelectItem value="doctor">Doctor</SelectItem>
-                            <SelectItem value="lab_tech">
-                              Laboratory Technician
-                            </SelectItem>
+                            <SelectItem value="lab_admin">Admin</SelectItem>
                           </SelectContent>
                         </Select>
                         {fieldState.invalid && (

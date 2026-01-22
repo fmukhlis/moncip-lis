@@ -22,19 +22,61 @@ import {
 const ITEMS_TO_DISPLAY = 3;
 
 const routeCrumbs = {
-  "/admin/dashboard": [{ label: "Dashboard", href: "" }],
-  "/admin/laboratory/user-management": [{ label: "User Management", href: "" }],
-  "/admin/master-data/laboratory-tests/test-availability": [
+  // System Administrator
+  "/sys-admin/dashboard": [{ label: "Dashboard", href: "" }],
+  "/sys-admin/system-administration/user-management": [
+    { label: "User Management", href: "" },
+  ],
+  "/sys-admin/system-administration/integration-settings": [
+    { label: "Integration Settings", href: "" },
+  ],
+
+  // Laboratory Administrator
+  "/lab-admin/dashboard": [{ label: "Dashboard", href: "" }],
+  "/lab-admin/operations/patient-registry": [
+    { label: "Patient Registry", href: "" },
+  ],
+  "/lab-admin/operations/test-orders": [{ label: "Test Orders", href: "" }],
+  "/lab-admin/operations/samples": [{ label: "Samples", href: "" }],
+  "/lab-admin/operations/results": [{ label: "Results", href: "" }],
+  "/lab-admin/master-data/test-availability": [
     { label: "Test Availability", href: "" },
   ],
-  "/admin/master-data/laboratory-tests/test-pricing": [
-    { label: "Test Pricing", href: "" },
+  "/lab-admin/master-data/reference-ranges": [
+    { label: "Reference Ranges", href: "" },
   ],
-  "/admin/master-data/laboratory-tests/reference-ranges": [
-    { label: "Reference Range", href: "" },
-  ],
+  "/lab-admin/master-data/test-pricing": [{ label: "Test Pricing", href: "" }],
+
+  // Doctor
   "/doctor/dashboard": [{ label: "Dashboard", href: "" }],
-  "/lab-tech/dashboard": [{ label: "Dashboard", href: "" }],
+  "/doctor/operations/patient-registry": [
+    { label: "Patient Registry", href: "" },
+  ],
+  "/doctor/operations/test-orders": [{ label: "Test Orders", href: "" }],
+  "/doctor/operations/results": [{ label: "Results", href: "" }],
+  "/doctor/master-data/test-availability": [
+    { label: "Test Availability", href: "" },
+  ],
+  "/doctor/master-data/reference-ranges": [
+    { label: "Reference Ranges", href: "" },
+  ],
+  "/doctor/master-data/test-pricing": [{ label: "Test Pricing", href: "" }],
+
+  // Staff
+  "/staff/dashboard": [{ label: "Dashboard", href: "" }],
+  "/staff/operations/patient-registry": [
+    { label: "Patient Registry", href: "" },
+  ],
+  "/staff/operations/test-orders": [{ label: "Test Orders", href: "" }],
+  "/staff/operations/samples": [{ label: "Samples", href: "" }],
+  "/staff/operations/results": [{ label: "Results", href: "" }],
+  "/staff/master-data/test-availability": [
+    { label: "Test Availability", href: "" },
+  ],
+  "/staff/master-data/reference-ranges": [
+    { label: "Reference Ranges", href: "" },
+  ],
+  "/staff/master-data/test-pricing": [{ label: "Test Pricing", href: "" }],
 } satisfies Partial<Record<AppRoutes, { label: string; href: string }[]>>;
 
 export function AppHeader() {

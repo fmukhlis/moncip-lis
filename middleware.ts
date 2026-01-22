@@ -22,7 +22,9 @@ export default auth((req) => {
     }
   } else {
     if (
-      req.nextUrl.pathname.startsWith("/admin") ||
+      req.nextUrl.pathname.startsWith("/sys-admin") ||
+      req.nextUrl.pathname.startsWith("/lab-admin") ||
+      req.nextUrl.pathname.startsWith("/doctor") ||
       req.nextUrl.pathname.startsWith("/staff")
     ) {
       const signinUrl = new URL(

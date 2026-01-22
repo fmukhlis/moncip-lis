@@ -17,7 +17,7 @@ describe("createLaboratoryAction", () => {
       data: {
         id: "admin_1_id",
         name: "Admin 1",
-        role: "admin",
+        role: "sys_admin",
         username: "admin_1",
       },
     });
@@ -51,7 +51,7 @@ describe("createLaboratoryAction", () => {
       user: {
         id: "admin_1_id",
         name: "Admin 1",
-        role: "admin",
+        role: "sys_admin",
         username: "admin_1",
       },
     }));
@@ -72,7 +72,7 @@ describe("createLaboratoryAction", () => {
       user: {
         id: "admin_1_id",
         name: "Admin 1",
-        role: "admin",
+        role: "sys_admin",
         username: "admin_1",
         laboratoryId: "admin_1_lab_id",
       },

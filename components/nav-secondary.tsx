@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 
+import { $Enums } from "@/generated/prisma";
+import { AppRoutes } from "@/.next/types/routes";
 import { usePathname } from "next/navigation";
 import { ChevronRight } from "lucide-react";
 import { LucideIcon, LayoutDashboard } from "lucide-react";
@@ -20,29 +22,29 @@ import {
 } from "./ui/sidebar";
 
 const NAV_SECONDARY_DATA: Record<
-  string,
+  $Enums.Role,
   {
     title: string;
-    url: string;
+    url: AppRoutes;
     icon?: LucideIcon;
     items?: {
       title: string;
-      url: string;
+      url: AppRoutes;
       icon?: LucideIcon;
     }[];
   }[]
 > = {
-  admin: [
+  sys_admin: [
     {
       title: "Dashboard",
-      url: "/admin/dashboard",
+      url: "/sys-admin/dashboard",
       icon: LayoutDashboard,
     },
   ],
-  lab_tech: [
+  lab_admin: [
     {
       title: "Dashboard",
-      url: "/lab-tech/dashboard",
+      url: "/lab-admin/dashboard",
       icon: LayoutDashboard,
     },
   ],
@@ -50,6 +52,13 @@ const NAV_SECONDARY_DATA: Record<
     {
       title: "Dashboard",
       url: "/doctor/dashboard",
+      icon: LayoutDashboard,
+    },
+  ],
+  staff: [
+    {
+      title: "Dashboard",
+      url: "/staff/dashboard",
       icon: LayoutDashboard,
     },
   ],

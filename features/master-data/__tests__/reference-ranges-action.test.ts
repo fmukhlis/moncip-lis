@@ -30,7 +30,7 @@ jest.mock("@/auth", () => {
 const authenticated = () => ({
   user: {
     name: "Admin 1",
-    role: "admin",
+    role: "sys_admin",
     laboratoryId: "lab_id_1",
   },
 });
@@ -132,7 +132,7 @@ describe("saveReferenceRangesAction", () => {
     await prisma.user.create({
       data: {
         name: "Admin 1",
-        role: "admin",
+        role: "sys_admin",
         laboratory: { create: { id: "lab_id_1" } },
       },
     });

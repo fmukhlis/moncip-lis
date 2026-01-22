@@ -36,7 +36,7 @@ async function Signin(props: {
 
         <p className="mb-3 text-center">
           ... or login as an{" "}
-          <span className="font-semibold">Administrator</span>
+          <span className="font-semibold">System Administrator</span>
         </p>
 
         <div className="flex flex-col md:flex-row gap-2 justify-center items-center flex-nowrap mb-3">
@@ -47,7 +47,7 @@ async function Signin(props: {
                 "use server";
                 try {
                   await signIn(provider.id, {
-                    redirectTo: callbackUrl ?? "/admin/dashboard",
+                    redirectTo: callbackUrl ?? "/sys-admin/dashboard",
                   });
                 } catch (error) {
                   throw error;
