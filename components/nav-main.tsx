@@ -7,11 +7,10 @@ import { AppRoutes } from "@/.next/types/routes";
 import { usePathname } from "next/navigation";
 import {
   UserCog,
-  LucideIcon,
-  FlaskConical,
-  BookCheck,
-  FileSliders,
   Banknote,
+  BookCheck,
+  LucideIcon,
+  FileSliders,
 } from "lucide-react";
 import {
   BookUser,
@@ -19,7 +18,6 @@ import {
   FileText,
   TestTubes,
   ChevronRight,
-  Workflow,
 } from "lucide-react";
 import {
   Collapsible,
