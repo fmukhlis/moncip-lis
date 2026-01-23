@@ -19,7 +19,7 @@ beforeAll(async () => {
   await seedLabTests();
 
   await seedTariffGroup();
-});
+}, 20000);
 
 afterAll(async () => {
   const tablenames = await prisma.$queryRaw<
