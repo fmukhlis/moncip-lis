@@ -67,6 +67,61 @@ const getDummyNonNumericRefRanges = () =>
     typeof SaveLocalTestReferenceRangesActionSchema
   >["refRanges"];
 
+const overlapAgeRangeNumericRefRanges = [
+  {
+    kind: "numeric",
+    ageMax: "150",
+    ageMaxUnit: "M",
+    ageMin: "0",
+    ageMinUnit: "M",
+    gender: "B",
+    valueLow: "13.0",
+    valueHigh: "17.0",
+  },
+  {
+    kind: "numeric",
+    ageMax: "300",
+    ageMaxUnit: "M",
+    ageMin: "150",
+    ageMinUnit: "M",
+    gender: "B",
+    valueLow: "15.0",
+    valueHigh: "19.0",
+  },
+] satisfies z.input<
+  typeof SaveLocalTestReferenceRangesActionSchema
+>["refRanges"];
+
+const invalidValueRangeNumericRefRanges = [
+  {
+    kind: "numeric",
+    ageMax: "150",
+    ageMaxUnit: "M",
+    ageMin: "0",
+    ageMinUnit: "M",
+    gender: "B",
+    valueLow: "17.0",
+    valueHigh: "13.0",
+  },
+] satisfies z.input<
+  typeof SaveLocalTestReferenceRangesActionSchema
+>["refRanges"];
+
+const invalidAgeRangeNumericRefRanges = [
+  {
+    kind: "numeric",
+    ageMax: "0",
+    ageMaxUnit: "M",
+    ageMin: "150",
+    ageMinUnit: "M",
+    gender: "B",
+    valueLow: "13.0",
+    valueHigh: "17.0",
+  },
+] satisfies z.input<
+  typeof SaveLocalTestReferenceRangesActionSchema
+>["refRanges"];
+
 // Create an admin user
 beforeAll(async () => {
   await prisma.user.create({
@@ -200,6 +255,9 @@ describe("saveReferenceRangesAction", () => {
       .mockResolvedValueOnce(authenticatedUser)
       .mockResolvedValueOnce(authenticatedUser)
       .mockResolvedValueOnce(authenticatedUser)
+      .mockResolvedValueOnce(authenticatedUser)
+      .mockResolvedValueOnce(authenticatedUser)
+      .mockResolvedValueOnce(authenticatedUser)
       .mockResolvedValueOnce(authenticatedUser);
 
     const laboratoriesOnLabTestsHGB = (
@@ -210,15 +268,38 @@ describe("saveReferenceRangesAction", () => {
       await getLocalTestsWithReferenceRangesAction()
     ).data.filter(({ labTest }) => labTest.code === "HEMATOCRIT")[0];
 
+    // Empty refRanges
     const response1 = await saveLocalTestReferenceRangesAction({
       refRanges: [],
       defaultUnitId: laboratoriesOnLabTestsHGB.labTest.units[0].id,
       laboratoriesOnLabTestsId: laboratoriesOnLabTestsHGB.id,
     });
 
+    // Intentionally using wrong unit id (HCT instead of HGB)
     const response2 = await saveLocalTestReferenceRangesAction({
       refRanges: getDummyNumericRefRanges(),
-      defaultUnitId: laboratoriesOnLabTestsHCT.labTest.units[0].id, // Intentionally using HCT unit instead of HGB
+      defaultUnitId: laboratoriesOnLabTestsHCT.labTest.units[0].id,
+      laboratoriesOnLabTestsId: laboratoriesOnLabTestsHGB.id,
+    });
+
+    // Age range overlap
+    const response3 = await saveLocalTestReferenceRangesAction({
+      refRanges: overlapAgeRangeNumericRefRanges,
+      defaultUnitId: laboratoriesOnLabTestsHCT.labTest.units[0].id,
+      laboratoriesOnLabTestsId: laboratoriesOnLabTestsHGB.id,
+    });
+
+    // Age range is inverted
+    const response4 = await saveLocalTestReferenceRangesAction({
+      refRanges: invalidAgeRangeNumericRefRanges,
+      defaultUnitId: laboratoriesOnLabTestsHCT.labTest.units[0].id,
+      laboratoriesOnLabTestsId: laboratoriesOnLabTestsHGB.id,
+    });
+
+    // Value range is inverted
+    const response5 = await saveLocalTestReferenceRangesAction({
+      refRanges: invalidValueRangeNumericRefRanges,
+      defaultUnitId: laboratoriesOnLabTestsHCT.labTest.units[0].id,
       laboratoriesOnLabTestsId: laboratoriesOnLabTestsHGB.id,
     });
 
@@ -229,6 +310,24 @@ describe("saveReferenceRangesAction", () => {
     });
 
     expect(response2).toEqual({
+      success: false,
+      message: "Invalid data.",
+      data: 0,
+    });
+
+    expect(response3).toEqual({
+      success: false,
+      message: "Invalid data.",
+      data: 0,
+    });
+
+    expect(response4).toEqual({
+      success: false,
+      message: "Invalid data.",
+      data: 0,
+    });
+
+    expect(response5).toEqual({
       success: false,
       message: "Invalid data.",
       data: 0,
