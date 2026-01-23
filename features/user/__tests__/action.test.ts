@@ -36,7 +36,7 @@ describe("createUserAction", () => {
   const invalidUserPayload = {
     name: "Garp",
     password: "garp", // Password rule violation
-    role: "lab_tech" as const,
+    role: "staff" as const,
     username: "garp",
   };
 
@@ -134,7 +134,7 @@ describe("updateUserAction", () => {
   const invalidUserPayload = {
     name: "Garp",
     password: "garp", // Password rule violation
-    role: "lab_tech" as const,
+    role: "staff" as const,
     username: "garp",
   };
 
