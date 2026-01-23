@@ -139,6 +139,8 @@ jobs:
           DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
 
       - run: pnpm run test --ci --coverage --runInBand
+        env:
+          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
