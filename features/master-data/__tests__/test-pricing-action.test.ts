@@ -72,34 +72,6 @@ beforeAll(async () => {
   });
 });
 
-afterAll(async () => {
-  const tablenames = await prisma.$queryRaw<
-    Array<{ tablename: string }>
-  >`SELECT tablename FROM pg_tables WHERE schemaname='public'`;
-
-  const EXCLUDED = new Set([
-    "_prisma_migrations",
-    "Specimen",
-    "Method",
-    "Unit",
-    "Category",
-    "Scale",
-    "LabTest",
-  ]);
-
-  const tables = tablenames
-    .map(({ tablename }) => tablename)
-    .filter((name) => !EXCLUDED.has(name))
-    .map((name) => `"public"."${name}"`)
-    .join(", ");
-
-  try {
-    await prisma.$executeRawUnsafe(`TRUNCATE TABLE ${tables} CASCADE;`);
-  } catch (error) {
-    console.log({ error });
-  }
-});
-
 // Local Test ----------------------------------------------
 describe("getLocalTestsAction", () => {
   it("returns a failure response when unauthorized", async () => {
