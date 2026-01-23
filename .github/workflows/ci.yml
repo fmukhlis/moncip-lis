@@ -114,7 +114,7 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
 
-      - run: pnpm run test --ci --coverage
+      - run: pnpm run test --ci --coverage --runInBand
         env:
           DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
 
