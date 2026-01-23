@@ -110,7 +110,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - run: pnpm dlx prisma migrate deploy
+      - run: pnpm prisma migrate deploy
         env:
           DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
 
@@ -157,7 +157,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - run: pnpm dlx prisma migrate deploy
+      - run: pnpm prisma migrate deploy
         env:
           DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
 
