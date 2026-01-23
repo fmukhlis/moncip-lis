@@ -1,7 +1,6 @@
 import prisma from "@/lib/prisma";
 
 import { auth } from "@/auth";
-import { seedTariffGroup } from "@/lib/seed-master-tariff-group";
 import { getTests, saveLocalTests } from "../dal/test-availability-query";
 import {
   getLocalTestAction,
@@ -19,14 +18,6 @@ import {
   markLocalTestGroupOrderableAction,
   markLocalTestGroupNotOrderableAction,
 } from "../action/test-pricing-action";
-import {
-  seedUnits,
-  seedScales,
-  seedMethods,
-  seedLabTests,
-  seedSpecimens,
-  seedCategories,
-} from "@/lib/seed-master-test";
 import {
   getLocalTests,
   getLocalTestGroups,
@@ -50,17 +41,8 @@ const authenticatedUser = {
   },
 };
 
-// Prepare metadata for test, create an admin user, select all tests to user's lab, and create a dummy test group
+// Create an admin user, select all tests to user's lab, and create a dummy test group
 beforeAll(async () => {
-  await seedSpecimens();
-  await seedMethods();
-  await seedUnits();
-  await seedCategories();
-  await seedScales();
-  await seedLabTests();
-
-  await seedTariffGroup();
-
   await prisma.user.create({
     data: {
       name: authenticatedUser.user.name,
@@ -90,15 +72,24 @@ beforeAll(async () => {
   });
 });
 
-// Clear all tables except _prisma_migrations table
 afterAll(async () => {
   const tablenames = await prisma.$queryRaw<
     Array<{ tablename: string }>
   >`SELECT tablename FROM pg_tables WHERE schemaname='public'`;
 
+  const EXCLUDED = new Set([
+    "_prisma_migrations",
+    "Specimen",
+    "Method",
+    "Unit",
+    "Category",
+    "Scale",
+    "LabTest",
+  ]);
+
   const tables = tablenames
     .map(({ tablename }) => tablename)
-    .filter((name) => name !== "_prisma_migrations")
+    .filter((name) => !EXCLUDED.has(name))
     .map((name) => `"public"."${name}"`)
     .join(", ");
 

@@ -28,9 +28,19 @@ describe("createLaboratoryAction", () => {
       Array<{ tablename: string }>
     >`SELECT tablename FROM pg_tables WHERE schemaname='public'`;
 
+    const EXCLUDED = new Set([
+      "_prisma_migrations",
+      "Specimen",
+      "Method",
+      "Unit",
+      "Category",
+      "Scale",
+      "LabTest",
+    ]);
+
     const tables = tablenames
       .map(({ tablename }) => tablename)
-      .filter((name) => name !== "_prisma_migrations")
+      .filter((name) => !EXCLUDED.has(name))
       .map((name) => `"public"."${name}"`)
       .join(", ");
 

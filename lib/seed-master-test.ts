@@ -7,61 +7,73 @@ import categoryData from "@/prisma/data/categories";
 import specimenData from "@/prisma/data/specimens";
 
 export async function seedSpecimens() {
-  for (const specimen of specimenData) {
-    await prisma.specimen.upsert({
-      where: { code: specimen.code },
-      update: {},
-      create: { ...specimen },
-    });
-  }
+  await prisma.$transaction(
+    specimenData.map((specimen) =>
+      prisma.specimen.upsert({
+        where: { code: specimen.code },
+        update: {},
+        create: { ...specimen },
+      }),
+    ),
+  );
 }
 
 export async function seedMethods() {
-  for (const method of methodData) {
-    await prisma.method.upsert({
-      where: { code: method.code },
-      update: {},
-      create: { ...method },
-    });
-  }
+  await prisma.$transaction(
+    methodData.map((method) =>
+      prisma.method.upsert({
+        where: { code: method.code },
+        update: {},
+        create: { ...method },
+      }),
+    ),
+  );
 }
 
 export async function seedUnits() {
-  for (const unit of unitData) {
-    await prisma.unit.upsert({
-      where: { code: unit.code },
-      update: {},
-      create: { ...unit },
-    });
-  }
+  await prisma.$transaction(
+    unitData.map((unit) =>
+      prisma.unit.upsert({
+        where: { code: unit.code },
+        update: {},
+        create: { ...unit },
+      }),
+    ),
+  );
 }
 
 export async function seedCategories() {
-  for (const category of categoryData) {
-    await prisma.category.upsert({
-      where: { code: category.code },
-      update: {},
-      create: { ...category },
-    });
-  }
+  await prisma.$transaction(
+    categoryData.map((category) =>
+      prisma.category.upsert({
+        where: { code: category.code },
+        update: {},
+        create: { ...category },
+      }),
+    ),
+  );
 }
 
 export async function seedScales() {
-  for (const scale of scaleData) {
-    await prisma.scale.upsert({
-      where: { code: scale.code },
-      update: {},
-      create: { ...scale },
-    });
-  }
+  await prisma.$transaction(
+    scaleData.map((scale) =>
+      prisma.scale.upsert({
+        where: { code: scale.code },
+        update: {},
+        create: { ...scale },
+      }),
+    ),
+  );
 }
 
 export async function seedLabTests() {
-  for (const labTest of labTestData) {
-    await prisma.labTest.upsert({
-      where: { code: labTest.code },
-      update: {},
-      create: { ...labTest },
-    });
-  }
+  await prisma.$transaction(
+    labTestData.map((labTest) =>
+      prisma.labTest.upsert({
+        where: { code: labTest.code },
+        update: {},
+        create: { ...labTest },
+      }),
+    ),
+  );
 }

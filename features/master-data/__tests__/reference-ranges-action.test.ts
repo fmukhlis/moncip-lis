@@ -2,21 +2,12 @@ import z from "zod";
 import prisma from "@/lib/prisma";
 
 import { auth } from "@/auth";
-import { getTests } from "../dal/test-availability-query";
-import { saveLocalTestsAction } from "../action/test-availability-action";
+import { getTests, saveLocalTests } from "../dal/test-availability-query";
+import { SaveLocalTestReferenceRangesActionSchema } from "../schema/reference-ranges-schema";
 import {
   saveLocalTestReferenceRangesAction,
   getLocalTestsWithReferenceRangesAction,
 } from "../action/reference-ranges-action";
-import {
-  seedUnits,
-  seedScales,
-  seedMethods,
-  seedLabTests,
-  seedSpecimens,
-  seedCategories,
-} from "@/lib/seed-master-test";
-import { SaveLocalTestReferenceRangesActionSchema } from "../schema/reference-ranges-schema";
 
 jest.mock("@/auth", () => {
   return {
@@ -27,13 +18,13 @@ jest.mock("@/auth", () => {
   };
 });
 
-const authenticated = () => ({
+const authenticatedUser = {
   user: {
     name: "Admin 1",
-    role: "sys_admin",
+    role: "sys_admin" as const,
     laboratoryId: "lab_id_1",
   },
-});
+};
 
 const getDummyNumericRefRanges = () =>
   [
@@ -76,13 +67,15 @@ const getDummyNonNumericRefRanges = () =>
     typeof SaveLocalTestReferenceRangesActionSchema
   >["refRanges"];
 
+// Create an admin user
 beforeAll(async () => {
-  await seedSpecimens();
-  await seedMethods();
-  await seedUnits();
-  await seedCategories();
-  await seedScales();
-  await seedLabTests();
+  await prisma.user.create({
+    data: {
+      name: authenticatedUser.user.name,
+      role: authenticatedUser.user.role,
+      laboratory: { create: { id: authenticatedUser.user.laboratoryId } },
+    },
+  });
 });
 
 afterAll(async () => {
@@ -90,9 +83,19 @@ afterAll(async () => {
     Array<{ tablename: string }>
   >`SELECT tablename FROM pg_tables WHERE schemaname='public'`;
 
+  const EXCLUDED = new Set([
+    "_prisma_migrations",
+    "Specimen",
+    "Method",
+    "Unit",
+    "Category",
+    "Scale",
+    "LabTest",
+  ]);
+
   const tables = tablenames
     .map(({ tablename }) => tablename)
-    .filter((name) => name !== "_prisma_migrations")
+    .filter((name) => !EXCLUDED.has(name))
     .map((name) => `"public"."${name}"`)
     .join(", ");
 
@@ -105,7 +108,7 @@ afterAll(async () => {
 
 describe("getLocalTestsWithReferenceRangesAction", () => {
   it("returns a success response", async () => {
-    (auth as jest.Mock).mockImplementationOnce(authenticated);
+    (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
 
     const response = await getLocalTestsWithReferenceRangesAction();
 
@@ -129,27 +132,20 @@ describe("getLocalTestsWithReferenceRangesAction", () => {
 
 describe("saveReferenceRangesAction", () => {
   beforeAll(async () => {
-    await prisma.user.create({
-      data: {
-        name: "Admin 1",
-        role: "sys_admin",
-        laboratory: { create: { id: "lab_id_1" } },
-      },
-    });
-
-    (auth as jest.Mock).mockImplementationOnce(authenticated);
-
     const labTestIds = (await getTests()).map(({ id }) => id);
 
-    await saveLocalTestsAction({ labTestIds });
+    await saveLocalTests({
+      labTestIds,
+      laboratoryId: authenticatedUser.user.laboratoryId,
+    });
   });
 
   it("saves local test reference ranges and returns a success response", async () => {
     (auth as jest.Mock)
-      .mockImplementationOnce(authenticated)
-      .mockImplementationOnce(authenticated)
-      .mockImplementationOnce(authenticated)
-      .mockImplementationOnce(authenticated);
+      .mockResolvedValueOnce(authenticatedUser)
+      .mockResolvedValueOnce(authenticatedUser)
+      .mockResolvedValueOnce(authenticatedUser)
+      .mockResolvedValueOnce(authenticatedUser);
 
     const laboratoriesOnLabTestsNumeric = (
       await getLocalTestsWithReferenceRangesAction()
@@ -201,10 +197,10 @@ describe("saveReferenceRangesAction", () => {
 
   it("returns a failed response when data is invalid", async () => {
     (auth as jest.Mock)
-      .mockImplementationOnce(authenticated)
-      .mockImplementationOnce(authenticated)
-      .mockImplementationOnce(authenticated)
-      .mockImplementationOnce(authenticated);
+      .mockResolvedValueOnce(authenticatedUser)
+      .mockResolvedValueOnce(authenticatedUser)
+      .mockResolvedValueOnce(authenticatedUser)
+      .mockResolvedValueOnce(authenticatedUser);
 
     const laboratoriesOnLabTestsHGB = (
       await getLocalTestsWithReferenceRangesAction()

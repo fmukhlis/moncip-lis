@@ -3,14 +3,6 @@ import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
 import { getTests } from "../dal/test-availability-query";
 import {
-  seedUnits,
-  seedScales,
-  seedMethods,
-  seedLabTests,
-  seedSpecimens,
-  seedCategories,
-} from "@/lib/seed-master-test";
-import {
   getLocalTestsAction,
   saveLocalTestsAction,
   getTestCategoriesWithTestsAction,
@@ -25,13 +17,23 @@ jest.mock("@/auth", () => {
   };
 });
 
+const authenticatedUser = {
+  user: {
+    name: "Admin 1",
+    role: "sys_admin" as const,
+    laboratoryId: "lab_id_1",
+  },
+};
+
+// Create an admin user
 beforeAll(async () => {
-  await seedSpecimens();
-  await seedMethods();
-  await seedUnits();
-  await seedCategories();
-  await seedScales();
-  await seedLabTests();
+  await prisma.user.create({
+    data: {
+      name: authenticatedUser.user.name,
+      role: authenticatedUser.user.role,
+      laboratory: { create: { id: authenticatedUser.user.laboratoryId } },
+    },
+  });
 });
 
 afterAll(async () => {
@@ -39,9 +41,19 @@ afterAll(async () => {
     Array<{ tablename: string }>
   >`SELECT tablename FROM pg_tables WHERE schemaname='public'`;
 
+  const EXCLUDED = new Set([
+    "_prisma_migrations",
+    "Specimen",
+    "Method",
+    "Unit",
+    "Category",
+    "Scale",
+    "LabTest",
+  ]);
+
   const tables = tablenames
     .map(({ tablename }) => tablename)
-    .filter((name) => name !== "_prisma_migrations")
+    .filter((name) => !EXCLUDED.has(name))
     .map((name) => `"public"."${name}"`)
     .join(", ");
 
@@ -54,13 +66,7 @@ afterAll(async () => {
 
 describe("getTestCategoriesWithTestsAction", () => {
   it("returns a success response", async () => {
-    (auth as jest.Mock).mockImplementationOnce(() => ({
-      user: {
-        name: "Admin 1",
-        role: "sys_admin",
-        laboratoryId: "lab_id_1",
-      },
-    }));
+    (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
 
     const response = await getTestCategoriesWithTestsAction();
 
@@ -83,24 +89,8 @@ describe("getTestCategoriesWithTestsAction", () => {
 });
 
 describe("saveLocalTestsAction", () => {
-  beforeAll(async () => {
-    await prisma.user.create({
-      data: {
-        name: "Admin 1",
-        role: "sys_admin",
-        laboratory: { create: { id: "lab_id_1" } },
-      },
-    });
-  });
-
   it("saves lab tests to own lab and returns a success response", async () => {
-    (auth as jest.Mock).mockImplementationOnce(() => ({
-      user: {
-        name: "Admin 1",
-        role: "sys_admin",
-        laboratoryId: "lab_id_1",
-      },
-    }));
+    (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
 
     const labTestIds = (await getTests()).map(({ id }) => id);
 
@@ -116,13 +106,7 @@ describe("saveLocalTestsAction", () => {
   });
 
   it("returns a failed response when data is invalid", async () => {
-    (auth as jest.Mock).mockImplementationOnce(() => ({
-      user: {
-        name: "Admin 1",
-        role: "sys_admin",
-        laboratoryId: "lab_id_1",
-      },
-    }));
+    (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
 
     const response = await saveLocalTestsAction({
       labTestIds: ["NON_EXISTING_ID"],
@@ -152,13 +136,7 @@ describe("saveLocalTestsAction", () => {
 
 describe("getLocalTestsAction", () => {
   it("returns a success response", async () => {
-    (auth as jest.Mock).mockImplementationOnce(() => ({
-      user: {
-        name: "Admin 1",
-        role: "sys_admin",
-        laboratoryId: "lab_id_1",
-      },
-    }));
+    (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
 
     const response = await getLocalTestsAction();
 
