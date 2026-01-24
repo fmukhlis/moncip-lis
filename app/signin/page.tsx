@@ -1,14 +1,12 @@
 import Link from "next/link";
-import LOGOS from "@/components/logos";
 import LoginWithCredentialsForm from "@/components/authentication/signin-with-credentials-form";
+import SigninWithOAuthProviderButton from "@/components/authentication/signin-with-oauth-provider-button";
 
 import { Field } from "@/components/ui/field";
-import { roboto } from "@/lib/fonts";
-import { Button } from "@/components/ui/button";
+import { Hospital } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
+import { type Metadata } from "next";
 import { providerMap, signIn } from "@/auth";
-
-import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Sign In",
@@ -21,15 +19,16 @@ async function Signin(props: {
   const callbackUrl = (await props.searchParams).callbackUrl;
 
   return (
-    <div className="h-screen flex justify-center items-center">
-      <main className="bg-card w-4/5 max-w-lg border border-input p-6 rounded-md shadow-sm shadow-input">
+    <div className="min-h-screen flex flex-col justify-center items-center py-10 px-4">
+      <Hospital size={64} className="mb-6" />
+      <main className="bg-card w-full max-w-lg border border-input p-6 rounded-md shadow-sm shadow-input">
         <h1 className="text-2xl font-black text-center mb-2">
           Sign In to Moncip LIS
         </h1>
 
-        <p className="mb-2 text-center">Login with credentials</p>
+        <p className="mb-4 text-center">Login with credentials</p>
 
-        <div className="w-[70%] mx-auto">
+        <div className="max-w-52 md:max-w-72 mx-auto">
           <LoginWithCredentialsForm callbackUrl={callbackUrl} />
         </div>
 
@@ -37,7 +36,7 @@ async function Signin(props: {
 
         <p className="mb-3 text-center">
           ... or login as an{" "}
-          <span className="font-semibold">Administrator</span>
+          <span className="font-semibold">System Administrator</span>
         </p>
 
         <div className="flex flex-col md:flex-row gap-2 justify-center items-center flex-nowrap mb-3">
@@ -48,7 +47,7 @@ async function Signin(props: {
                 "use server";
                 try {
                   await signIn(provider.id, {
-                    redirectTo: callbackUrl ?? "/dashboard",
+                    redirectTo: callbackUrl ?? "/sys-admin/dashboard",
                   });
                 } catch (error) {
                   throw error;
@@ -56,20 +55,9 @@ async function Signin(props: {
               }}
             >
               <Field>
-                <Button
-                  variant={"google-spec"}
-                  size={"google-spec"}
-                  type="submit"
-                >
-                  <div className="flex items-center">
-                    <div className="w-[25px] h-[25px] mr-[10px]">
-                      {LOGOS[provider.name as "Google" | "GitHub"]}
-                    </div>
-                    <span className={`${roboto.className}`}>
-                      Sign in with {provider.name}
-                    </span>
-                  </div>
-                </Button>
+                <SigninWithOAuthProviderButton
+                  providerName={provider.name as "Google" | "GitHub"}
+                />
               </Field>
             </form>
           ))}

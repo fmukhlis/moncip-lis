@@ -4,7 +4,9 @@ import z from "zod";
 import React from "react";
 
 import { Input } from "../ui/input";
+import { toast } from "sonner";
 import { Button } from "../ui/button";
+import { Spinner } from "../ui/spinner";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
 import { signInWithCredentials } from "@/features/authentication/action";
@@ -31,12 +33,23 @@ export default function LoginWithCredentialsForm({
   });
 
   async function onSubmit(data: z.infer<typeof SignInWithCredentialsSchema>) {
-    await signInWithCredentials({ data, callbackUrl });
+    const response = await signInWithCredentials({ data, callbackUrl });
+
+    if (response && !response.success) {
+      form.resetField("password");
+      toast.error(response.message, {
+        style: {
+          backgroundColor: "oklch(0.704 0.191 22.216 / 0.97)",
+          color: "oklch(0.984 0.003 247.858)",
+        },
+        position: "top-center",
+      });
+    }
   }
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)}>
-      <FieldGroup className="gap-2">
+      <FieldGroup className="gap-2 gray-200">
         <Controller
           name="username"
           render={({ field, fieldState }) => {
@@ -51,7 +64,6 @@ export default function LoginWithCredentialsForm({
                   required
                   className="h-[50px] text-base"
                   aria-invalid={fieldState.invalid}
-                  placeholder="Your username..."
                 />
                 {fieldState.invalid && (
                   <FieldError errors={[fieldState.error]} />
@@ -88,12 +100,17 @@ export default function LoginWithCredentialsForm({
         />
         <Field>
           <Button
+            disabled={form.formState.isSubmitting}
             type="submit"
             size={"google-spec"}
             variant={"default"}
             className="text-base font-semibold mt-2"
           >
-            Sign In
+            {form.formState.isSubmitting ? (
+              <Spinner className="size-8" />
+            ) : (
+              "Sign In"
+            )}
           </Button>
         </Field>
       </FieldGroup>

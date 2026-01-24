@@ -1,10 +1,12 @@
 import prisma from "@/lib/prisma";
 
 import { auth } from "@/auth";
+import { downloadImage } from "@/lib/downloadImage";
 import {
   createUserAction,
   deleteUserAction,
   updateUserAction,
+  importOAuthUserImageAction,
 } from "../action";
 
 jest.mock("@/auth", () => {
@@ -16,33 +18,33 @@ jest.mock("@/auth", () => {
   };
 });
 
-jest.mock("next/cache", () => {
+jest.mock("@/lib/downloadImage", () => {
   return {
     __esModule: true,
-    revalidatePath: jest.fn(),
+    downloadImage: jest.fn(),
   };
 });
 
-const validUserPayload = {
-  name: "Dr. Crocus",
-  password: "dr_crocus_password",
-  role: "doctor" as const,
-  username: "dr_crocus",
-};
+describe("createUserAction", () => {
+  const validUserPayload = {
+    name: "Dr. Crocus",
+    password: "dr_crocus_password",
+    role: "doctor" as const,
+    username: "dr_crocus",
+  };
 
-const invalidUserPayload = {
-  name: "Garp",
-  password: "garp", // Password rule violation
-  role: "lab_tech" as const,
-  username: "garp",
-};
+  const invalidUserPayload = {
+    name: "Garp",
+    password: "garp", // Password rule violation
+    role: "staff" as const,
+    username: "garp",
+  };
 
-describe("createUser()", () => {
   beforeAll(async () => {
     await prisma.user.create({
       data: {
         name: "Admin 1",
-        role: "admin",
+        role: "sys_admin",
         username: "admin_1",
         laboratory: { create: { id: "lab_id_1" } },
       },
@@ -54,9 +56,19 @@ describe("createUser()", () => {
       Array<{ tablename: string }>
     >`SELECT tablename FROM pg_tables WHERE schemaname='public'`;
 
+    const EXCLUDED = new Set([
+      "_prisma_migrations",
+      "Specimen",
+      "Method",
+      "Unit",
+      "Category",
+      "Scale",
+      "LabTest",
+    ]);
+
     const tables = tablenames
       .map(({ tablename }) => tablename)
-      .filter((name) => name !== "_prisma_migrations")
+      .filter((name) => !EXCLUDED.has(name))
       .map((name) => `"public"."${name}"`)
       .join(", ");
 
@@ -76,7 +88,7 @@ describe("createUser()", () => {
     (auth as unknown as jest.Mock).mockImplementationOnce(() => ({
       user: {
         name: "Admin 1",
-        role: "admin",
+        role: "sys_admin",
         username: "admin_1",
         laboratoryId: "lab_id_1",
       },
@@ -86,7 +98,7 @@ describe("createUser()", () => {
 
     expect(response).toEqual({
       success: true,
-      message: "User created successfully.",
+      message: "User was created successfully.",
       data: validUserPayload,
     });
   });
@@ -95,7 +107,7 @@ describe("createUser()", () => {
     (auth as unknown as jest.Mock).mockImplementationOnce(() => ({
       user: {
         name: "Admin 1",
-        role: "admin",
+        role: "sys_admin",
         username: "admin_1",
         laboratoryId: "lab_id_1",
       },
@@ -121,12 +133,26 @@ describe("createUser()", () => {
   });
 });
 
-describe("updateUser()", () => {
+describe("updateUserAction", () => {
+  const validUserPayload = {
+    name: "Dr. Crocus",
+    password: "dr_crocus_password",
+    role: "doctor" as const,
+    username: "dr_crocus",
+  };
+
+  const invalidUserPayload = {
+    name: "Garp",
+    password: "garp", // Password rule violation
+    role: "staff" as const,
+    username: "garp",
+  };
+
   beforeAll(async () => {
     await prisma.user.create({
       data: {
         name: "Admin 1",
-        role: "admin",
+        role: "sys_admin",
         username: "admin_1",
         laboratory: { create: { id: "lab_id_1" } },
       },
@@ -135,7 +161,7 @@ describe("updateUser()", () => {
     await prisma.user.create({
       data: {
         name: "Admin 2",
-        role: "admin",
+        role: "sys_admin",
         username: "admin_2",
         laboratory: { create: { id: "lab_id_2" } },
       },
@@ -157,9 +183,19 @@ describe("updateUser()", () => {
       Array<{ tablename: string }>
     >`SELECT tablename FROM pg_tables WHERE schemaname='public'`;
 
+    const EXCLUDED = new Set([
+      "_prisma_migrations",
+      "Specimen",
+      "Method",
+      "Unit",
+      "Category",
+      "Scale",
+      "LabTest",
+    ]);
+
     const tables = tablenames
       .map(({ tablename }) => tablename)
-      .filter((name) => name !== "_prisma_migrations")
+      .filter((name) => !EXCLUDED.has(name))
       .map((name) => `"public"."${name}"`)
       .join(", ");
 
@@ -179,7 +215,7 @@ describe("updateUser()", () => {
     (auth as unknown as jest.Mock).mockImplementationOnce(() => ({
       user: {
         name: "Admin 1",
-        role: "admin",
+        role: "sys_admin",
         username: "admin_1",
         laboratoryId: "lab_id_1",
       },
@@ -192,7 +228,7 @@ describe("updateUser()", () => {
 
     expect(response).toEqual({
       success: true,
-      message: "User updated successfully.",
+      message: "User was updated successfully.",
       data: validUserPayload,
     });
   });
@@ -201,7 +237,7 @@ describe("updateUser()", () => {
     (auth as unknown as jest.Mock).mockImplementationOnce(() => ({
       user: {
         name: "Admin 1",
-        role: "admin",
+        role: "sys_admin",
         username: "admin_1",
         laboratoryId: "lab_id_1",
       },
@@ -223,7 +259,7 @@ describe("updateUser()", () => {
     (auth as unknown as jest.Mock).mockImplementationOnce(() => ({
       user: {
         name: "Admin 2",
-        role: "admin",
+        role: "sys_admin",
         username: "admin_2",
         laboratoryId: "lab_id_2",
       },
@@ -242,12 +278,12 @@ describe("updateUser()", () => {
   });
 });
 
-describe("deleteUser()", () => {
+describe("deleteUserAction", () => {
   beforeAll(async () => {
     await prisma.user.create({
       data: {
         name: "Admin 1",
-        role: "admin",
+        role: "sys_admin",
         username: "admin_1",
         laboratory: { create: { id: "lab_id_1" } },
       },
@@ -256,7 +292,7 @@ describe("deleteUser()", () => {
     await prisma.user.create({
       data: {
         name: "Admin 2",
-        role: "admin",
+        role: "sys_admin",
         username: "admin_2",
         laboratory: { create: { id: "lab_id_2" } },
       },
@@ -278,9 +314,19 @@ describe("deleteUser()", () => {
       Array<{ tablename: string }>
     >`SELECT tablename FROM pg_tables WHERE schemaname='public'`;
 
+    const EXCLUDED = new Set([
+      "_prisma_migrations",
+      "Specimen",
+      "Method",
+      "Unit",
+      "Category",
+      "Scale",
+      "LabTest",
+    ]);
+
     const tables = tablenames
       .map(({ tablename }) => tablename)
-      .filter((name) => name !== "_prisma_migrations")
+      .filter((name) => !EXCLUDED.has(name))
       .map((name) => `"public"."${name}"`)
       .join(", ");
 
@@ -300,7 +346,7 @@ describe("deleteUser()", () => {
     (auth as unknown as jest.Mock).mockImplementationOnce(() => ({
       user: {
         name: "Admin 1",
-        role: "admin",
+        role: "sys_admin",
         username: "admin_1",
         laboratoryId: "lab_id_1",
       },
@@ -310,8 +356,8 @@ describe("deleteUser()", () => {
 
     expect(response).toEqual({
       success: true,
-      message: "User deleted successfully.",
-      data: {},
+      message: "User was deleted successfully.",
+      data: null,
     });
   });
 
@@ -319,7 +365,7 @@ describe("deleteUser()", () => {
     (auth as unknown as jest.Mock).mockImplementationOnce(() => ({
       user: {
         name: "Admin 2",
-        role: "admin",
+        role: "sys_admin",
         username: "admin_2",
         laboratoryId: "lab_id_2",
       },
@@ -330,7 +376,107 @@ describe("deleteUser()", () => {
     expect(response).toEqual({
       success: false,
       message: "Authorization violations.",
-      data: {},
+      data: null,
+    });
+  });
+});
+
+describe("importOAuthUserImageAction", () => {
+  beforeAll(async () => {
+    await prisma.user.create({
+      data: {
+        id: "admin_1_id",
+        name: "Admin 1",
+        role: "sys_admin",
+        image: "https://somedomain.com/admin_1.jpg",
+        username: "admin_1",
+        laboratory: { create: { id: "lab_id_1" } },
+      },
+    });
+  });
+
+  afterAll(async () => {
+    const tablenames = await prisma.$queryRaw<
+      Array<{ tablename: string }>
+    >`SELECT tablename FROM pg_tables WHERE schemaname='public'`;
+
+    const EXCLUDED = new Set([
+      "_prisma_migrations",
+      "Specimen",
+      "Method",
+      "Unit",
+      "Category",
+      "Scale",
+      "LabTest",
+    ]);
+
+    const tables = tablenames
+      .map(({ tablename }) => tablename)
+      .filter((name) => !EXCLUDED.has(name))
+      .map((name) => `"public"."${name}"`)
+      .join(", ");
+
+    try {
+      await prisma.$executeRawUnsafe(`TRUNCATE TABLE ${tables} CASCADE;`);
+    } catch (error) {
+      console.log({ error });
+    }
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
+    jest.resetModules();
+  });
+
+  it("downloads user image locally, updates user image path in database and returns a success response", async () => {
+    (downloadImage as unknown as jest.Mock).mockImplementationOnce(() => ({
+      success: true,
+      message: `Image was downloaded successfully.`,
+      data: `/api/files/users/admin_1_id.jpg`,
+    }));
+
+    (auth as unknown as jest.Mock).mockImplementationOnce(() => ({
+      user: {
+        id: "admin_1_id",
+        name: "Admin 1",
+        role: "sys_admin",
+        image: "https://somedomain.com/admin_1.jpg",
+        username: "admin_1",
+        laboratoryId: "lab_id_1",
+      },
+    }));
+
+    const session = await auth();
+
+    const response = await importOAuthUserImageAction(session?.user);
+
+    expect(response).toEqual({
+      success: true,
+      message: "Image was imported successfully.",
+      data: null,
+    });
+  });
+
+  it("returns a failed response when image is already imported", async () => {
+    (auth as unknown as jest.Mock).mockImplementationOnce(() => ({
+      user: {
+        id: "admin_1_id",
+        name: "Admin 1",
+        role: "sys_admin",
+        image: "/api/files/users/admin_1_id.jpg",
+        username: "admin_1",
+        laboratoryId: "lab_id_1",
+      },
+    }));
+
+    const session = await auth();
+
+    const response = await importOAuthUserImageAction(session?.user);
+
+    expect(response).toEqual({
+      success: false,
+      message: "Image doesn't exist or has already been imported.",
+      data: null,
     });
   });
 });

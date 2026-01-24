@@ -35,6 +35,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - run: pnpm dlx prisma migrate deploy
+      - run: pnpm prisma migrate deploy
         env:
           DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}

@@ -1,0 +1,43 @@
+"use client";
+
+import { Row } from "@tanstack/react-table";
+import { Button } from "@/components/ui/button";
+import { ArchiveRestore } from "lucide-react";
+import { useAppDispatch } from "@/hooks";
+import { LocalTestGroupSummary } from "@/features/master-data/type/test-pricing";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  setSelectedLocalTestGroupId,
+  setShowUnarchiveLocalTestGroupDialog,
+} from "@/features/master-data/test-pricing-slice";
+
+export default function UnarchiveLocalTestGroupDialogTrigger({
+  row,
+}: {
+  row: Row<LocalTestGroupSummary>;
+}) {
+  const dispatch = useAppDispatch();
+
+  return (
+    <Tooltip delayDuration={500}>
+      <TooltipTrigger asChild>
+        <Button
+          size={"icon-sm"}
+          variant={"destructive"}
+          className="size-6"
+          onClick={() => {
+            dispatch(setSelectedLocalTestGroupId(row.original.id));
+            dispatch(setShowUnarchiveLocalTestGroupDialog(true));
+          }}
+        >
+          <ArchiveRestore className="size-[14px]" />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>Restore test panel</TooltipContent>
+    </Tooltip>
+  );
+}

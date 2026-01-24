@@ -22,11 +22,16 @@ export default auth((req) => {
     }
   } else {
     if (
-      req.nextUrl.pathname.startsWith("/admin") ||
-      req.nextUrl.pathname.startsWith("/lab")
+      req.nextUrl.pathname.startsWith("/sys-admin") ||
+      req.nextUrl.pathname.startsWith("/lab-admin") ||
+      req.nextUrl.pathname.startsWith("/doctor") ||
+      req.nextUrl.pathname.startsWith("/staff")
     ) {
-      const signInUrl = new URL("/signin", req.nextUrl.origin);
-      return Response.redirect(signInUrl);
+      const signinUrl = new URL(
+        `/signin?callbackUrl=${req.nextUrl.pathname}`,
+        req.nextUrl.origin,
+      );
+      return Response.redirect(signinUrl);
     }
   }
 });

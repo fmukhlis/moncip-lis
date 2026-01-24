@@ -6,7 +6,7 @@ import {
   setSelectedUser,
   setShowDeleteUserDialog,
   setShowUpdateUserDialog,
-} from "@/features/user/userSlice";
+} from "@/features/user/user-slice";
 import {
   DropdownMenu,
   DropdownMenuItem,

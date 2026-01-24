@@ -1,20 +1,26 @@
 "use server";
 
 import z from "zod";
-
 import prisma from "@/lib/prisma";
 
+import { type Session } from "next-auth";
+
 import { auth } from "@/auth";
-import { revalidatePath } from "next/cache";
-import { createUser, deleteUser, updateUser } from "./dal/query";
+import { downloadImage } from "@/lib/downloadImage";
 import { CreateUserSchema, UpdateUserSchema } from "./schema";
+import {
+  createUser,
+  deleteUser,
+  updateUser,
+  updateUserImage,
+} from "./dal/query";
 
 export async function createUserAction(data: z.infer<typeof CreateUserSchema>) {
   const session = await auth();
 
   const parsedData = CreateUserSchema.safeParse(data);
 
-  if (session?.user?.role !== "admin" || !session.user.laboratoryId) {
+  if (session?.user?.role !== "sys_admin" || !session.user.laboratoryId) {
     return { success: false, message: "Authorization violations.", data: data };
   }
 
@@ -24,9 +30,11 @@ export async function createUserAction(data: z.infer<typeof CreateUserSchema>) {
 
   await createUser(session.user.laboratoryId, parsedData.data);
 
-  revalidatePath("/admin/dashboard");
-
-  return { success: true, message: "User created successfully.", data: data };
+  return {
+    success: true,
+    message: "User was created successfully.",
+    data: data,
+  };
 }
 
 export async function updateUserAction(
@@ -48,11 +56,15 @@ export async function updateUserAction(
       if (user.laboratoryId !== session?.user?.laboratoryId) {
         throw new Error();
       }
+
+      return user;
     });
 
-    revalidatePath("/admin/dashboard");
-
-    return { success: true, message: "User updated successfully.", data: data };
+    return {
+      success: true,
+      message: "User was updated successfully.",
+      data: data,
+    };
   } catch {
     return { success: false, message: "Authorization violations.", data: data };
   }
@@ -68,12 +80,39 @@ export async function deleteUserAction(userId: string) {
       if (user.laboratoryId !== session?.user?.laboratoryId) {
         throw new Error();
       }
+
+      return user;
     });
 
-    revalidatePath("/admin/dashboard");
-
-    return { success: true, message: "User deleted successfully.", data: {} };
+    return {
+      success: true,
+      message: "User was deleted successfully.",
+      data: null,
+    };
   } catch {
-    return { success: false, message: "Authorization violations.", data: {} };
+    return { success: false, message: "Authorization violations.", data: null };
+  }
+}
+
+export async function importOAuthUserImageAction(user: Session["user"]) {
+  if (process.env.STORAGE_TYPE === "LOCAL") {
+    if (user?.id && user.image?.startsWith("https://")) {
+      const { data } = await downloadImage(user.image, `${user.id}.jpg`);
+
+      if (data) {
+        await updateUserImage(user.id, { image: data });
+        return {
+          success: true,
+          message: "Image was imported successfully.",
+          data: null,
+        };
+      }
+    }
+
+    return {
+      success: false,
+      message: "Image doesn't exist or has already been imported.",
+      data: null,
+    };
   }
 }

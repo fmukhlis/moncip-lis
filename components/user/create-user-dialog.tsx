@@ -7,6 +7,7 @@ import { Input } from "../ui/input";
 import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Spinner } from "../ui/spinner";
+import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { createUserAction } from "@/features/user/action";
 import { CreateUserSchema } from "@/features/user/schema";
@@ -45,11 +46,16 @@ export default function CreateUserDialog() {
     resolver: zodResolver(CreateUserSchema),
   });
 
+  const { refresh } = useRouter();
+
   async function onSubmit(data: z.infer<typeof CreateUserSchema>) {
     const response = await createUserAction(data);
     if (response.success) {
       toast.success(response.message);
       setIsOpen(false);
+      React.startTransition(() => {
+        refresh();
+      });
     } else {
       toast.error(response.message);
     }
@@ -170,13 +176,14 @@ export default function CreateUserDialog() {
                             id="create-user-form-role"
                             aria-invalid={fieldState.invalid}
                           >
-                            <SelectValue placeholder="Select" />
+                            <div className="max-w-14 sm:max-w-none truncate">
+                              <SelectValue placeholder="Select" />
+                            </div>
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="staff">Staff</SelectItem>
                             <SelectItem value="doctor">Doctor</SelectItem>
-                            <SelectItem value="lab_tech">
-                              Laboratory Technician
-                            </SelectItem>
+                            <SelectItem value="lab_admin">Admin</SelectItem>
                           </SelectContent>
                         </Select>
                         {fieldState.invalid && (
@@ -190,12 +197,17 @@ export default function CreateUserDialog() {
               </div>
             </FieldGroup>
           </div>
-          <DialogFooter className="sm:flex-row-reverse">
+          <DialogFooter className="sm:justify-between">
+            <DialogClose asChild>
+              <Button type="button" variant="secondary">
+                Close
+              </Button>
+            </DialogClose>
             <Button
-              disabled={formState.isSubmitting}
               type="submit"
               form="create-user-form"
-              className="w-[100px]"
+              disabled={formState.isSubmitting}
+              className="sm:w-[100px]"
             >
               {formState.isSubmitting ? (
                 <Spinner className="size-5" />
@@ -203,11 +215,6 @@ export default function CreateUserDialog() {
                 "Create"
               )}
             </Button>
-            <DialogClose asChild>
-              <Button type="button" variant="secondary" className="mr-auto">
-                Close
-              </Button>
-            </DialogClose>
           </DialogFooter>
         </DialogContent>
       </form>

@@ -22,7 +22,7 @@ model User {
   username      String?          @unique
   emailVerified DateTime?
   image         String?
-  role          Role            @default(admin)
+  role          Role            @default(sys_admin)
   password      String?
   laboratory    Laboratory?     @relation(fields: [laboratoryId], references: [id])
   accounts      Account[]
@@ -35,9 +35,10 @@ model User {
 }
 
 enum Role {
-  admin
+  sys_admin
+  lab_admin
   doctor
-  lab_tech
+  staff
 }
  
 model Account {
@@ -96,6 +97,212 @@ model Authenticator {
 }
 
 model Laboratory {
-  id        String   @id @default(cuid(2))
-  users     User[]
+  id                          String                        @id @default(cuid(2))
+
+  // Relationships
+  users                       User[]
+  labTestGroups               LabTestGroup[]
+  laboratoriesOnLabTests      LaboratoriesOnLabTests[]      
+
+  // Timestamps
+  createdAt                   DateTime                      @default(now())
+  updatedAt                   DateTime                      @updatedAt
 }
+
+model LaboratoriesOnLabTests {
+  id                      String                @id @default(cuid(2))
+  notOrderableReason      String?
+
+  // Relationships
+  labTest                 LabTest               @relation(fields: [labTestId], references: [id])
+  labTestId               String
+  laboratory              Laboratory            @relation(fields: [laboratoryId], references: [id])
+  laboratoryId            String
+  defaultUnit             Unit?                 @relation("defaultUnit", fields: [defaultUnitId], references: [id])
+  defaultUnitId           String?
+  prices                  Price[]
+  referenceRanges         ReferenceRange[]
+  labTestGroups           LabTestGroup[]
+
+  // Timestamps
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
+  deletedAt               DateTime?
+
+  @@unique([labTestId, laboratoryId])
+}
+
+model LabTestGroup {
+  id                          String                        @id @default(cuid(2))
+  code                        String                        
+  name                        String
+  description                 String?
+  notOrderableReason          String?
+
+  // Relationships
+  laboratory                  Laboratory                    @relation(fields: [laboratoryId], references: [id])
+  laboratoryId                String
+  prices                      Price[]
+  laboratoriesOnLabTests      LaboratoriesOnLabTests[]
+
+  // Timestamps
+  validFrom                   DateTime                      @default(now())
+  validTo                     DateTime?
+  createdAt                   DateTime                      @default(now())
+  updatedAt                   DateTime                      @updatedAt
+  deletedAt                   DateTime?
+}
+
+enum AgeUnit {
+  M
+  Y
+}
+
+model ReferenceRange {
+  id                            String                      @id @default(cuid(2))
+  gender                        Gender
+  ageMin                        Int
+  ageMinUnit                    AgeUnit
+  ageMax                        Int
+  ageMaxUnit                    AgeUnit
+  valueLow                      Decimal?
+  valueHigh                     Decimal?
+  normalValues                  String[]                    @default([])
+
+  // Relationships
+  unit                          Unit?                       @relation(fields: [unitId], references: [id])
+  unitId                        String?
+  laboratoriesOnLabTests        LaboratoriesOnLabTests      @relation(fields: [laboratoriesOnLabTestsId], references: [id])
+  laboratoriesOnLabTestsId      String
+  
+  // Timestamps
+  validFrom                     DateTime                    @default(now())
+  validTo                       DateTime?
+  createdAt                     DateTime                    @default(now())
+  updatedAt                     DateTime                    @updatedAt
+}
+
+enum Gender {
+  M
+  F
+  B
+}
+
+model Price {
+  id                            String                      @id @default(cuid(2))
+  price                         Decimal   
+  
+  // Relationships
+  tariffGroup                   TariffGroup                 @relation(fields: [tariffGroupId], references: [id])
+  tariffGroupId                 String
+  labTestGroup                  LabTestGroup?               @relation(fields: [labTestGroupId], references: [id])
+  labTestGroupId                String?
+  laboratoriesOnLabTests        LaboratoriesOnLabTests?     @relation(fields: [laboratoriesOnLabTestsId], references: [id])
+  laboratoriesOnLabTestsId      String?
+
+  // Timestamps
+  validFrom                     DateTime                    @default(now())
+  validTo                       DateTime?
+  createdAt                     DateTime                    @default(now())
+  updatedAt                     DateTime                    @updatedAt
+}
+
+// -------------------------- Statically Generated Data -------------------------- //
+
+model LabTest {
+  id                          String                      @id @default(cuid(2))
+  code                        String                      @unique
+  name                        String
+  possibleValues              String[]                    @default([])
+  
+  scale                       Scale                       @relation(fields: [scaleId], references: [id])
+  scaleId                     String
+  
+  method                      Method?                     @relation(fields: [methodId], references: [id])
+  methodId                    String?
+  
+  category                    Category                    @relation(fields: [categoryId], references: [id])
+  categoryId                  String
+  
+  units                       Unit[]                      @relation("units")
+  specimens                   Specimen[]          
+  laboratoriesOnLabTests      LaboratoriesOnLabTests[]
+}
+
+model Specimen {
+  id              String      @id @default(cuid(2))
+  code            String      @unique
+  name            String
+  description     String?
+  abbreviation    String
+
+  labTests        LabTest[]   
+}
+
+model Category {
+  id              String            @id @default(cuid(2))
+  code            String            @unique
+  name            String
+  description     String?
+
+  labTests        LabTest[]
+}
+
+model Method {
+  id              String      @id @default(cuid(2))
+  code            String      @unique
+  name            String
+  description     String?
+  abbreviation    String      
+
+  labTests        LabTest[]
+}
+
+model Unit {
+  id                          String                        @id @default(cuid(2))
+  code                        String                        @unique
+  name                        String
+  description                 String?
+  displayCode                 String
+
+  labTests                    LabTest[]                     @relation("units")
+  conversionTo                UnitConversion[]              @relation("toUnit")
+  referenceRanges             ReferenceRange[]    
+  conversionsFrom             UnitConversion[]              @relation("fromUnit")
+  laboratoriesOnLabTests      LaboratoriesOnLabTests[]      @relation("defaultUnit")
+}
+
+model Scale {
+  id                String        @id @default(cuid(2))
+  code              String        @unique
+  name              String
+  description       String?
+  abbreviation      String
+
+  labTests          LabTest[]   
+}
+
+model UnitConversion {
+  id              String        @id @default(cuid(2))
+  factor          Decimal
+  offset          Decimal?    
+  
+  fromUnit        Unit          @relation("fromUnit", fields: [fromUnitId], references: [id])
+  fromUnitId      String
+  
+  toUnit          Unit          @relation("toUnit", fields: [toUnitId], references: [id])
+  toUnitId        String
+
+  @@unique([fromUnitId, toUnitId])
+}
+
+model TariffGroup {
+  id              String      @id @default(cuid(2))
+  code            String      @unique
+  name            String
+  description     String?
+
+  prices          Price[]
+}
+
+// -------------------------- Statically Generated Data -------------------------- //

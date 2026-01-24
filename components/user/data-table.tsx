@@ -1,0 +1,218 @@
+"use client";
+
+import React from "react";
+import CreateUserDialog from "./create-user-dialog";
+import UpdateUserDialog from "./update-user-dialog";
+import DeleteUserDialog from "./delete-user-dialog";
+
+import type {
+  SortingState,
+  PaginationState,
+  ColumnFiltersState,
+} from "@tanstack/react-table";
+
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
+import { X, ArrowBigLeft, ArrowBigRight, EllipsisVertical } from "lucide-react";
+import {
+  ColumnDef,
+  flexRender,
+  useReactTable,
+  getCoreRowModel,
+  getSortedRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+} from "@tanstack/react-table";
+import {
+  Table,
+  TableRow,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+} from "../ui/table";
+
+type DataTableProps<TData, TValue> = {
+  data: TData[];
+  columns: ColumnDef<TData, TValue>[];
+};
+
+export function DataTableForCard<TData, TValue>({
+  data,
+  columns,
+}: DataTableProps<TData, TValue>) {
+  const [pagination, setPagination] = React.useState<PaginationState>({
+    pageSize: 5,
+    pageIndex: 0,
+  });
+  const [sorting, setSorting] = React.useState<SortingState>([
+    {
+      id: "name",
+      desc: false,
+    },
+  ]);
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    [],
+  );
+
+  const table = useReactTable({
+    data,
+    state: {
+      sorting,
+      pagination,
+      columnFilters,
+    },
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    onSortingChange: setSorting,
+    getSortedRowModel: getSortedRowModel(),
+    onPaginationChange: setPagination,
+    getFilteredRowModel: getFilteredRowModel(),
+    onColumnFiltersChange: setColumnFilters,
+    getPaginationRowModel: getPaginationRowModel(),
+  });
+
+  const rowsLength = table.getRowModel().rows.length;
+
+  const rowPlaceholder = React.useMemo(() => {
+    return rowsLength && rowsLength < 5 ? (
+      Array.from({ length: 5 - rowsLength }, (_, i) => (
+        <TableRow key={`${i}`} className="pointer-events-none opacity-70">
+          <TableCell>
+            <div
+              className="ml-1.5 h-5 bg-accent rounded-md max-w-(--skeleton-width)"
+              style={
+                {
+                  "--skeleton-width": `${Math.floor(Math.random() * 30) + 60}%`,
+                } as React.CSSProperties
+              }
+            ></div>
+          </TableCell>
+          <TableCell>
+            <div
+              className="h-5 bg-accent rounded-md max-w-(--skeleton-width)"
+              style={
+                {
+                  "--skeleton-width": `${Math.floor(Math.random() * 30) + 60}%`,
+                } as React.CSSProperties
+              }
+            ></div>
+          </TableCell>
+          <TableCell>
+            <Button variant="ghost" disabled className="size-8 flex">
+              <EllipsisVertical className="h-4 w-4" />
+            </Button>
+          </TableCell>
+        </TableRow>
+      ))
+    ) : (
+      <></>
+    );
+  }, [rowsLength]);
+
+  return (
+    <>
+      <div className="flex items-center pb-5 gap-3">
+        <Input
+          value={(table.getColumn("name")?.getFilterValue() as string) ?? ""}
+          onChange={(event) =>
+            table.getColumn("name")?.setFilterValue(event.target.value)
+          }
+          placeholder="Search user's name..."
+        />
+        <Button
+          size={"icon"}
+          variant={"outline"}
+          onClick={() => {
+            table.getColumn("name")?.setFilterValue(undefined);
+          }}
+          disabled={!table.getColumn("name")?.getFilterValue()}
+        >
+          <span className="sr-only">Clear filters</span>
+          <X />
+        </Button>
+      </div>
+      <div className="overflow-hidden rounded-md border">
+        <Table>
+          <TableHeader className="bg-secondary">
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id} className="font-semibold">
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
+                    </TableHead>
+                  );
+                })}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody className="bg-background">
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext(),
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <>
+                <TableRow>
+                  <TableCell colSpan={columns.length} className="h-[243px]">
+                    <div className="text-center text-muted-foreground">
+                      No results.
+                    </div>
+                  </TableCell>
+                </TableRow>
+              </>
+            )}
+            {rowPlaceholder}
+          </TableBody>
+        </Table>
+      </div>
+      <div className="flex items-center pt-5 gap-3">
+        <CreateUserDialog />
+        <Button
+          aria-label="Previous"
+          variant={"secondary"}
+          onClick={() => {
+            table.previousPage();
+          }}
+          disabled={!table.getCanPreviousPage()}
+          className="max-w-[90px] ml-auto flex-1"
+        >
+          <ArrowBigLeft />
+          <span className="hidden sm:inline">Prev</span>
+        </Button>
+        <Button
+          aria-label="Next"
+          variant={"secondary"}
+          onClick={() => {
+            table.nextPage();
+          }}
+          disabled={!table.getCanNextPage()}
+          className="max-w-[90px] flex-1"
+        >
+          <span className="hidden sm:inline">Next</span>
+          <ArrowBigRight />
+        </Button>
+      </div>
+      <UpdateUserDialog />
+      <DeleteUserDialog />
+    </>
+  );
+}

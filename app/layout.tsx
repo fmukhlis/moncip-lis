@@ -1,11 +1,12 @@
 import "./globals.css";
 
-import StoreProvider from "@/StoreProvider";
+import StoreProvider from "@/store-provider";
 
 import type { Metadata } from "next";
 
 import { Toaster } from "@/components/ui/sonner";
 import { ThemeProvider } from "@/components/theme-provider";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { geistMono, geistSans } from "@/lib/fonts";
 
 export const metadata: Metadata = {
@@ -40,7 +41,7 @@ export default function RootLayout({
             enableSystem
             disableTransitionOnChange
           >
-            {children}
+            <TooltipProvider>{children}</TooltipProvider>
             <Toaster />
           </ThemeProvider>
         </StoreProvider>

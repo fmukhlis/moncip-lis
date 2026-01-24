@@ -1,6 +1,6 @@
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { Skeleton } from "../ui/skeleton";
+import { DynamicSkeleton } from "../ui/dynamic-skeleton";
 import {
   Card,
   CardTitle,
@@ -62,10 +62,10 @@ export default function LabMemberSkeleton() {
               {Array.from({ length: 5 }, (_, i) => (
                 <TableRow key={`${i}`} className="pointer-events-none">
                   <TableCell>
-                    <Skeleton className="ml-1.5 h-5 w-[186px] rounded-md" />
+                    <DynamicSkeleton className="ml-1.5 h-5" />
                   </TableCell>
                   <TableCell>
-                    <Skeleton className="h-5 w-20 rounded-md" />
+                    <DynamicSkeleton className="h-5" />
                   </TableCell>
                   <TableCell>
                     <Button variant="ghost" disabled className="size-8 flex">

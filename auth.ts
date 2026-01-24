@@ -8,9 +8,11 @@ import Credentials from "next-auth/providers/credentials";
 import { Provider } from "next-auth/providers";
 import { randomUUID } from "crypto";
 import { PrismaAdapter } from "@auth/prisma-adapter";
-import { createLaboratory } from "./features/lab/dal/query";
+import { CredentialsSignin } from "next-auth";
 import { getUserCredentials } from "./features/user/dal/query";
+import { createLaboratoryAction } from "./features/lab/action";
 import { encode as defaultEncode } from "next-auth/jwt";
+import { importOAuthUserImageAction } from "./features/user/action";
 import { SignInWithCredentialsSchema } from "./features/authentication/schema";
 
 const providers: Provider[] = [
@@ -35,7 +37,7 @@ const providers: Provider[] = [
         }
       }
 
-      throw new Error("Invalid credentials.");
+      throw new CredentialsSignin("Invalid credentials.");
     },
   }),
   Google,
@@ -67,7 +69,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const sessionToken = randomUUID();
 
         await adapter.createSession?.({
-          expires: new Date(Date.now() + 43200),
+          expires: new Date(Date.now() + 12 * 60 * 60 * 1000),
           sessionToken,
           userId: token.sub,
         });
@@ -79,9 +81,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async session({ session }) {
       const { email, username, image, name, role, laboratoryId } = session.user;
 
-      if (!session.user.laboratoryId && session.user.role === "admin") {
-        await createLaboratory(session.user.id);
-      }
+      await createLaboratoryAction(session.user);
+
+      await importOAuthUserImageAction(session.user);
 
       return {
         expires: session.expires,
@@ -91,12 +93,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   },
   jwt: {
     async encode(params) {
+      // For credentials provider, returning defaultEncode(params) when AdapterConfig.session.strategy is
+      // set to 'database' will somehow force the client browser to delete the authjs.session-token cookie immediately.
       if (typeof params.token?.sessionToken === "string") {
         return params.token.sessionToken;
       }
-      // Returning defaultEncode(params) when AdapterConfig.session.strategy is set to
-      // 'database' will force the client browser to delete the jwt cookie immediately.
-      // So unless the provider is credentials, we let the provider to handle the cookie itself.
+
       return defaultEncode(params);
     },
   },
@@ -104,7 +106,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
 declare module "next-auth" {
   interface User {
-    role?: "admin" | "doctor" | "lab_tech";
+    role?: "sys_admin" | "lab_admin" | "doctor" | "staff";
     username?: string | null;
     laboratoryId?: string | null;
   }

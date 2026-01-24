@@ -6,12 +6,13 @@ import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Spinner } from "../ui/spinner";
 import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
 import { deleteUserAction } from "@/features/user/action";
 import { useAppDispatch, useAppSelector } from "@/hooks";
 import {
   setSelectedUser,
   setShowDeleteUserDialog,
-} from "@/features/user/userSlice";
+} from "@/features/user/user-slice";
 import {
   AlertDialog,
   AlertDialogTitle,
@@ -30,6 +31,8 @@ export default function DeleteUserDialog() {
 
   const dispatch = useAppDispatch();
 
+  const { refresh } = useRouter();
+
   const { formState, handleSubmit } = useForm();
 
   const onSubmit = async () => {
@@ -38,6 +41,9 @@ export default function DeleteUserDialog() {
       if (response.success) {
         toast.success(response.message);
         dispatch(setShowDeleteUserDialog(false));
+        React.startTransition(() => {
+          refresh();
+        });
       } else {
         toast.error(response.message);
       }
@@ -73,7 +79,7 @@ export default function DeleteUserDialog() {
               form="delete-user-form"
               variant={"destructive"}
               disabled={formState.isSubmitting}
-              className="w-[100px]"
+              className="sm:w-[100px]"
             >
               {formState.isSubmitting ? (
                 <Spinner className="size-5" />
