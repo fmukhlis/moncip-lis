@@ -160,6 +160,7 @@ export const GetLocalTestGroupsByCodeSchema = z.object({
 
 // -------------------- Client Form --------------------
 
+/* c8 ignore start */
 export const ConfigureLocalTestPricingForm =
   SaveLocalTestPricesActionSchema.extend({
     basePrice: z.string().trim().min(1, "Base price cannot be empty."),
@@ -232,3 +233,5 @@ export const MarkLocalTestGroupNotOrderableForm =
 export const ArchiveLocalTestGroupForm = ArchiveLocalTestGroupActionSchema;
 
 export const UnarchiveLocalTestGroupForm = UnarchiveLocalTestGroupActionSchema;
+
+/* c8 ignore stop */

@@ -91,7 +91,7 @@ describe("getLocalTestsAction", () => {
   it("returns a success response", async () => {
     (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
 
-    const response = await getLocalTestsAction();
+    const response = await getLocalTestsAction({ count: 5 });
 
     expect(response).toEqual({
       success: true,
@@ -250,6 +250,7 @@ describe("saveLocalTestPricesAction", () => {
   it("returns a failure response when data is invalid", async () => {
     (auth as jest.Mock)
       .mockResolvedValueOnce(authenticatedUser)
+      .mockResolvedValueOnce(authenticatedUser)
       .mockResolvedValueOnce(authenticatedUser);
 
     // Invalid tariff group id
@@ -258,7 +259,18 @@ describe("saveLocalTestPricesAction", () => {
         id: laboratoriesOnLabTests.id,
         prices: pricesPayload.map((item) => ({
           ...item,
-          tariffGroupId: "nonexistent_tariff_group_id",
+          tariffGroupId: `invalid-${item.tariffGroupId}`,
+        })),
+      }),
+    ).rejects.toThrow("Invalid data.");
+
+    // Duplicate tariff group id
+    await expect(
+      saveLocalTestPricesAction({
+        id: laboratoriesOnLabTests.id,
+        prices: pricesPayload.map((item) => ({
+          ...item,
+          tariffGroupId: `ID`,
         })),
       }),
     ).rejects.toThrow("Invalid data.");
@@ -308,7 +320,7 @@ describe("getLocalTestGroupsAction", () => {
   it("returns a success response", async () => {
     (auth as jest.Mock).mockResolvedValueOnce(authenticatedUser);
 
-    const response = await getLocalTestGroupsAction();
+    const response = await getLocalTestGroupsAction({ count: 5 });
 
     expect(response).toEqual({
       success: true,
@@ -671,6 +683,7 @@ describe("saveLocalTestGroupPricesAction", () => {
   it("returns a failure response when data is invalid", async () => {
     (auth as jest.Mock)
       .mockResolvedValueOnce(authenticatedUser)
+      .mockResolvedValueOnce(authenticatedUser)
       .mockResolvedValueOnce(authenticatedUser);
 
     // Invalid tariff group id
@@ -679,7 +692,18 @@ describe("saveLocalTestGroupPricesAction", () => {
         labTestGroupId: localTestGroup.id,
         prices: pricesPayload.map((item) => ({
           ...item,
-          tariffGroupId: "nonexistent_tariff_group_id",
+          tariffGroupId: `invalid-${item.tariffGroupId}`,
+        })),
+      }),
+    ).rejects.toThrow("Invalid data.");
+
+    // Duplicate tariff group id
+    await expect(
+      saveLocalTestGroupPricesAction({
+        labTestGroupId: localTestGroup.id,
+        prices: pricesPayload.map((item) => ({
+          ...item,
+          tariffGroupId: `ID`,
         })),
       }),
     ).rejects.toThrow("Invalid data.");
