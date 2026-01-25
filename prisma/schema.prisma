@@ -207,6 +207,26 @@ model Price {
   updatedAt                     DateTime                    @updatedAt
 }
 
+model Patient {
+  id                    String        @id @default(cuid(2))
+  name                  String
+  gender                Gender
+  source                Source
+  dateOfBirth           DateTime      
+  externalSystemId      String?
+
+  // Timestamps
+  createdAt             DateTime      @default(now())
+  linkedAt              DateTime?
+  deletedAt             DateTime?
+}
+
+enum Source {
+  MANUAL
+  HIS
+}
+
+
 // -------------------------- Statically Generated Data -------------------------- //
 
 model LabTest {
