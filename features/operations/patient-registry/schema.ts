@@ -10,7 +10,15 @@ export const GetLocalPatientSchema = z.object({
   id: z.string().trim().min(1),
 });
 
+export const GetHISPatientsParamsSchema = z
+  .object({
+    count: z.number().positive().optional(),
+    patientId: z.string().trim().optional(),
+  })
+  .optional();
+
 export const CreateLocalPatientSchema = z.object({
+  laboratoryId: z.string().trim().min(1),
   name: z.string().trim().min(1),
   gender: z.enum(["M", "F"]),
   source: z.enum(["MANUAL", "HIS"]),
@@ -58,23 +66,27 @@ export const UpdateLocalPatientSchema = z.object({
 export const DeleteLocalPatientSchema = z.object({
   id: z.string().trim().min(1),
 });
-
-export const UndeleteLocalPatientSchema = z.object({
-  id: z.string().trim().min(1),
-});
 // --------------------------------------------------- Data Access Layer
 
 // Server Function -----------------------------------------------------
 export const GetLocalPatientsActionSchema = GetLocalPatientsSchema.omit({
   laboratoryId: true,
-});
+}).optional();
 
 export const GetLocalPatientActionSchema = GetLocalPatientSchema;
+
+export const GetPatientFromHISActionSchema = z
+  .object({
+    count: z.number().positive().optional(),
+    patientId: z.string().trim().min(1).optional(),
+  })
+  .optional();
 
 export const CreateLocalPatientManualActionSchema =
   CreateLocalPatientSchema.omit({
     source: true,
     linkedAt: true,
+    laboratoryId: true,
     externalSystemId: true,
   });
 
@@ -93,23 +105,14 @@ export const UpdateLocalPatientManualActionSchema =
     externalSystemId: true,
   });
 
-export const LinkLocalTestPatientActionSchema = UpdateLocalPatientSchema.omit({
+export const SyncLocalPatientHISActionSchema = UpdateLocalPatientSchema.omit({
   name: true,
   gender: true,
   source: true,
   linkedAt: true,
   dateOfBirth: true,
-}).extend({ externalSystemId: z.string().trim().min(1) });
-
-export const RelinkLocalPatientActionSchema = UpdateLocalPatientSchema.omit({
-  name: true,
-  gender: true,
-  source: true,
-  linkedAt: true,
-  dateOfBirth: true,
-}).extend({ externalSystemId: z.string().trim().min(1) });
+  externalSystemId: true,
+});
 
 export const DeleteLocalPatientActionSchema = DeleteLocalPatientSchema;
-
-export const UndeleteLocalPatientActionSchema = UndeleteLocalPatientSchema;
 // -----------------------------------------------------  Server Function

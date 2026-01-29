@@ -28,7 +28,7 @@ import {
 
 jest.mock("@/auth", () => {
   return {
-    esModule: true,
+    __esModule: true,
     auth: jest.fn().mockResolvedValue(null),
   };
 });

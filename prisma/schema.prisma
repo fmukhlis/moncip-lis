@@ -101,6 +101,7 @@ model Laboratory {
 
   // Relationships
   users                       User[]
+  patients                    Patient[]
   labTestGroups               LabTestGroup[]
   laboratoriesOnLabTests      LaboratoriesOnLabTests[]      
 
@@ -208,15 +209,19 @@ model Price {
 }
 
 model Patient {
-  id                    String        @id @default(cuid(2))
+  id                    String          @id @default(cuid(2))
   name                  String
   gender                Gender
   source                Source
   dateOfBirth           DateTime      
+  laboratoryId          String
   externalSystemId      String?
 
+  // Relationships
+  laboratory            Laboratory      @relation(fields: [laboratoryId], references: [id])
+
   // Timestamps
-  createdAt             DateTime      @default(now())
+  createdAt             DateTime        @default(now())
   linkedAt              DateTime?
   deletedAt             DateTime?
 }
