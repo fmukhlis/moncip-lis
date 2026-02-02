@@ -151,7 +151,7 @@ export async function getPatientsFromHIS(
     const nameOrMrn = payload.nameOrMrn?.toLowerCase();
 
     if (patientId) {
-      predicate = (item) => item.id.toLowerCase().includes(patientId);
+      predicate = (item) => item.id.toLowerCase() === patientId;
     } else if (nameOrMrn) {
       predicate = (item) =>
         item.medical_record_number.toLowerCase().includes(nameOrMrn) ||
