@@ -54,7 +54,7 @@ export default function EditPatientManualDialog() {
   ] = useUpdateLocalPatientManualActionMutation();
 
   // React Hook Form
-  const { control, handleSubmit, reset, formState } = useForm({
+  const { control, handleSubmit, reset } = useForm({
     resolver: zodResolver(UpdateLocalPatientManualForm),
   });
   const onSubmit = async (
@@ -83,7 +83,7 @@ export default function EditPatientManualDialog() {
     if (isOpen) {
       reset({ id: id ?? "", name: "", gender: "M", dateOfBirth: "" });
     }
-  }, [id, isOpen]);
+  }, [id, isOpen, reset]);
 
   return (
     <Dialog
@@ -134,7 +134,7 @@ export default function EditPatientManualDialog() {
                 <div className="grid grid-cols-[repeat(auto-fit,minmax(250px,1fr))] gap-3">
                   <Controller
                     name="name"
-                    render={({ field: { value, onChange }, fieldState }) => (
+                    render={({ field: { value, onChange } }) => (
                       <Field className="gap-2 col-span-1">
                         <FieldLabel htmlFor="edit-patient-manual-name">
                           Name
