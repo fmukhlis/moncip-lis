@@ -1,5 +1,6 @@
 import React from "react";
 import PatientsTable from "@/components/patient-registry/patients-table";
+import AddPatientCard from "@/components/patient-registry/add-patient-card";
 import DeletePatientDialog from "@/components/patient-registry/delete-patient-dialog";
 import EditPatientManualDialog from "@/components/patient-registry/edit-patient-manual-dialog";
 
@@ -19,7 +20,10 @@ export default function StaffPatientRegistry() {
             </div>
           </div>
           <Separator />
-          <PatientsTable columns={patientsTableColumns} />
+          <div className="flex flex-col flex-1 gap-4 px-1.5">
+            <AddPatientCard />
+            <PatientsTable columns={patientsTableColumns} />
+          </div>
         </div>
         <EditPatientManualDialog />
         <DeletePatientDialog />

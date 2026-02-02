@@ -2,10 +2,10 @@
 
 import React from "react";
 import PatientsTableHeader from "./patients-table-header";
-import PatientsTableSkeleton from "./patients-table-skeleton";
 
 import { useVirtualizer } from "@tanstack/react-virtual";
 import { useAppSelector } from "@/hooks";
+import { PatientsTableSkeleton } from "./patients-table-skeleton";
 import { getLocalPatientsAction } from "@/features/operations/patient-registry/action/query";
 import { useGetLocalPatientsActionQuery } from "@/features/operations/patient-registry/api/patient";
 import {
@@ -42,8 +42,10 @@ export default function PatientsTable({
   const { isLoading, data: localPatientsActionData } =
     useGetLocalPatientsActionQuery({});
 
+  // Tanstack Virtual
   const tableContainerRef = React.useRef<HTMLDivElement>(null);
 
+  // Tanstack Table
   const memoizedPatients = React.useMemo(() => {
     const data = localPatientsActionData?.data ?? [];
 
@@ -56,7 +58,6 @@ export default function PatientsTable({
         return data;
     }
   }, [localPatientsActionData?.data, localPatientsSource]);
-
   const table = useReactTable({
     data: memoizedPatients,
     columns,
@@ -75,7 +76,7 @@ export default function PatientsTable({
   }
 
   return (
-    <div className="flex flex-col flex-1 gap-4 px-1.5">
+    <>
       <PatientsTableHeader
         rowLength={table.getRowCount()}
         onSearch={(val) => {
@@ -120,7 +121,7 @@ export default function PatientsTable({
           />
         </Table>
       </div>
-    </div>
+    </>
   );
 }
 

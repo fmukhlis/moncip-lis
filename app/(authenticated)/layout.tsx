@@ -19,7 +19,7 @@ export default async function AuthenticatedLayout({
   }
 
   return (
-    <SessionProvider>
+    <SessionProvider session={session}>
       <div className="[--header-height:calc(--spacing(14))]">
         <SidebarProvider className="flex flex-col">
           <AppHeader />

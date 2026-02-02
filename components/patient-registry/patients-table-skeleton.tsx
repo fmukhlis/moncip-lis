@@ -1,17 +1,7 @@
-import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Spinner } from "../ui/spinner";
 import { DynamicSkeleton } from "../ui/dynamic-skeleton";
-import { Field, FieldGroup, FieldLabel } from "../ui/field";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import {
-  X,
-  Search,
-  Sparkles,
-  ArrowUpDown,
-  NotebookPen,
-  UserRoundSearch,
-} from "lucide-react";
+import { X, Search, ArrowUpDown } from "lucide-react";
 import {
   Table,
   TableRow,
@@ -21,21 +11,6 @@ import {
   TableHeader,
 } from "../ui/table";
 import {
-  Card,
-  CardTitle,
-  CardHeader,
-  CardContent,
-  CardDescription,
-} from "../ui/card";
-import {
-  Combobox,
-  ComboboxList,
-  ComboboxItem,
-  ComboboxEmpty,
-  ComboboxInput,
-  ComboboxContent,
-} from "../ui/combobox";
-import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
@@ -44,7 +19,6 @@ import {
 import {
   Select,
   SelectItem,
-  SelectGroup,
   SelectValue,
   SelectTrigger,
   SelectContent,
@@ -91,130 +65,10 @@ const PATIENT_COLUMN = [
   },
 ];
 
-export default function PatientsTableSkeleton() {
+export function PatientsTableSkeleton() {
   return (
-    <div className="flex flex-col flex-1 gap-4 px-1.5 opacity-70">
-      <Card className="w-full relative border shadow rounded-sm py-4">
-        <CardHeader className="sm:max-w-[calc(100%-250px)] px-4">
-          <CardTitle>Add New Patient</CardTitle>
-          <CardDescription>
-            Add a patient automatically from the HIS or register a new patient
-            manually.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="px-4">
-          <Tabs defaultValue="automatic">
-            <TabsList className="sm:absolute top-2 right-2 w-full sm:w-[200px]">
-              <TabsTrigger value="automatic">
-                <Sparkles />
-                Automatic
-              </TabsTrigger>
-              <TabsTrigger value="manual" disabled>
-                <NotebookPen />
-                Manual
-              </TabsTrigger>
-            </TabsList>
-            <TabsContent value="automatic">
-              <form>
-                <FieldGroup className="px-1 gap-3">
-                  <Field className="gap-2 col-span-1">
-                    <FieldLabel htmlFor="add-patient-automatic-external-system-id">
-                      Select patient from HIS
-                    </FieldLabel>
-                    <Combobox>
-                      <ComboboxInput
-                        id="add-patient-automatic-external-system-id"
-                        placeholder="Search by MRN or patient name..."
-                      >
-                        <InputGroupAddon>
-                          <UserRoundSearch />
-                        </InputGroupAddon>
-                      </ComboboxInput>
-                      <ComboboxContent align="center">
-                        <ComboboxEmpty>
-                          <div className="flex items-center gap-2">
-                            No results found.
-                          </div>
-                        </ComboboxEmpty>
-                        <ComboboxList>
-                          <ComboboxItem disabled className="relative">
-                            <div className="flex flex-col rounded gap-1">
-                              <div className="font-medium">
-                                [MRN] - PatientName
-                              </div>
-                              <div className="font-normal">
-                                PatientGender PatientDOB
-                              </div>
-                              <div className="text-muted-foreground font-normal">
-                                PatientAddress
-                              </div>
-                            </div>
-                          </ComboboxItem>
-                        </ComboboxList>
-                      </ComboboxContent>
-                    </Combobox>
-                  </Field>
-                  <Field className="col-span-1">
-                    <Button type="submit" disabled>
-                      Add Patient
-                    </Button>
-                  </Field>
-                </FieldGroup>
-              </form>
-            </TabsContent>
-            <TabsContent value="manual">
-              <form>
-                <FieldGroup className="px-1 gap-3">
-                  <div className="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-3">
-                    <Field className="gap-2 col-span-1">
-                      <FieldLabel htmlFor="add-patient-manual-name">
-                        Name
-                      </FieldLabel>
-                      <Input id="add-patient-manual-name" />
-                    </Field>
-                    <div className="grid grid-cols-[repeat(auto-fit,minmax(30px,1fr))] gap-3 col-span-1">
-                      <Field className="col-span-2 gap-2">
-                        <FieldLabel htmlFor="add-patient-manual-gender">
-                          Gender
-                        </FieldLabel>
-                        <Select>
-                          <SelectTrigger
-                            id="add-patient-manual-gender"
-                            className="w-full max-w-48"
-                          >
-                            <SelectValue placeholder="Select gender..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectGroup>
-                              <SelectItem value="M">Male</SelectItem>
-                              <SelectItem value="F">Female</SelectItem>
-                            </SelectGroup>
-                          </SelectContent>
-                        </Select>
-                      </Field>
-                      <Field className="col-span-3 gap-2">
-                        <FieldLabel htmlFor="add-patient-manual-date-of-birth">
-                          Date of Birth
-                        </FieldLabel>
-                        <Input
-                          id="add-patient-manual-date-of-birth"
-                          type="date"
-                        />
-                      </Field>
-                    </div>
-                  </div>
-                  <Field className="col-span-1">
-                    <Button type="submit" disabled>
-                      Add Patient
-                    </Button>
-                  </Field>
-                </FieldGroup>
-              </form>
-            </TabsContent>
-          </Tabs>
-        </CardContent>
-      </Card>
-      <div className="grid gap-3 grid-cols-[repeat(auto-fit,minmax(140px,1fr))] items-center">
+    <>
+      <div className="grid gap-3 grid-cols-[repeat(auto-fit,minmax(140px,1fr))] items-center opacity-65">
         <InputGroup className="h-10 col-span-3">
           <InputGroupInput
             disabled
@@ -254,7 +108,7 @@ export default function PatientsTableSkeleton() {
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-md border">
+      <div className="overflow-hidden rounded-md border opacity-65">
         <Table
           className="grid"
           containerClassName="relative h-[500px] overflow-auto"
@@ -305,6 +159,6 @@ export default function PatientsTableSkeleton() {
           </TableBody>
         </Table>
       </div>
-    </div>
+    </>
   );
 }
