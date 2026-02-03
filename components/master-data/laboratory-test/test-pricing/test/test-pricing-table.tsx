@@ -71,12 +71,7 @@ export default function TestPricingTable({ columns }: TestPricingTableProps) {
     columns,
     getRowId: ({ id }) => id,
     initialState: {
-      sorting: [
-        {
-          id: "name",
-          desc: false,
-        },
-      ],
+      sorting: [{ id: "name", desc: false }],
     },
     onRowSelectionChange: (updater) => {
       const next =

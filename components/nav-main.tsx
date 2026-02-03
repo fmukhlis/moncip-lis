@@ -60,8 +60,8 @@ const NAV_MAIN_DATA: Record<
         icon: UserCog,
       },
       // {
-      //   title: "Integration Settings",
-      //   url: "/sys-admin/system-administration/integration-settings",
+      //   title: "Patient Integration",
+      //   url: "/sys-admin/system-administration/patient-integration",
       //   icon: Workflow,
       // },
     ],

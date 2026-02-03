@@ -82,7 +82,7 @@ export default function TestGroupPricingTable({
         onSearch={(value) => {
           table.getColumn("name")?.setFilterValue(value);
         }}
-        rowLength={table.getRowModel().flatRows.length}
+        rowLength={table.getRowCount()}
       />
       <div className="overflow-hidden rounded-md border">
         <Table

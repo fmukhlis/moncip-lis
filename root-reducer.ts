@@ -1,6 +1,7 @@
 import userReducer from "@/features/user/user-slice";
 import testPricingReducer from "@/features/master-data/test-pricing-slice";
 import authenticationReducer from "@/features/authentication/authSlice";
+import patientRegistryReducer from "@/features/operations/patient-registry/slice";
 import referenceRangesReducer from "@/features/master-data/reference-ranges-slice";
 import testAvailabilityReducer from "@/features/master-data/test-availability-slice";
 
@@ -13,6 +14,7 @@ const appReducer = combineReducers({
   user: userReducer,
   testPricing: testPricingReducer,
   authentication: authenticationReducer,
+  patientRegistry: patientRegistryReducer,
   referenceRanges: referenceRangesReducer,
   testAvailability: testAvailabilityReducer,
   [serverFunctionSlice.reducerPath]: serverFunctionSlice.reducer,
