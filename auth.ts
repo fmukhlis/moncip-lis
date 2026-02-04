@@ -106,7 +106,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
 declare module "next-auth" {
   interface User {
-    role?: "sys_admin" | "lab_admin" | "doctor" | "staff";
+    role?: "SYS_ADMIN" | "LAB_ADMIN" | "DOCTOR" | "STAFF";
     username?: string | null;
     laboratoryId?: string | null;
   }

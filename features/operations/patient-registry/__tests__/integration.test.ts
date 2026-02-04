@@ -17,9 +17,9 @@ const LABORATORY_ID = "lab_id_1";
 const sessionSysAdmin = {
   user: {
     name: "Sys Admin 1",
-    role: "sys_admin" as const,
-    username: "sys_admin_1",
-    password: "sys_admin_1",
+    role: "SYS_ADMIN" as const,
+    username: "SYS_ADMIN_1",
+    password: "SYS_ADMIN_1",
     laboratoryId: LABORATORY_ID,
   },
 };

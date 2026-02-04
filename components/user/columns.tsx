@@ -7,6 +7,13 @@ import { ArrowDownUp } from "lucide-react";
 import { getLabMembers } from "@/features/lab/dal/query";
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 
+const ROLE_LABEL = {
+  SYS_ADMIN: "System Administrator",
+  LAB_ADMIN: "Laboratory Administrator",
+  STAFF: "Staff",
+  DOCTOR: "Doctor",
+};
+
 const columnHelper =
   createColumnHelper<Awaited<ReturnType<typeof getLabMembers>>[number]>();
 
@@ -25,11 +32,7 @@ export const labMemberColumns = [
       return <div className="w-24">Role</div>;
     },
     cell: ({ row }) => {
-      return (
-        <div>
-          {row.original.role === "doctor" ? "Doctor" : "Lab. Technician"}
-        </div>
-      );
+      return <div>{ROLE_LABEL[row.original.role]}</div>;
     },
   }),
   columnHelper.display({

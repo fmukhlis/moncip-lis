@@ -6,14 +6,14 @@
 */
 -- AlterEnum
 BEGIN;
-CREATE TYPE "Role_new" AS ENUM ('sys_admin', 'lab_admin', 'doctor', 'staff');
+CREATE TYPE "Role_new" AS ENUM ('SYS_ADMIN', 'LAB_ADMIN', 'DOCTOR', 'STAFF');
 ALTER TABLE "public"."User" ALTER COLUMN "role" DROP DEFAULT;
 ALTER TABLE "User" ALTER COLUMN "role" TYPE "Role_new" USING ("role"::text::"Role_new");
 ALTER TYPE "Role" RENAME TO "Role_old";
 ALTER TYPE "Role_new" RENAME TO "Role";
 DROP TYPE "public"."Role_old";
-ALTER TABLE "User" ALTER COLUMN "role" SET DEFAULT 'sys_admin';
+ALTER TABLE "User" ALTER COLUMN "role" SET DEFAULT 'SYS_ADMIN';
 COMMIT;
 
 -- AlterTable
-ALTER TABLE "User" ALTER COLUMN "role" SET DEFAULT 'sys_admin';
+ALTER TABLE "User" ALTER COLUMN "role" SET DEFAULT 'SYS_ADMIN';

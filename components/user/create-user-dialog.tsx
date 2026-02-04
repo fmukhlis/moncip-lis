@@ -38,7 +38,7 @@ export default function CreateUserDialog() {
   >({
     mode: "onSubmit",
     defaultValues: {
-      role: "doctor",
+      role: "DOCTOR",
       password: "",
       username: "",
       name: "",
@@ -181,9 +181,9 @@ export default function CreateUserDialog() {
                             </div>
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="staff">Staff</SelectItem>
-                            <SelectItem value="doctor">Doctor</SelectItem>
-                            <SelectItem value="lab_admin">Admin</SelectItem>
+                            <SelectItem value="STAFF">Staff</SelectItem>
+                            <SelectItem value="DOCTOR">Doctor</SelectItem>
+                            <SelectItem value="LAB_ADMIN">Admin</SelectItem>
                           </SelectContent>
                         </Select>
                         {fieldState.invalid && (

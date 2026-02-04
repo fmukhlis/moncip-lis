@@ -29,14 +29,14 @@ describe("createUserAction", () => {
   const validUserPayload = {
     name: "Dr. Crocus",
     password: "dr_crocus_password",
-    role: "doctor" as const,
+    role: "DOCTOR" as const,
     username: "dr_crocus",
   };
 
   const invalidUserPayload = {
     name: "Garp",
     password: "garp", // Password rule violation
-    role: "staff" as const,
+    role: "STAFF" as const,
     username: "garp",
   };
 
@@ -44,7 +44,7 @@ describe("createUserAction", () => {
     await prisma.user.create({
       data: {
         name: "Admin 1",
-        role: "sys_admin",
+        role: "SYS_ADMIN",
         username: "admin_1",
         laboratory: { create: { id: "lab_id_1" } },
       },
@@ -88,7 +88,7 @@ describe("createUserAction", () => {
     (auth as unknown as jest.Mock).mockImplementationOnce(() => ({
       user: {
         name: "Admin 1",
-        role: "sys_admin",
+        role: "SYS_ADMIN",
         username: "admin_1",
         laboratoryId: "lab_id_1",
       },
@@ -107,7 +107,7 @@ describe("createUserAction", () => {
     (auth as unknown as jest.Mock).mockImplementationOnce(() => ({
       user: {
         name: "Admin 1",
-        role: "sys_admin",
+        role: "SYS_ADMIN",
         username: "admin_1",
         laboratoryId: "lab_id_1",
       },
@@ -137,14 +137,14 @@ describe("updateUserAction", () => {
   const validUserPayload = {
     name: "Dr. Crocus",
     password: "dr_crocus_password",
-    role: "doctor" as const,
+    role: "DOCTOR" as const,
     username: "dr_crocus",
   };
 
   const invalidUserPayload = {
     name: "Garp",
     password: "garp", // Password rule violation
-    role: "staff" as const,
+    role: "STAFF" as const,
     username: "garp",
   };
 
@@ -152,7 +152,7 @@ describe("updateUserAction", () => {
     await prisma.user.create({
       data: {
         name: "Admin 1",
-        role: "sys_admin",
+        role: "SYS_ADMIN",
         username: "admin_1",
         laboratory: { create: { id: "lab_id_1" } },
       },
@@ -161,7 +161,7 @@ describe("updateUserAction", () => {
     await prisma.user.create({
       data: {
         name: "Admin 2",
-        role: "sys_admin",
+        role: "SYS_ADMIN",
         username: "admin_2",
         laboratory: { create: { id: "lab_id_2" } },
       },
@@ -169,10 +169,10 @@ describe("updateUserAction", () => {
 
     await prisma.user.create({
       data: {
-        id: "existing_doctor_id",
-        name: "Existing doctor",
-        role: "doctor",
-        username: "existing_doctor",
+        id: "existing_DOCTOR_id",
+        name: "Existing DOCTOR",
+        role: "DOCTOR",
+        username: "existing_DOCTOR",
         laboratory: { connect: { id: "lab_id_1" } },
       },
     });
@@ -215,14 +215,14 @@ describe("updateUserAction", () => {
     (auth as unknown as jest.Mock).mockImplementationOnce(() => ({
       user: {
         name: "Admin 1",
-        role: "sys_admin",
+        role: "SYS_ADMIN",
         username: "admin_1",
         laboratoryId: "lab_id_1",
       },
     }));
 
     const response = await updateUserAction(
-      "existing_doctor_id",
+      "existing_DOCTOR_id",
       validUserPayload,
     );
 
@@ -237,14 +237,14 @@ describe("updateUserAction", () => {
     (auth as unknown as jest.Mock).mockImplementationOnce(() => ({
       user: {
         name: "Admin 1",
-        role: "sys_admin",
+        role: "SYS_ADMIN",
         username: "admin_1",
         laboratoryId: "lab_id_1",
       },
     }));
 
     const response = await updateUserAction(
-      "existing_doctor_id",
+      "existing_DOCTOR_id",
       invalidUserPayload,
     );
 
@@ -259,14 +259,14 @@ describe("updateUserAction", () => {
     (auth as unknown as jest.Mock).mockImplementationOnce(() => ({
       user: {
         name: "Admin 2",
-        role: "sys_admin",
+        role: "SYS_ADMIN",
         username: "admin_2",
         laboratoryId: "lab_id_2",
       },
     }));
 
     const response = await updateUserAction(
-      "existing_doctor_id",
+      "existing_DOCTOR_id",
       validUserPayload,
     );
 
@@ -283,7 +283,7 @@ describe("deleteUserAction", () => {
     await prisma.user.create({
       data: {
         name: "Admin 1",
-        role: "sys_admin",
+        role: "SYS_ADMIN",
         username: "admin_1",
         laboratory: { create: { id: "lab_id_1" } },
       },
@@ -292,7 +292,7 @@ describe("deleteUserAction", () => {
     await prisma.user.create({
       data: {
         name: "Admin 2",
-        role: "sys_admin",
+        role: "SYS_ADMIN",
         username: "admin_2",
         laboratory: { create: { id: "lab_id_2" } },
       },
@@ -300,10 +300,10 @@ describe("deleteUserAction", () => {
 
     await prisma.user.create({
       data: {
-        id: "existing_doctor_id",
-        name: "Existing doctor",
-        role: "doctor",
-        username: "existing_doctor",
+        id: "existing_DOCTOR_id",
+        name: "Existing DOCTOR",
+        role: "DOCTOR",
+        username: "existing_DOCTOR",
         laboratory: { connect: { id: "lab_id_1" } },
       },
     });
@@ -346,13 +346,13 @@ describe("deleteUserAction", () => {
     (auth as unknown as jest.Mock).mockImplementationOnce(() => ({
       user: {
         name: "Admin 1",
-        role: "sys_admin",
+        role: "SYS_ADMIN",
         username: "admin_1",
         laboratoryId: "lab_id_1",
       },
     }));
 
-    const response = await deleteUserAction("existing_doctor_id");
+    const response = await deleteUserAction("existing_DOCTOR_id");
 
     expect(response).toEqual({
       success: true,
@@ -365,13 +365,13 @@ describe("deleteUserAction", () => {
     (auth as unknown as jest.Mock).mockImplementationOnce(() => ({
       user: {
         name: "Admin 2",
-        role: "sys_admin",
+        role: "SYS_ADMIN",
         username: "admin_2",
         laboratoryId: "lab_id_2",
       },
     }));
 
-    const response = await deleteUserAction("existing_doctor_id");
+    const response = await deleteUserAction("existing_DOCTOR_id");
 
     expect(response).toEqual({
       success: false,
@@ -387,7 +387,7 @@ describe("importOAuthUserImageAction", () => {
       data: {
         id: "admin_1_id",
         name: "Admin 1",
-        role: "sys_admin",
+        role: "SYS_ADMIN",
         image: "https://somedomain.com/admin_1.jpg",
         username: "admin_1",
         laboratory: { create: { id: "lab_id_1" } },
@@ -439,7 +439,7 @@ describe("importOAuthUserImageAction", () => {
       user: {
         id: "admin_1_id",
         name: "Admin 1",
-        role: "sys_admin",
+        role: "SYS_ADMIN",
         image: "https://somedomain.com/admin_1.jpg",
         username: "admin_1",
         laboratoryId: "lab_id_1",
@@ -462,7 +462,7 @@ describe("importOAuthUserImageAction", () => {
       user: {
         id: "admin_1_id",
         name: "Admin 1",
-        role: "sys_admin",
+        role: "SYS_ADMIN",
         image: "/api/files/users/admin_1_id.jpg",
         username: "admin_1",
         laboratoryId: "lab_id_1",

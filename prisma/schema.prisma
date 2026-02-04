@@ -22,7 +22,7 @@ model User {
   username      String?          @unique
   emailVerified DateTime?
   image         String?
-  role          Role            @default(sys_admin)
+  role          Role            @default(SYS_ADMIN)
   password      String?
   laboratory    Laboratory?     @relation(fields: [laboratoryId], references: [id])
   accounts      Account[]
@@ -30,15 +30,20 @@ model User {
   // Optional for WebAuthn support
   Authenticator Authenticator[]
  
+  orderedTestOrder          TestOrder[]       @relation("orderedBy")
+  updatedTestOrder          TestOrder[]       @relation("updatedBy")
+  canceledTestOrder         TestOrder[]       @relation("canceledBy")
+  canceledTestOrderItem     TestOrderItem[]   
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 enum Role {
-  sys_admin
-  lab_admin
-  doctor
-  staff
+  SYS_ADMIN
+  LAB_ADMIN
+  DOCTOR
+  STAFF
 }
  
 model Account {
@@ -124,6 +129,7 @@ model LaboratoriesOnLabTests {
   prices                  Price[]
   referenceRanges         ReferenceRange[]
   labTestGroups           LabTestGroup[]
+  testOrderItems          TestOrderItem[]
 
   // Timestamps
   createdAt               DateTime              @default(now())
@@ -219,6 +225,7 @@ model Patient {
 
   // Relationships
   laboratory            Laboratory      @relation(fields: [laboratoryId], references: [id])
+  testOrders            TestOrder[]
 
   // Timestamps
   createdAt             DateTime        @default(now())
@@ -231,6 +238,111 @@ enum Source {
   HIS
 }
 
+model TestOrder {
+  id                    String                  @id @default(cuid(2))
+  notes                 String?
+  source                OrderSource
+  status                OrderStatus
+  priority              OrderPriority
+  orderNumber           String                  @unique
+  cancelReason          String?
+  externalSystem        String?
+  externalOrderId       String?
+  inboundOrderEvents    InboundOrderEvent[]
+  
+  // Relationships
+  patientId             String
+  patient               Patient                 @relation(fields: [patientId], references: [id])
+  orderedById           String
+  orderedBy             User                    @relation("orderedBy", fields: [orderedById], references: [id])
+  updatedById           String?
+  updatedBy             User?                   @relation("updatedBy", fields: [updatedById], references: [id])
+  canceledById          String?
+  canceledBy            User?                   @relation("canceledBy", fields: [canceledById], references: [id])
+  testOrderItems        TestOrderItem[]
+
+  // Timestamps
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  orderedAt             DateTime
+  acknowledgedAt        DateTime?
+  sampleCollectedAt     DateTime?
+  inProgressAt          DateTime?
+  completedAt           DateTime?
+  canceledAt            DateTime?
+}
+
+enum OrderSource {
+  LIS
+  HIS
+}
+
+enum OrderStatus {
+  ORDERED
+  ACKNOWLEDGED
+  SAMPLE_COLLECTED
+  IN_PROGRESS
+  COMPLETED
+  CANCELED
+}
+
+enum OrderPriority {
+  ROUTINE
+  URGENT
+}
+
+model TestOrderItem {
+  id                                  String                      @id @default(cuid(2))
+  status                              OrderItemStatus
+  cancelReason                        String?
+  priceSnapshot                       Json
+
+  // Relationships
+  testOrderId                         String
+  testOrder                           TestOrder                   @relation(fields: [testOrderId], references: [id])
+  canceledById                        String?
+  canceledBy                          User?                       @relation(fields: [canceledById], references: [id])
+  laboratoriesOnLabTestsId            String
+  laboratoriesOnLabTests              LaboratoriesOnLabTests      @relation(fields: [laboratoriesOnLabTestsId], references: [id])
+
+  // Timestamps
+  createdAt                           DateTime                    @default(now())
+  canceledAt                          DateTime?
+}
+
+enum OrderItemStatus {
+  ORDERED
+  CANCELED
+  COMPLETED
+}
+
+model InboundOrderEvent {
+  id                          String                  @id @default(cuid(2))
+  status                      EventStatus
+  payload                     Json
+  eventType                   OrderEventType
+  receivedAt                  DateTime                @default(now())
+  processedAt                 DateTime?
+  sourceSystem                String
+  errorMessage                String?
+  targetUserIds               String[]
+  externalOrderId             String
+
+  // Relationships
+  testOrderId                 String?
+  testOrder                   TestOrder?              @relation(fields: [testOrderId], references: [id])
+}
+
+enum EventStatus {
+  RECEIVED
+  PROCESSED
+  FAILED
+}
+
+enum OrderEventType {
+  CREATED
+  CANCELLED
+}
 
 // -------------------------- Statically Generated Data -------------------------- //
 

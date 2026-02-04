@@ -1,6 +1,8 @@
 User-agent: *
+Disallow: /sys-admin
+Disallow: /lab-admin
 Disallow: /staff
-Disallow: /admin
+Disallow: /doctor
  
 User-agent: *
 Allow: /

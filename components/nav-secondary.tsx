@@ -34,28 +34,28 @@ const NAV_SECONDARY_DATA: Record<
     }[];
   }[]
 > = {
-  sys_admin: [
+  SYS_ADMIN: [
     {
       title: "Dashboard",
       url: "/sys-admin/dashboard",
       icon: LayoutDashboard,
     },
   ],
-  lab_admin: [
+  LAB_ADMIN: [
     {
       title: "Dashboard",
       url: "/lab-admin/dashboard",
       icon: LayoutDashboard,
     },
   ],
-  doctor: [
+  DOCTOR: [
     {
       title: "Dashboard",
       url: "/doctor/dashboard",
       icon: LayoutDashboard,
     },
   ],
-  staff: [
+  STAFF: [
     {
       title: "Dashboard",
       url: "/staff/dashboard",

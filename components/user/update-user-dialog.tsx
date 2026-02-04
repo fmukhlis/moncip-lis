@@ -69,7 +69,7 @@ export default function UpdateUserDialog() {
   React.useEffect(() => {
     reset({
       name: "",
-      role: selectedUser?.role ?? "doctor",
+      role: selectedUser?.role ?? "DOCTOR",
       password: "",
       username: "",
     });
@@ -196,9 +196,11 @@ export default function UpdateUserDialog() {
                             </div>
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="staff">Staff</SelectItem>
-                            <SelectItem value="doctor">Doctor</SelectItem>
-                            <SelectItem value="lab_admin">Admin</SelectItem>
+                            <SelectItem value="STAFF">Staff</SelectItem>
+                            <SelectItem value="DOCTOR">Doctor</SelectItem>
+                            <SelectItem value="LAB_ADMIN">
+                              Lab. Admin
+                            </SelectItem>
                           </SelectContent>
                         </Select>
                         {fieldState.invalid && (

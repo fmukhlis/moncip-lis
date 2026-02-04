@@ -20,7 +20,7 @@ export async function createUserAction(data: z.infer<typeof CreateUserSchema>) {
 
   const parsedData = CreateUserSchema.safeParse(data);
 
-  if (session?.user?.role !== "sys_admin" || !session.user.laboratoryId) {
+  if (session?.user?.role !== "SYS_ADMIN" || !session.user.laboratoryId) {
     return { success: false, message: "Authorization violations.", data: data };
   }
 

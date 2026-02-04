@@ -52,7 +52,7 @@ const NAV_MAIN_DATA: Record<
     }[]
   >
 > = {
-  sys_admin: {
+  SYS_ADMIN: {
     "System Administration": [
       {
         title: "User Management",
@@ -66,7 +66,7 @@ const NAV_MAIN_DATA: Record<
       // },
     ],
   },
-  lab_admin: {
+  LAB_ADMIN: {
     Operations: [
       {
         title: "Patient Registry",
@@ -107,7 +107,7 @@ const NAV_MAIN_DATA: Record<
       },
     ],
   },
-  doctor: {
+  DOCTOR: {
     Operations: [
       {
         title: "Patient Registry",
@@ -143,7 +143,7 @@ const NAV_MAIN_DATA: Record<
       },
     ],
   },
-  staff: {
+  STAFF: {
     Operations: [
       {
         title: "Patient Registry",

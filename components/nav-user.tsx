@@ -23,10 +23,10 @@ import {
 import { $Enums } from "@/generated/prisma";
 
 const ROLE_LABEL = {
-  sys_admin: "System Administrator",
-  lab_admin: "Laboratory Administrator",
-  doctor: "Doctor",
-  staff: "Staff",
+  SYS_ADMIN: "System Administrator",
+  LAB_ADMIN: "Laboratory Administrator",
+  DOCTOR: "Doctor",
+  STAFF: "Staff",
 } satisfies Record<$Enums.Role, string>;
 
 export default function NavUser() {
