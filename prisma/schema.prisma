@@ -259,11 +259,13 @@ model TestOrder {
   updatedBy             User?                   @relation("updatedBy", fields: [updatedById], references: [id])
   canceledById          String?
   canceledBy            User?                   @relation("canceledBy", fields: [canceledById], references: [id])
+  tariffGroupId         String
+  tariffGroup           TariffGroup             @relation(fields: [tariffGroupId], references: [id])
   testOrderItems        TestOrderItem[]
 
   // Timestamps
   createdAt             DateTime                @default(now())
-  updatedAt             DateTime                @updatedAt
+  updatedAt             DateTime                @default(now())
   orderedAt             DateTime
   acknowledgedAt        DateTime?
   sampleCollectedAt     DateTime?
@@ -440,6 +442,7 @@ model TariffGroup {
   description     String?
 
   prices          Price[]
+  testOrders      TestOrder[]
 }
 
 // -------------------------- Statically Generated Data -------------------------- //
