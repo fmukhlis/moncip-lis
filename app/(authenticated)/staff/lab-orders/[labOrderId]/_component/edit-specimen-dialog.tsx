@@ -253,7 +253,11 @@ export default function EditSpecimenDialog({
               className="px-4 -mx-4 max-h-[50vh] overflow-y-auto"
             >
               <FieldGroup className="gap-4">
-                <ComboboxField<FormValues, (typeof specimenTypeOptions)[number]>
+                <ComboboxField<
+                  FormValues,
+                  (typeof specimenTypeOptions)[number],
+                  (typeof specimenTypeOptions)[number]
+                >
                   name="specimenTypeId"
                   formId="edit-specimen"
                   disabled={isFetchingSpecimenData || isFetchingOrderData}
@@ -281,9 +285,7 @@ export default function EditSpecimenDialog({
                       );
                     },
                     itemToStringLabel: (itemValue) => itemValue.label,
-                    renderItemContent: (
-                      item: (typeof specimenTypeOptions)[number],
-                    ) => (
+                    renderItemContent: (item) => (
                       <Item size="xs" className="p-0">
                         <ItemContent>
                           <ItemTitle className="whitespace-nowrap mb-1">

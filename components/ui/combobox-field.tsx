@@ -23,20 +23,21 @@ import {
   ComboboxChipsInput,
 } from "./combobox";
 
-type UsedComboboxProps<Value, Multiple extends boolean = false> = Omit<
+type UsedComboboxProps<Value, Item, Multiple extends boolean = false> = Omit<
   ComboboxRootProps<Value, Multiple>,
   "disabled"
 > & {
   placeholder?: string | undefined;
   onChipKeyDown?: ((e: KeyboardEvent<HTMLDivElement>) => void) | undefined;
   renderChipContent?: ((value: unknown) => ReactNode) | undefined;
-  renderItemContent?: ((item: unknown) => ReactNode) | undefined;
+  renderItemContent?: ((item: Item) => ReactNode) | undefined;
   comboboxContentContainerRef?: React.RefObject<HTMLDivElement | null>;
 };
 
 export default function ComboboxField<
   TFieldValues extends FieldValues,
   Value,
+  Item,
   Multiple extends boolean = false,
 >({
   formId,
@@ -48,11 +49,11 @@ export default function ComboboxField<
 }: UseControllerProps<TFieldValues> & {
   formId: string;
   className?: string | undefined;
-  comboboxProps?: UsedComboboxProps<Value, Multiple>;
+  comboboxProps?: UsedComboboxProps<Value, Item, Multiple>;
   renderLabelContent: () => ReactNode;
   extractValueToFieldValue: (
     value: Parameters<
-      NonNullable<UsedComboboxProps<Value, Multiple>["onValueChange"]>
+      NonNullable<UsedComboboxProps<Value, Item, Multiple>["onValueChange"]>
     >[0],
   ) => unknown;
 }) {
@@ -130,7 +131,7 @@ export default function ComboboxField<
           >
             <ComboboxEmpty>No items found.</ComboboxEmpty>
             <ComboboxList>
-              {(item: { value: string; label: string }) => (
+              {(item) => (
                 <ComboboxItem key={item.value} value={item}>
                   {renderItemContent ? renderItemContent(item) : item.label}
                 </ComboboxItem>

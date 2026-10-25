@@ -66,7 +66,7 @@ export default function CreateSpecimenDialog({
   const [isSpecimenTypeComboboxOpen, setIsSpecimenTypeComboboxOpen] =
     useState(false);
 
-  const specimenOptions = useMemo(() => {
+  const specimenTypeOptions = useMemo(() => {
     if (orderData?.data) {
       const specimenUsedBy = new Map<
         string,
@@ -215,14 +215,18 @@ export default function CreateSpecimenDialog({
               className="px-4 -mx-4 max-h-[50vh] overflow-y-auto"
             >
               <FieldGroup className="gap-4">
-                <ComboboxField<FormValues, (typeof specimenOptions)[number]>
+                <ComboboxField<
+                  FormValues,
+                  (typeof specimenTypeOptions)[number],
+                  (typeof specimenTypeOptions)[number]
+                >
                   name="specimenTypeId"
                   formId="create-specimen"
                   disabled={!orderData?.data}
                   extractValueToFieldValue={(value) => value?.value}
                   comboboxProps={{
                     open: isSpecimenTypeComboboxOpen,
-                    items: specimenOptions,
+                    items: specimenTypeOptions,
                     placeholder: "Select specimen type...",
                     onOpenChange: setIsSpecimenTypeComboboxOpen,
                     autoHighlight: true,
@@ -241,9 +245,7 @@ export default function CreateSpecimenDialog({
                       );
                     },
                     itemToStringLabel: (itemValue) => itemValue.label,
-                    renderItemContent: (
-                      item: (typeof specimenOptions)[number],
-                    ) => (
+                    renderItemContent: (item) => (
                       <Item size="xs" className="p-0">
                         <ItemContent>
                           <ItemTitle className="whitespace-nowrap mb-1">
