@@ -1,7 +1,6 @@
 import Link from "next/link";
-import LoginWithCredentialsForm from "@/components/authentication/signin-with-credentials-form";
-import SigninWithOAuthProviderButton from "@/components/authentication/signin-with-oauth-provider-button";
-
+import LoginWithCredentialsForm from "@/app/signin/_component/signin-with-credentials-form";
+import SigninWithOAuthProviderButton from "@/app/signin/_component/signin-with-oauth-provider-button";
 import { Field } from "@/components/ui/field";
 import { Hospital } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
@@ -28,14 +27,14 @@ async function Signin(props: {
 
         <p className="mb-4 text-center">Login with credentials</p>
 
-        <div className="max-w-52 md:max-w-72 mx-auto">
+        <div className="max-w-72 mx-auto">
           <LoginWithCredentialsForm callbackUrl={callbackUrl} />
         </div>
 
         <Separator orientation="horizontal" className="mt-5 mb-3" />
 
         <p className="mb-3 text-center">
-          ... or login as an{" "}
+          ... or login as a{" "}
           <span className="font-semibold">System Administrator</span>
         </p>
 

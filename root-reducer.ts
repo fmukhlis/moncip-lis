@@ -1,22 +1,21 @@
-import userReducer from "@/features/user/user-slice";
-import testPricingReducer from "@/features/master-data/test-pricing-slice";
-import authenticationReducer from "@/features/authentication/authSlice";
-import patientRegistryReducer from "@/features/operations/patient-registry/slice";
-import referenceRangesReducer from "@/features/master-data/reference-ranges-slice";
-import testAvailabilityReducer from "@/features/master-data/test-availability-slice";
-
+import organizationReducer from "@/app/(authenticated)/sys-admin/organization/slice";
+import labOrderablesReducer from "@/app/(authenticated)/sys-admin/laboratory-setup/lab-orderables/slice";
+import authenticationReducer from "@/app/(authenticated)/slice";
+import labOrderDetailReducer from "@/app/(authenticated)/staff/lab-orders/[labOrderId]/slice";
+import connectionSettingsReducer from "@/app/(authenticated)/sys-admin/integration/connections/slice";
+import integrationConnectionDetailReducer from "@/app/(authenticated)/sys-admin/integration/connections/[connectionId]/(group)/slice";
 import { serverFunctionSlice } from "./features/api/serverFunctionSlice";
 import { combineReducers, createAction, PayloadAction } from "@reduxjs/toolkit";
 
 export const resetApp = createAction("app/reset");
 
 const appReducer = combineReducers({
-  user: userReducer,
-  testPricing: testPricingReducer,
+  organization: organizationReducer,
+  labOrderables: labOrderablesReducer,
   authentication: authenticationReducer,
-  patientRegistry: patientRegistryReducer,
-  referenceRanges: referenceRangesReducer,
-  testAvailability: testAvailabilityReducer,
+  labOrderDetail: labOrderDetailReducer,
+  connectionSettings: connectionSettingsReducer,
+  integrationConnectionDetail: integrationConnectionDetailReducer,
   [serverFunctionSlice.reducerPath]: serverFunctionSlice.reducer,
 });
 

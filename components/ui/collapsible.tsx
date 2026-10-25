@@ -21,25 +21,19 @@ function CollapsibleTrigger({
 }
 
 function CollapsibleContent({
-  id,
   ...props
 }: React.ComponentProps<typeof CollapsiblePrimitive.CollapsibleContent>) {
-  const [isMounted, setIsMounted] = React.useState(false);
+  const [id, setId] = React.useState("");
 
   React.useEffect(() => {
-    setIsMounted(true);
-  }, []);
+    setId(props.id ?? "");
+  }, [props.id]);
 
-  return isMounted ? (
+  return (
     <CollapsiblePrimitive.CollapsibleContent
+      {...props}
       id={id}
       data-slot="collapsible-content"
-      {...props}
-    />
-  ) : (
-    <CollapsiblePrimitive.CollapsibleContent
-      data-slot="collapsible-content"
-      {...props}
     />
   );
 }

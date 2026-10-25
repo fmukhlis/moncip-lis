@@ -11,6 +11,8 @@ import {
   BookCheck,
   LucideIcon,
   FileSliders,
+  Plus,
+  List,
 } from "lucide-react";
 import {
   BookUser,
@@ -154,6 +156,18 @@ const NAV_MAIN_DATA: Record<
         title: "Test Orders",
         url: "/staff/operations/test-orders",
         icon: FilePlus,
+        items: [
+          {
+            title: "Orders",
+            url: "/staff/operations/test-orders",
+            icon: List,
+          },
+          {
+            title: "Create Order",
+            url: "/staff/operations/test-orders/create",
+            icon: Plus,
+          },
+        ],
       },
       {
         title: "Samples",
@@ -213,23 +227,28 @@ export default function NavMain({
                     >
                       <SidebarMenuItem>
                         <CollapsibleTrigger asChild>
-                          <SidebarMenuButton tooltip={item.title}>
+                          <SidebarMenuButton
+                            isActive={pathname.startsWith(item.url)}
+                            tooltip={item.title}
+                          >
                             {item.icon && <item.icon />}
                             <span className="text-nowrap">{item.title}</span>
                             <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
                           </SidebarMenuButton>
                         </CollapsibleTrigger>
                         <CollapsibleContent>
-                          <SidebarMenuSub>
+                          <SidebarMenuSub className="mt-0.5">
                             {item.items.map((subItem) => {
                               return (
                                 <SidebarMenuSubItem key={subItem.title}>
                                   <SidebarMenuSubButton
-                                    isActive={pathname.startsWith(subItem.url)}
+                                    isActive={pathname === subItem.url}
                                     asChild
                                   >
                                     <Link href={subItem.url}>
-                                      {subItem.icon && <subItem.icon />}
+                                      {subItem.icon && (
+                                        <subItem.icon className="size-3" />
+                                      )}
                                       <span className="text-nowrap">
                                         {subItem.title}
                                       </span>

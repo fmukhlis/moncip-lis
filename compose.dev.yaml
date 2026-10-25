@@ -12,18 +12,28 @@ services:
       - pnpm-store:/pnpm/store
     ports:
       - 3000:3000
+    networks:
+      - lis-his-network
 
-  db:
+  moncip-lis-db:
     image: postgres:17
     shm_size: 128mb
     environment:
       POSTGRES_USER: moncip_lis
       POSTGRES_PASSWORD: moncip_lis
+    networks:
+      - lis-his-network
 
-  adminer:
+  moncip-lis-adminer:
     image: adminer
     ports:
       - 8080:8080
+    networks:
+      - lis-his-network
 
 volumes:
   pnpm-store:
+
+networks:
+  lis-his-network:
+    external: true

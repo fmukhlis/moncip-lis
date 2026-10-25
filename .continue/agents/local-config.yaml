@@ -1,0 +1,42 @@
+name: Local Assistant
+version: 1.0.0
+schema: v1
+models:
+  - name: DeepSeek Flash
+    provider: deepseek
+    model: deepseek-flash
+    apiKey: sk-2ef440390c85484587797be3ce36f945
+    apiBase: https://api.deepseek.com
+    roles:
+      - chat
+      - edit
+      - apply
+      - summarize
+      - autocomplete
+    contextLength: 128000
+    defaultCompletionOptions:
+      temperature: 0.0
+      maxTokens: 256
+  - name: DeepSeek Chat
+    provider: deepseek
+    model: deepseek-chat
+    apiKey: sk-2ef440390c85484587797be3ce36f945
+    apiBase: https://api.deepseek.com
+    roles:
+      - chat
+      - edit
+      - apply
+      - summarize
+      - autocomplete
+    contextLength: 128000
+    defaultCompletionOptions:
+      temperature: 0.0
+      maxTokens: 256
+context:
+  - provider: code
+  - provider: docs
+  - provider: diff
+  - provider: terminal
+  - provider: problems
+  - provider: folder
+  - provider: codebase
