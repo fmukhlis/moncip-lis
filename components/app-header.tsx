@@ -103,7 +103,7 @@ export function AppHeader({
     };
 
     setCrumbs(mergedBreadcrumbData[pathname] ?? []);
-  }, [setCrumbs, pathname]);
+  }, [setCrumbs, pathname, breadcrumbData, connectionId, labOrderId]);
 
   return (
     <header className="bg-background sticky top-0 z-50 flex w-full items-center border-b">
