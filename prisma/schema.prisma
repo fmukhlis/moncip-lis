@@ -14,33 +14,151 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum PatientSex {
+  MALE
+  FEMALE
+  UNKNOWN
+}
+
+enum IntegrationEventType {
+  CLINICAL_ORDER_CREATED
+  CATALOG_SYNC
+  PATIENT_SYNC
+}
+
+enum SpecimenRejectionReason {
+  INSUFFICIENT_VOLUME
+  HEMOLYZED
+  CLOTTED
+  WRONG_CONTAINER
+  MISMATCHED_IDENTITY
+  CONTAMINATED
+  OTHER
+}
+
+enum SpecimenCancellationReason {
+  NO_LONGER_NEEDED
+  LAB_ORDER_CANCELLED
+  DUPLICATE_SPECIMEN
+  OTHER
+}
+
+enum SpecimenAssignmentEndReason {
+  REASSIGNED
+  SPECIMEN_REJECTED
+  SPECIMEN_CANCELLED
+  LAB_ORDER_ITEM_CANCELLED
+}
+
+enum InboundIntegrationEventStatus {
+  RECEIVED
+  PROCESSED
+  FAILED
+  DUPLICATE
+}
+
+enum OutboundIntegrationEventStatus {
+  QUEUED
+  SENDING
+  SENT
+  ACKNOWLEDGED
+  FAILED
+  RETRY_WAITING
+  CANCELLED
+}
+
+enum ExternalOrderableType {
+  TEST
+  PANEL
+}
+
+enum LisPerformableType {
+  SINGLE
+  PANEL
+}
+
+enum ResultValueType {
+  NUMERIC
+  TEXT
+  CODED
+  BOOLEAN
+}
+
+enum LabOrderStatus {
+  ORDERED
+  IN_PROCESS
+  COMPLETED
+  CANCELLED
+}
+
+enum LabOrderItemStatus {
+  OPEN
+  PRINTED
+  COLLECTED
+  RECEIVED
+  PRELIMINARY
+  VERIFIED
+  REJECTED
+  TNP
+  CANCELLED
+}
+
+enum LabOrderPriority {
+  ROUTINE
+  URGENT
+  STAT
+}
+
+enum Role {
+  SYS_ADMIN
+  LAB_ADMIN
+  DOCTOR
+  STAFF
+}
+
+enum IntegrationAuthType {
+  API_KEY
+  BEARER_TOKEN
+}
+
+enum SpecimenStatus {
+  PENDING
+  COLLECTED
+  RECEIVED
+  REJECTED
+  CANCELLED
+}
+
+enum AuditLogEntityType {
+  SPECIMEN
+  LAB_ORDER_ITEM
+}
+
 model User {
-  laboratoryId  String?
   id            String          @id @default(cuid(2))
+  laboratoryId  String?
+  departmentId  String?
+
   name          String?
-  email         String?          @unique
-  username      String?          @unique
-  emailVerified DateTime?
+  role          Role            @default(SYS_ADMIN)
+  email         String?         @unique
   image         String?
-  role          Role            @default(sys_admin)
   password      String?
-  laboratory    Laboratory?     @relation(fields: [laboratoryId], references: [id])
+  username      String?         @unique
+  emailVerified DateTime?
+  
   accounts      Account[]
   sessions      Session[]
+  auditLogs     AuditLog[]
+  department    Department?     @relation(fields: [departmentId], references: [id])
+  laboratory    Laboratory?     @relation(fields: [laboratoryId], references: [id])
   // Optional for WebAuthn support
   Authenticator Authenticator[]
- 
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-enum Role {
-  sys_admin
-  lab_admin
-  doctor
-  staff
-}
- 
 model Account {
   userId            String
   type              String
@@ -53,33 +171,33 @@ model Account {
   scope             String?
   id_token          String?
   session_state     String?
- 
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
- 
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
+
   @@id([provider, providerAccountId])
 }
- 
+
 model Session {
   sessionToken String   @unique
   userId       String
   expires      DateTime
   user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
- 
+
 model VerificationToken {
   identifier String
   token      String
   expires    DateTime
- 
+
   @@id([identifier, token])
 }
- 
+
 // Optional for WebAuthn support
 model Authenticator {
   credentialID         String  @unique
@@ -90,244 +208,693 @@ model Authenticator {
   credentialDeviceType String
   credentialBackedUp   Boolean
   transports           String?
- 
+
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
- 
+
   @@id([userId, credentialID])
 }
 
 model Laboratory {
-  id                          String                        @id @default(cuid(2))
+  id String @id @default(cuid(2))
 
   // Relationships
-  users                       User[]
-  patients                    Patient[]
-  labTestGroups               LabTestGroup[]
-  laboratoriesOnLabTests      LaboratoriesOnLabTests[]      
-
-  // Timestamps
-  createdAt                   DateTime                      @default(now())
-  updatedAt                   DateTime                      @updatedAt
-}
-
-model LaboratoriesOnLabTests {
-  id                      String                @id @default(cuid(2))
-  notOrderableReason      String?
-
-  // Relationships
-  labTest                 LabTest               @relation(fields: [labTestId], references: [id])
-  labTestId               String
-  laboratory              Laboratory            @relation(fields: [laboratoryId], references: [id])
-  laboratoryId            String
-  defaultUnit             Unit?                 @relation("defaultUnit", fields: [defaultUnitId], references: [id])
-  defaultUnitId           String?
-  prices                  Price[]
-  referenceRanges         ReferenceRange[]
-  labTestGroups           LabTestGroup[]
-
-  // Timestamps
-  createdAt               DateTime              @default(now())
-  updatedAt               DateTime              @updatedAt
-  deletedAt               DateTime?
-
-  @@unique([labTestId, laboratoryId])
-}
-
-model LabTestGroup {
-  id                          String                        @id @default(cuid(2))
-  code                        String                        
-  name                        String
-  description                 String?
-  notOrderableReason          String?
-
-  // Relationships
-  laboratory                  Laboratory                    @relation(fields: [laboratoryId], references: [id])
-  laboratoryId                String
-  prices                      Price[]
-  laboratoriesOnLabTests      LaboratoriesOnLabTests[]
-
-  // Timestamps
-  validFrom                   DateTime                      @default(now())
-  validTo                     DateTime?
-  createdAt                   DateTime                      @default(now())
-  updatedAt                   DateTime                      @updatedAt
-  deletedAt                   DateTime?
-}
-
-enum AgeUnit {
-  M
-  Y
-}
-
-model ReferenceRange {
-  id                            String                      @id @default(cuid(2))
-  gender                        Gender
-  ageMin                        Int
-  ageMinUnit                    AgeUnit
-  ageMax                        Int
-  ageMaxUnit                    AgeUnit
-  valueLow                      Decimal?
-  valueHigh                     Decimal?
-  normalValues                  String[]                    @default([])
-
-  // Relationships
-  unit                          Unit?                       @relation(fields: [unitId], references: [id])
-  unitId                        String?
-  laboratoriesOnLabTests        LaboratoriesOnLabTests      @relation(fields: [laboratoriesOnLabTestsId], references: [id])
-  laboratoriesOnLabTestsId      String
+  users                     User[]
+  patients                  Patient[]
+  auditLogs                 AuditLog[]
+  labOrders                 LabOrder[]
+  specimens                 Specimen[]
+  departments               Department[]
+  labOrderItems             LabOrderItem[]
+  lisPerformables           LisPerformable[]
+  integrationTokens         IntegrationToken[]
+  lisResultComponents       LisResultComponent[]
+  externalLabOrderables     ExternalLabOrderable[]
+  labOrderItemSpecimens     LabOrderItemSpecimen[]
+  integrationConnections    IntegrationConnection[]
+  integrationCredentials    IntegrationCredential[]
+  inboundIntegrationEvents  InboundIntegrationEvent[]
+  outboundIntegrationEvents OutboundIntegrationEvent[]
   
   // Timestamps
-  validFrom                     DateTime                    @default(now())
-  validTo                       DateTime?
-  createdAt                     DateTime                    @default(now())
-  updatedAt                     DateTime                    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-enum Gender {
-  M
-  F
-  B
-}
+model Department {
+  id           String @id @default(cuid(2))
+  laboratoryId String
 
-model Price {
-  id                            String                      @id @default(cuid(2))
-  price                         Decimal   
-  
-  // Relationships
-  tariffGroup                   TariffGroup                 @relation(fields: [tariffGroupId], references: [id])
-  tariffGroupId                 String
-  labTestGroup                  LabTestGroup?               @relation(fields: [labTestGroupId], references: [id])
-  labTestGroupId                String?
-  laboratoriesOnLabTests        LaboratoriesOnLabTests?     @relation(fields: [laboratoriesOnLabTestsId], references: [id])
-  laboratoriesOnLabTestsId      String?
+  code        String
+  color       String
+  isActive    Boolean @default(true)
+  displayName String
+  description String?
+
+  // Realtionships
+  users        User[]
+  laboratory   Laboratory       @relation(fields: [laboratoryId], references: [id], onDelete: Cascade)
+  performables LisPerformable[]
 
   // Timestamps
-  validFrom                     DateTime                    @default(now())
-  validTo                       DateTime?
-  createdAt                     DateTime                    @default(now())
-  updatedAt                     DateTime                    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([laboratoryId, code])
+  @@index([laboratoryId])
 }
+
+// enum AgeUnit {
+//   M
+//   Y
+// }
+
+// enum Gender {
+//   M
+//   F
+//   B
+// }
+
+// model ReferenceRange {
+//   id                            String                      @id @default(cuid(2))
+//   gender                        Gender
+//   ageMin                        Int
+//   ageMinUnit                    AgeUnit
+//   ageMax                        Int
+//   ageMaxUnit                    AgeUnit
+//   valueLow                      Decimal?
+//   valueHigh                     Decimal?
+//   normalValues                  String[]                    @default([])
+
+//   // Relationships
+//   unit                          Unit?                       @relation(fields: [unitId], references: [id])
+//   unitId                        String?
+//   laboratoriesOnLabTests        LaboratoriesOnLabTests      @relation(fields: [laboratoriesOnLabTestsId], references: [id])
+//   laboratoriesOnLabTestsId      String
+
+//   // Timestamps
+//   validFrom                     DateTime                    @default(now())
+//   validTo                       DateTime?
+//   createdAt                     DateTime                    @default(now())
+//   updatedAt                     DateTime                    @updatedAt
+// }
+
+
+// model Price {
+//   id                            String                      @id @default(cuid(2))
+//   price                         Decimal   
+
+//   // Relationships
+//   tariffGroup                   TariffGroup                 @relation(fields: [tariffGroupId], references: [id])
+//   tariffGroupId                 String
+//   labTestGroup                  LabTestGroup?               @relation(fields: [labTestGroupId], references: [id])
+//   labTestGroupId                String?
+//   laboratoriesOnLabTests        LaboratoriesOnLabTests?     @relation(fields: [laboratoriesOnLabTestsId], references: [id])
+//   laboratoriesOnLabTestsId      String?
+
+//   // Timestamps
+//   validFrom                     DateTime                    @default(now())
+//   validTo                       DateTime?
+//   createdAt                     DateTime                    @default(now())
+//   updatedAt                     DateTime                    @updatedAt
+// }
 
 model Patient {
-  id                    String          @id @default(cuid(2))
-  name                  String
-  gender                Gender
-  source                Source
-  dateOfBirth           DateTime      
-  laboratoryId          String
-  externalSystemId      String?
+  id           String @id @default(cuid(2))
+  laboratoryId String
+
+  mrn               String?
+  sex               PatientSex @default(UNKNOWN)
+  name              String
+  phone             String?
+  address           String?
+  dateOfBirth       DateTime
+  lastSnapshot      Json?
+  sourceSystem      String
+  externalPatientId String?
 
   // Relationships
-  laboratory            Laboratory      @relation(fields: [laboratoryId], references: [id])
+  labOrders  LabOrder[]
+  specimens  Specimen[]
+  laboratory Laboratory @relation(fields: [laboratoryId], references: [id])
 
   // Timestamps
-  createdAt             DateTime        @default(now())
-  linkedAt              DateTime?
-  deletedAt             DateTime?
+  linkedAt     DateTime?
+  createdAt    DateTime  @default(now())
+  deletedAt    DateTime?
+  updatedAt    DateTime  @updatedAt
+  lastSyncedAt DateTime?
+
+  @@unique([laboratoryId, sourceSystem, externalPatientId])
+  @@index([laboratoryId, sourceSystem])
+  @@index([laboratoryId, name])
+  @@index([laboratoryId, mrn])
 }
 
-enum Source {
-  MANUAL
-  HIS
+model IntegrationConnection {
+  id           String @id @default(cuid(2))
+  laboratoryId String
+
+  name         String
+  type         IntegrationAuthType
+  baseUrl      String?
+  isActive     Boolean             @default(true)
+  sourceSystem String
+
+  // Relationships
+  tokens             IntegrationToken[]
+  credentials        IntegrationCredential[]
+  laboratory         Laboratory                 @relation(fields: [laboratoryId], references: [id])
+  inboundEvents      InboundIntegrationEvent[]
+  outboundEvents     OutboundIntegrationEvent[]
+  externalOrderables ExternalLabOrderable[]
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([laboratoryId, sourceSystem, name])
+  @@index([laboratoryId, sourceSystem])
+  @@index([laboratoryId, isActive])
 }
 
+model IntegrationToken {
+  id           String @id @default(cuid(2))
+  connectionId String
+  laboratoryId String
 
-// -------------------------- Statically Generated Data -------------------------- //
+  name            String
+  tokenHash       String  @unique
+  tokenPrefix     String
+  createdByUserId String?
+  revokedByUserId String?
 
-model LabTest {
-  id                          String                      @id @default(cuid(2))
-  code                        String                      @unique
-  name                        String
-  possibleValues              String[]                    @default([])
-  
-  scale                       Scale                       @relation(fields: [scaleId], references: [id])
-  scaleId                     String
-  
-  method                      Method?                     @relation(fields: [methodId], references: [id])
-  methodId                    String?
-  
-  category                    Category                    @relation(fields: [categoryId], references: [id])
-  categoryId                  String
-  
-  units                       Unit[]                      @relation("units")
-  specimens                   Specimen[]          
-  laboratoriesOnLabTests      LaboratoriesOnLabTests[]
+  // Relationships
+  connection    IntegrationConnection     @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  laboratory    Laboratory                @relation(fields: [laboratoryId], references: [id])
+  inboundEvents InboundIntegrationEvent[]
+
+  // Timestamps
+  expiresAt  DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  lastUsedAt DateTime?
+
+  @@index([laboratoryId, connectionId])
+  @@index([laboratoryId, tokenPrefix])
+  @@index([laboratoryId, revokedAt])
+}
+
+model IntegrationCredential {
+  id           String @id @default(cuid(2))
+  connectionId String
+  laboratoryId String
+
+  name            String
+  secretPrefix    String
+  encryptedSecret String
+  createdByUserId String?
+  revokedByUserId String?
+
+  // Relationships
+  connection     IntegrationConnection      @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  laboratory     Laboratory                 @relation(fields: [laboratoryId], references: [id])
+  outboundEvents OutboundIntegrationEvent[]
+
+  // Timestamps
+  expiresAt  DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  lastUsedAt DateTime?
+
+  @@index([laboratoryId, connectionId])
+  @@index([laboratoryId, secretPrefix])
+  @@index([laboratoryId, revokedAt])
+}
+
+model ExternalLabOrderable {
+  id           String @id @default(cuid(2))
+  connectionId String
+  laboratoryId String
+
+  type                ExternalOrderableType @default(TEST)
+  isActive            Boolean               @default(true)
+  categoryCode        String?
+  externalCode        String
+  sourceSystem        String
+  categoryDisplay     String?
+  externalDisplay     String
+  externalCodeSystem  String
+  rawCatalogSnapshot  Json?
+  externalOrderableId String
+
+  // Relationships
+  connection    IntegrationConnection @relation(fields: [connectionId], references: [id])
+  laboratory    Laboratory            @relation(fields: [laboratoryId], references: [id])
+  performables  LisPerformable[]
+  labOrderItems LabOrderItem[]
+
+  // Timestamps
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  lastSyncedAt DateTime?
+
+  @@unique([laboratoryId, sourceSystem, externalCodeSystem, externalCode])
+  @@unique([laboratoryId, sourceSystem, externalOrderableId])
+  @@index([laboratoryId, sourceSystem])
+  @@index([laboratoryId, isActive])
+}
+
+model LisPerformable {
+  id                  String  @id @default(cuid(2))
+  departmentId        String?
+  laboratoryId        String
+  externalOrderableId String
+
+  type        LisPerformableType @default(SINGLE)
+  isActive    Boolean            @default(true)
+  displayName String
+
+  // Relationships
+  department        Department?                  @relation(fields: [departmentId], references: [id])
+  laboratory        Laboratory                   @relation(fields: [laboratoryId], references: [id])
+  labOrderItems     LabOrderItem[]
+  specimenTypes     LisPerformableSpecimenType[]
+  resultComponents  LisResultComponent[]
+  externalOrderable ExternalLabOrderable         @relation(fields: [externalOrderableId], references: [id])
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([laboratoryId, externalOrderableId])
+  @@index([laboratoryId, departmentId])
+  @@index([laboratoryId, isActive])
+}
+
+model LisResultComponent {
+  id            String  @id @default(cuid(2))
+  unitId        String?
+  laboratoryId  String
+  performableId String
+
+  code          String
+  isActive      Boolean         @default(true)
+  sortOrder     Int             @default(0)
+  valueType     ResultValueType
+  isRequired    Boolean         @default(true)
+  displayName   String
+  decimalPlaces Int?
+
+  // Relationships
+  unit        Unit?          @relation(fields: [unitId], references: [id])
+  laboratory  Laboratory     @relation(fields: [laboratoryId], references: [id])
+  performable LisPerformable @relation(fields: [performableId], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([laboratoryId, performableId, code])
+  @@index([laboratoryId, performableId])
+  @@index([laboratoryId, isActive])
+}
+
+model LabOrder {
+  id           String  @id @default(cuid(2))
+  patientId    String?
+  laboratoryId String
+
+  no                         String
+  period                     String
+  status                     LabOrderStatus   @default(ORDERED)
+  priority                   LabOrderPriority @default(ROUTINE)
+  sequence                   Int
+  externalId                 String
+  externalNo                 String?
+  sourceSystem               String
+  externalPatientId          String
+  externalEncounterId        String
+  externalOrderingProviderId String
+
+  // Relationships
+  items          LabOrderItem[]
+  patient        Patient?                   @relation(fields: [patientId], references: [id])
+  specimens      Specimen[]
+  laboratory     Laboratory                 @relation(fields: [laboratoryId], references: [id])
+  inboundEvents  InboundIntegrationEvent[]
+  outboundEvents OutboundIntegrationEvent[]
+
+  // Timestamps
+  orderedAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  receivedAt DateTime @default(now())
+
+  @@unique([laboratoryId, no])
+  @@unique([laboratoryId, sourceSystem, externalId])
+  @@unique([laboratoryId, sourceSystem, externalNo])
+  @@index([laboratoryId, patientId])
+  @@index([laboratoryId, status, priority])
+  @@index([laboratoryId, externalPatientId])
+  @@index([laboratoryId, createdAt(sort: Desc)])
+}
+
+model LabOrderCounter {
+  period    String   @id
+  sequence  Int
+  updatedAt DateTime @updatedAt
+}
+
+model LabOrderItem {
+  id                  String @id @default(cuid(2))
+  labOrderId          String
+  laboratoryId        String
+  performableId       String
+  externalOrderableId String
+
+  note                        String?
+  status                      LabOrderItemStatus @default(OPEN)
+  priority                    LabOrderPriority?
+  sortOrder                   Int                @default(0)
+  performableSnapshot         Json?
+  externalOrderItemId         String
+  specimenTypeCodeSnapshot    String?
+  specimenTypeDisplaySnapshot String?
+
+  // Relationships
+  labOrder          LabOrder               @relation(fields: [labOrderId], references: [id], onDelete: Cascade)
+  specimens         LabOrderItemSpecimen[]
+  laboratory        Laboratory             @relation(fields: [laboratoryId], references: [id])
+  performable       LisPerformable         @relation(fields: [performableId], references: [id])
+  externalOrderable ExternalLabOrderable   @relation(fields: [externalOrderableId], references: [id])
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([labOrderId, externalOrderItemId])
+  @@index([laboratoryId, externalOrderableId])
+  @@index([laboratoryId, performableId])
+  @@index([laboratoryId, labOrderId])
+  @@index([laboratoryId, status])
+}
+
+model LabOrderItemSpecimen {
+  id             String @id @default(cuid(2))
+  specimenId     String
+  laboratoryId   String
+  labOrderItemId String
+
+  endReason SpecimenAssignmentEndReason?
+
+  // Relationships
+  specimen     Specimen     @relation(fields: [specimenId], references: [id], onDelete: Cascade)
+  laboratory   Laboratory   @relation(fields: [laboratoryId], references: [id])
+  labOrderItem LabOrderItem @relation(fields: [labOrderItemId], references: [id], onDelete: Cascade)
+
+  // Timestamps
+  endedAt    DateTime?
+  createdAt  DateTime @default(now())
+  assignedAt DateTime @default(now())
+
+  @@index([specimenId])
+  @@index([labOrderItemId])
+  @@index([labOrderItemId, specimenId])
+}
+
+model InboundIntegrationEvent {
+  id           String  @id @default(cuid(2))
+  tokenId      String
+  labOrderId   String?
+  connectionId String
+  laboratoryId String
+
+  status             InboundIntegrationEventStatus @default(RECEIVED)
+  errorCode          String?
+  eventType          IntegrationEventType
+  messageId          String
+  errorMessage       String?
+  resultSummary      Json?
+  idempotencyKey     String
+  requestPayload     Json
+  externalOrderId    String?
+  responsePayload    Json?
+  requestPayloadHash String
+
+  // Relationships
+  token      IntegrationToken      @relation(fields: [tokenId], references: [id])
+  labOrder   LabOrder?             @relation(fields: [labOrderId], references: [id])
+  connection IntegrationConnection @relation(fields: [connectionId], references: [id])
+  laboratory Laboratory            @relation(fields: [laboratoryId], references: [id])
+
+  // Timestamps
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  receivedAt  DateTime  @default(now())
+  processedAt DateTime?
+
+  @@unique([laboratoryId, connectionId, idempotencyKey])
+  @@unique([laboratoryId, connectionId, messageId])
+  @@index([laboratoryId, connectionId, externalOrderId])
+  @@index([laboratoryId, status, receivedAt])
+  @@index([laboratoryId, labOrderId])
+}
+
+model OutboundIntegrationEvent {
+  id           String  @id @default(cuid(2))
+  labOrderId   String?
+  connectionId String
+  credentialId String
+  laboratoryId String
+
+  status             OutboundIntegrationEventStatus @default(QUEUED)
+  errorCode          String?
+  eventType          IntegrationEventType
+  messageId          String
+  attemptCount       Int                            @default(0)
+  errorMessage       String?
+  targetSystem       String
+  resultSummary      Json?
+  idempotencyKey     String
+  requestPayload     Json
+  externalOrderId    String?
+  responsePayload    Json?
+  requestPayloadHash String
+
+  // Relationships
+  labOrder   LabOrder?             @relation(fields: [labOrderId], references: [id])
+  connection IntegrationConnection @relation(fields: [connectionId], references: [id])
+  credential IntegrationCredential @relation(fields: [credentialId], references: [id])
+  laboratory Laboratory            @relation(fields: [laboratoryId], references: [id])
+
+  // Timestamps
+  sentAt         DateTime?
+  queuedAt       DateTime  @default(now())
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  nextRetryAt    DateTime?
+  lastAttemptAt  DateTime?
+  acknowledgedAt DateTime?
+
+  @@unique([laboratoryId, targetSystem, idempotencyKey])
+  @@unique([laboratoryId, targetSystem, messageId])
+  @@index([laboratoryId, targetSystem, externalOrderId])
+  @@index([laboratoryId, status, queuedAt])
+  @@index([laboratoryId, labOrderId])
+  @@index([laboratoryId, credentialId])
+}
+
+model LisPerformableSpecimenType {
+  specimenTypeId   String
+  lisPerformableId String
+
+  isDefault Boolean @default(false)
+
+  specimenType   SpecimenType   @relation(fields: [specimenTypeId], references: [id])
+  lisPerformable LisPerformable @relation(fields: [lisPerformableId], references: [id], onDelete: Cascade)
+
+  @@id([lisPerformableId, specimenTypeId])
+  @@index([specimenTypeId])
 }
 
 model Specimen {
-  id              String      @id @default(cuid(2))
-  code            String      @unique
-  name            String
-  description     String?
-  abbreviation    String
+  id             String @id @default(cuid(2))
+  patientId      String
+  labOrderId     String
+  laboratoryId   String
+  specimenTypeId String
 
-  labTests        LabTest[]   
+  no                 String
+  note               String?
+  period             String
+  status             SpecimenStatus @default(PENDING)
+  sequence           Int
+  rejectionReason    SpecimenRejectionReason?
+  cancellationReason SpecimenCancellationReason?
+
+  // Relationships
+  patient      Patient                @relation(fields: [patientId], references: [id])
+  labOrder     LabOrder               @relation(fields: [labOrderId], references: [id])
+  laboratory   Laboratory             @relation(fields: [laboratoryId], references: [id])
+  orderItems   LabOrderItemSpecimen[]
+  specimenType SpecimenType           @relation(fields: [specimenTypeId], references: [id])
+
+  // Timestamps
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  receivedAt  DateTime?
+  rejectedAt  DateTime?
+  cancelledAt DateTime?
+  collectedAt DateTime?
+
+  @@index([laboratoryId, status])
+  @@index([laboratoryId, patientId])
+  @@index([laboratoryId, labOrderId])
+  @@index([laboratoryId, specimenTypeId])
 }
 
-model Category {
-  id              String            @id @default(cuid(2))
-  code            String            @unique
-  name            String
-  description     String?
-
-  labTests        LabTest[]
+model SpecimenCounter {
+  period    String   @id
+  sequence  Int
+  updatedAt DateTime @updatedAt
 }
 
-model Method {
-  id              String      @id @default(cuid(2))
-  code            String      @unique
-  name            String
-  description     String?
-  abbreviation    String      
+model AuditLog {
+  id           String   @id @default(cuid(2))
+  actorId      String?
+  laboratoryId String
 
-  labTests        LabTest[]
+  action     String
+  entityId   String
+  entityType AuditLogEntityType
+
+  reason   String?
+  metadata Json?
+
+  // Timestamps
+  createdAt DateTime @default(now())
+
+  // Relationships
+  actor      User? @relation(fields: [actorId], references: [id])
+  laboratory Laboratory @relation(fields: [laboratoryId], references: [id])
+
+  @@index([laboratoryId, entityType, entityId, createdAt])
+  @@index([laboratoryId, action, createdAt])
+  @@index([laboratoryId, actorId, createdAt])
+}
+
+model OrderSequence {
+  id      String @id @default(cuid(2))
+  value   Int
+  dateKey String @unique
+}
+
+// -------------------------- Statically Generated Data -------------------------- //
+
+model SpecimenType {
+  id          String  @id @default(cuid(2))
+  code        String  @unique
+  isActive    Boolean @default(true)
+  displayName String
+  description String?
+
+  // Relationships
+  specimens    Specimen[]
+  performables LisPerformableSpecimenType[]
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Unit {
-  id                          String                        @id @default(cuid(2))
-  code                        String                        @unique
-  name                        String
-  description                 String?
-  displayCode                 String
+  id          String  @id @default(cuid(2))
+  code        String  @unique
+  isActive    Boolean @default(true)
+  displayName String
+  description String?
 
-  labTests                    LabTest[]                     @relation("units")
-  conversionTo                UnitConversion[]              @relation("toUnit")
-  referenceRanges             ReferenceRange[]    
-  conversionsFrom             UnitConversion[]              @relation("fromUnit")
-  laboratoriesOnLabTests      LaboratoriesOnLabTests[]      @relation("defaultUnit")
+  // Relationships
+  resultComponents LisResultComponent[]
+
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
-model Scale {
-  id                String        @id @default(cuid(2))
-  code              String        @unique
-  name              String
-  description       String?
-  abbreviation      String
+// model LabTest {
+//   id                          String                      @id @default(cuid(2))
+//   code                        String                      @unique
+//   name                        String
+//   possibleValues              String[]                    @default([])
 
-  labTests          LabTest[]   
-}
+//   scale                       Scale                       @relation(fields: [scaleId], references: [id])
+//   scaleId                     String
 
-model UnitConversion {
-  id              String        @id @default(cuid(2))
-  factor          Decimal
-  offset          Decimal?    
-  
-  fromUnit        Unit          @relation("fromUnit", fields: [fromUnitId], references: [id])
-  fromUnitId      String
-  
-  toUnit          Unit          @relation("toUnit", fields: [toUnitId], references: [id])
-  toUnitId        String
+//   method                      Method?                     @relation(fields: [methodId], references: [id])
+//   methodId                    String?
 
-  @@unique([fromUnitId, toUnitId])
-}
+//   category                    Category                    @relation(fields: [categoryId], references: [id])
+//   categoryId                  String
 
-model TariffGroup {
-  id              String      @id @default(cuid(2))
-  code            String      @unique
-  name            String
-  description     String?
+//   units                       Unit[]                      @relation("units")
+//   specimens                   Specimen[]          
+//   laboratoriesOnLabTests      LaboratoriesOnLabTests[]
+// }
 
-  prices          Price[]
-}
+// model Specimen {
+//   id              String      @id @default(cuid(2))
+//   code            String      @unique
+//   name            String
+//   description     String?
+//   abbreviation    String
+
+//   performables    LisPerformable[]   
+// }
+
+// model Category {
+//   id              String            @id @default(cuid(2))
+//   code            String            @unique
+//   name            String
+//   description     String?
+
+//   labTests        LabTest[]
+// }
+
+// model Method {
+//   id              String      @id @default(cuid(2))
+//   code            String      @unique
+//   name            String
+//   description     String?
+//   abbreviation    String      
+
+//   labTests        LabTest[]
+// }
+
+// model Scale {
+//   id                String        @id @default(cuid(2))
+//   code              String        @unique
+//   name              String
+//   description       String?
+//   abbreviation      String
+
+//   labTests          LabTest[]   
+// }
+
+// model UnitConversion {
+//   id              String        @id @default(cuid(2))
+//   factor          Decimal
+//   offset          Decimal?    
+
+//   fromUnit        Unit          @relation("fromUnit", fields: [fromUnitId], references: [id])
+//   fromUnitId      String
+
+//   toUnit          Unit          @relation("toUnit", fields: [toUnitId], references: [id])
+//   toUnitId        String
+
+//   @@unique([fromUnitId, toUnitId])
+// }
 
 // -------------------------- Statically Generated Data -------------------------- //

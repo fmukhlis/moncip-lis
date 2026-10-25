@@ -3,6 +3,7 @@
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
+import { RowData } from "@tanstack/react-table";
 
 function DefaultTable({ className, ...props }: React.ComponentProps<"table">) {
   return (
@@ -139,3 +140,14 @@ export {
   TableCaption,
   DefaultTable,
 };
+
+/* eslint-disable @typescript-eslint/no-unused-vars */
+declare module "@tanstack/react-table" {
+  interface ColumnMeta<TData extends RowData, TValue> {
+    headerClassName?: string;
+    cellClassName?: string;
+  }
+  interface TableMeta<TData extends RowData> {
+    moveRow: (index: number, direction: "UP" | "DOWN") => void;
+  }
+}

@@ -1,10 +1,8 @@
 import Link from "next/link";
-import NavMain from "./nav-main";
 import NavUser from "./nav-user";
-import NavSecondary from "./nav-secondary";
-
-import { auth } from "@/auth";
+import { SideNav } from "./side-nav";
 import { Hospital } from "lucide-react";
+import { DataProps } from "@/lib/navigation-data";
 import {
   Sidebar,
   SidebarMenu,
@@ -15,9 +13,14 @@ import {
   SidebarMenuButton,
 } from "./ui/sidebar";
 
-export default async function AppSidebar() {
-  const session = await auth();
-
+export default async function AppSidebar({
+  sidebarData,
+}: {
+  sidebarData: {
+    label: string | null;
+    data: DataProps[];
+  }[];
+}) {
   return (
     <Sidebar
       variant="inset"
@@ -44,14 +47,9 @@ export default async function AppSidebar() {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        {!!session?.user?.role && (
-          <>
-            <div className="mt-2">
-              <NavSecondary role={session.user.role} />
-            </div>
-            <NavMain role={session.user.role} />
-          </>
-        )}
+        {sidebarData.map(({ data, label }, index) => (
+          <SideNav key={index} data={data} label={label} />
+        ))}
       </SidebarContent>
       <SidebarFooter>
         <NavUser />

@@ -1,0 +1,19 @@
+import { Session } from "next-auth";
+import { createLaboratory } from "./lab.service";
+
+export async function createLaboratoryAction(user: Session["user"]) {
+  if (user?.id && !user?.laboratoryId && user?.role === "SYS_ADMIN") {
+    await createLaboratory(user.id);
+    return {
+      success: true,
+      message: "Laboratory was created successfully.",
+      data: null,
+    };
+  }
+
+  return {
+    success: false,
+    message: "User already has a laboratory or lacks privileges.",
+    data: null,
+  };
+}

@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 import { NextRequest } from "next/server";
+import { differenceInMonths, differenceInYears } from "date-fns";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -24,4 +25,15 @@ export function extractBearerToken(req: NextRequest) {
   if (!token) return null;
 
   return token;
+}
+
+export function getPatientAge(dob: Date) {
+  const years = differenceInYears(new Date(), dob);
+
+  if (years >= 1) {
+    return `${years} y`;
+  }
+
+  const months = differenceInMonths(new Date(), dob);
+  return `${months} mo`;
 }

@@ -1,8 +1,9 @@
 "use client";
 
+import { Role } from "@/generated/prisma";
 import { useSession } from "next-auth/react";
 import { useAppDispatch } from "@/hooks";
-import { setShowSignoutDialog } from "@/features/authentication/authSlice";
+import { setShowSignoutDialog } from "@/app/(authenticated)/slice";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { LogOut, UserPen, Settings2, ChevronsUpDown } from "lucide-react";
 import {
@@ -20,14 +21,13 @@ import {
   DropdownMenuTrigger,
   DropdownMenuSeparator,
 } from "./ui/dropdown-menu";
-import { $Enums } from "@/generated/prisma";
 
 const ROLE_LABEL = {
-  sys_admin: "System Administrator",
-  lab_admin: "Laboratory Administrator",
-  doctor: "Doctor",
-  staff: "Staff",
-} satisfies Record<$Enums.Role, string>;
+  SYS_ADMIN: "System Administrator",
+  LAB_ADMIN: "Laboratory Administrator",
+  DOCTOR: "Doctor",
+  STAFF: "Staff",
+} satisfies Record<Role, string>;
 
 export default function NavUser() {
   const session = useSession();
@@ -71,7 +71,6 @@ export default function NavUser() {
           <DropdownMenuContent
             side={isMobile ? "bottom" : "right"}
             align="end"
-            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
             sideOffset={4}
           >
             <DropdownMenuLabel className="p-0 font-normal">

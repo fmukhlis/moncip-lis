@@ -1,25 +1,4 @@
 import prisma from "./lib/prisma";
-import { seedTariffGroup } from "./lib/seed-master-tariff-group";
-
-import {
-  seedCategories,
-  seedLabTests,
-  seedMethods,
-  seedScales,
-  seedSpecimens,
-  seedUnits,
-} from "./lib/seed-master-test";
-
-beforeAll(async () => {
-  await seedSpecimens();
-  await seedMethods();
-  await seedUnits();
-  await seedCategories();
-  await seedScales();
-  await seedLabTests();
-
-  await seedTariffGroup();
-}, 20000);
 
 afterAll(async () => {
   const tablenames = await prisma.$queryRaw<

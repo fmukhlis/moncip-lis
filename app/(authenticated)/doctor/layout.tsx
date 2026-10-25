@@ -10,15 +10,15 @@ export default async function DoctorLayout({
 }) {
   const session = await auth();
 
-  if (session?.user?.role === "sys_admin") {
+  if (session?.user?.role === "SYS_ADMIN") {
     redirect("/sys-admin/dashboard");
   }
 
-  if (session?.user?.role === "staff") {
+  if (session?.user?.role === "STAFF") {
     redirect("/staff/dashboard");
   }
 
-  if (session?.user?.role === "lab_admin") {
+  if (session?.user?.role === "LAB_ADMIN") {
     redirect("/lab-admin/dashboard");
   }
 

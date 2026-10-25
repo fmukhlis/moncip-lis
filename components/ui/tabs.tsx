@@ -60,6 +60,17 @@ function TabsTrigger({
   className,
   ...props
 }: React.ComponentProps<typeof TabsPrimitive.Trigger>) {
+  const [id, setId] = React.useState("");
+  const [ariaControl, setAriaControl] = React.useState("");
+
+  const propsId = props.id;
+  const propsAriaControls = props["aria-controls"];
+
+  React.useEffect(() => {
+    setId(propsId ?? "");
+    setAriaControl(propsAriaControls ?? "");
+  }, [propsId, propsAriaControls]);
+
   return (
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
@@ -71,6 +82,8 @@ function TabsTrigger({
         className,
       )}
       {...props}
+      id={id}
+      aria-controls={ariaControl}
     />
   );
 }

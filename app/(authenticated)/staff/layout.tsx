@@ -1,5 +1,3 @@
-import React from "react";
-
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 
@@ -10,15 +8,15 @@ export default async function StaffLayout({
 }) {
   const session = await auth();
 
-  if (session?.user?.role === "sys_admin") {
+  if (session?.user?.role === "SYS_ADMIN") {
     redirect("/sys-admin/dashboard");
   }
 
-  if (session?.user?.role === "doctor") {
+  if (session?.user?.role === "DOCTOR") {
     redirect("/doctor/dashboard");
   }
 
-  if (session?.user?.role === "lab_admin") {
+  if (session?.user?.role === "LAB_ADMIN") {
     redirect("/lab-admin/dashboard");
   }
 

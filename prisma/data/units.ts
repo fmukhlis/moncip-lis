@@ -1,181 +1,291 @@
 import { Prisma } from "@/generated/prisma";
 
-const unitData: Prisma.UnitCreateInput[] = [
+export const unitsData: Prisma.UnitCreateInput[] = [
+  // ---------------------------------------------------------------------------
+  // Mass Concentration
+  // ---------------------------------------------------------------------------
   {
     code: "g/dL",
-    displayCode: "g/dL",
-    name: "Gram per Deciliter",
-    description:
-      "Commonly used for hemoglobin, protein, or other concentrations in blood.",
-  },
-  {
-    code: "mg/dL",
-    displayCode: "mg/dL",
-    name: "Milligram per Deciliter",
-    description: "Used for glucose, cholesterol, urea, and similar analytes.",
-  },
-  {
-    code: "mmol/L",
-    displayCode: "mmol/L",
-    name: "Millimole per Liter",
-    description:
-      "SI unit for electrolytes, glucose, and many biochemical parameters.",
-  },
-  {
-    code: "pmol/L",
-    displayCode: "pmol/L",
-    name: "Picomole per Liter",
-    description:
-      "Unit of concentration commonly used for hormones such as Free T3 and Free T4.",
-  },
-  {
-    code: "umol/L",
-    displayCode: "µmol/L",
-    name: "Micromole per Liter",
-    description: "Used for creatinine, uric acid, bilirubin, etc.",
+    displayName: "g/dL",
+    description: "Grams per deciliter.",
   },
   {
     code: "g/L",
-    displayCode: "g/L",
-    name: "Gram per Liter",
-    description:
-      "Used for total protein, albumin, globulin, and other protein measurements",
+    displayName: "g/L",
+    description: "Grams per liter.",
   },
   {
-    code: "ng/mL",
-    displayCode: "ng/mL",
-    name: "Nanogram per Milliliter",
-    description: "Common in hormone and tumor marker assays.",
+    code: "mg/dL",
+    displayName: "mg/dL",
+    description: "Milligrams per deciliter.",
   },
   {
-    code: "ug/mL",
-    displayCode: "µg/mL",
-    name: "Microgram per Milliliter",
-    description: "Used for drug level measurements or specific assays.",
-  },
-  {
-    code: "u{IU}/mL",
-    displayCode: "µIU/mL",
-    name: "Micro-International Unit per Liter",
-    description: "Used for TSH and other hormone measurements.",
-  },
-  {
-    code: "m{IU}/L",
-    displayCode: "mIU/L",
-    name: "Milli-International Unit per Liter",
-    description: "Used for TSH and other endocrine hormones.",
-  },
-  {
-    code: "{IU}/L",
-    displayCode: "IU/L",
-    name: "International Unit per Liter",
-    description: "Used for enzyme activity (e.g., AST, ALT, ALP, CK).",
-  },
-  {
-    code: "{U}/L",
-    displayCode: "U/L",
-    name: "Unit per Liter",
-    description: "Alternative to IU/L, commonly interchangeable in enzymology.",
-  },
-  {
-    code: "%",
-    displayCode: "%",
-    name: "Percent",
-    description: "Used for differential counts or HbA1c percentage.",
-  },
-  {
-    code: "{ratio}",
-    displayCode: "ratio",
-    name: "Ratio",
-    description:
-      "Dimensionless unit used in calculated indexes or ratios (e.g., A/G ratio).",
-  },
-  {
-    code: "{numeric}",
-    displayCode: "numeric",
-    name: "Numeric",
-    description:
-      "Dimensionless unit used for numeric measurements without a physical unit (e.g., urine specific gravity, pH).",
-  },
-  {
-    code: "10*3/uL",
-    displayCode: "10³/µL",
-    name: "10³ Cells per Microliter",
-    description: "For WBC, RBC, platelet, or CD4 counts.",
-  },
-  {
-    code: "10*6/uL",
-    displayCode: "10⁶/µL",
-    name: "10⁶ Cells per Microliter",
-    description: "Used for red blood cell counts.",
-  },
-  {
-    code: "10*9/L",
-    displayCode: "x10⁹/L",
-    name: "10⁹ Cells per Liter",
-    description: "SI unit for cell counts (hematology).",
-  },
-  {
-    code: "10*12/L",
-    displayCode: "10¹²/L",
-    name: "10¹² Cells per Liter",
-    description: "Used for red blood cell counts (RBC).",
-  },
-  {
-    code: "pg",
-    displayCode: "pg",
-    name: "Picogram",
-    description: "Used for MCH (mean corpuscular hemoglobin).",
-  },
-  {
-    code: "pg/mL",
-    displayCode: "pg/mL",
-    name: "Picogram per Milliliter",
-    description: "Used for free T3 measurements.",
-  },
-  {
-    code: "fL",
-    displayCode: "fL",
-    name: "Femtoliter",
-    description: "Used for MCV (mean corpuscular volume).",
+    code: "mg/L",
+    displayName: "mg/L",
+    description: "Milligrams per liter.",
   },
   {
     code: "ug/dL",
-    displayCode: "µg/dL",
-    name: "Microgram per Deciliter",
-    description: "Used for lead or iron measurements.",
+    displayName: "μg/dL",
+    description: "Micrograms per deciliter.",
   },
   {
-    code: "meq/L",
-    displayCode: "mEq/L",
-    name: "Milliequivalent per Liter",
-    description: "Used for ions like Na⁺, K⁺, Cl⁻, and HCO₃⁻.",
+    code: "ug/L",
+    displayName: "μg/L",
+    description: "Micrograms per liter.",
   },
   {
-    code: "mosm/kg",
-    displayCode: "mOsm/kg",
-    name: "Milliosmole per Kilogram",
-    description: "Used for osmolality measurement.",
+    code: "ng/mL",
+    displayName: "ng/mL",
+    description: "Nanograms per milliliter.",
   },
   {
-    code: "{CFU}/mL",
-    displayCode: "CFU/mL",
-    name: "Colony Forming Unit per Milliliter",
-    description: "Used in microbiology for bacterial culture quantification.",
+    code: "pg/mL",
+    displayName: "pg/mL",
+    description: "Picograms per milliliter.",
   },
-  {
-    code: "ng/dL",
-    displayCode: "ng/dL",
-    name: "Nanogram per Deciliter",
-    description: "Used for thyroid and steroid hormone tests.",
-  },
-  {
-    code: "{kU}/L",
-    displayCode: "kU/L",
-    name: "Kilo Unit per Liter",
-    description:
-      "Used for allergy IgE testing and enzyme activity at higher scale.",
-  },
-];
 
-export default unitData;
+  // ---------------------------------------------------------------------------
+  // Amount Concentration
+  // ---------------------------------------------------------------------------
+  {
+    code: "mol/L",
+    displayName: "mol/L",
+    description: "Moles per liter.",
+  },
+  {
+    code: "mmol/L",
+    displayName: "mmol/L",
+    description: "Millimoles per liter.",
+  },
+  {
+    code: "umol/L",
+    displayName: "μmol/L",
+    description: "Micromoles per liter.",
+  },
+  {
+    code: "nmol/L",
+    displayName: "nmol/L",
+    description: "Nanomoles per liter.",
+  },
+  {
+    code: "pmol/L",
+    displayName: "pmol/L",
+    description: "Picomoles per liter.",
+  },
+  {
+    code: "mEq/L",
+    displayName: "mEq/L",
+    description: "Milliequivalents per liter.",
+  },
+
+  // ---------------------------------------------------------------------------
+  // Enzyme / Biological Activity
+  // ---------------------------------------------------------------------------
+  {
+    code: "U/L",
+    displayName: "U/L",
+    description: "Enzyme units per liter.",
+  },
+  {
+    code: "IU/L",
+    displayName: "IU/L",
+    description: "International units per liter.",
+  },
+  {
+    code: "IU/mL",
+    displayName: "IU/mL",
+    description: "International units per milliliter.",
+  },
+  {
+    code: "mIU/L",
+    displayName: "mIU/L",
+    description: "Milli-international units per liter.",
+  },
+  {
+    code: "uIU/mL",
+    displayName: "μIU/mL",
+    description: "Micro-international units per milliliter.",
+  },
+
+  // ---------------------------------------------------------------------------
+  // Cell Count
+  // ---------------------------------------------------------------------------
+  {
+    code: "10*3/uL",
+    displayName: "10³/μL",
+    description: "Thousands of cells per microliter.",
+  },
+  {
+    code: "10*6/uL",
+    displayName: "10⁶/μL",
+    description: "Millions of cells per microliter.",
+  },
+  {
+    code: "/uL",
+    displayName: "/μL",
+    description: "Cells per microliter.",
+  },
+
+  // ---------------------------------------------------------------------------
+  // Volume
+  // ---------------------------------------------------------------------------
+  {
+    code: "L",
+    displayName: "L",
+    description: "Liters.",
+  },
+  {
+    code: "dL",
+    displayName: "dL",
+    description: "Deciliters.",
+  },
+  {
+    code: "mL",
+    displayName: "mL",
+    description: "Milliliters.",
+  },
+  {
+    code: "uL",
+    displayName: "μL",
+    description: "Microliters.",
+  },
+  {
+    code: "fL",
+    displayName: "fL",
+    description: "Femtoliters.",
+  },
+
+  // ---------------------------------------------------------------------------
+  // Mass
+  // ---------------------------------------------------------------------------
+  {
+    code: "pg",
+    displayName: "pg",
+    description: "Picograms.",
+  },
+
+  // ---------------------------------------------------------------------------
+  // Time
+  // ---------------------------------------------------------------------------
+  {
+    code: "s",
+    displayName: "s",
+    description: "Seconds.",
+  },
+  {
+    code: "min",
+    displayName: "min",
+    description: "Minutes.",
+  },
+  {
+    code: "h",
+    displayName: "h",
+    description: "Hours.",
+  },
+
+  // ---------------------------------------------------------------------------
+  // Derived
+  // ---------------------------------------------------------------------------
+  {
+    code: "mg/24h",
+    displayName: "mg/24 h",
+    description: "Milligrams per 24 hours.",
+  },
+  {
+    code: "mL/min",
+    displayName: "mL/min",
+    description: "Milliliters per minute.",
+  },
+  {
+    code: "mL/min/1.73m²",
+    displayName: "mL/min/1.73 m²",
+    description:
+      "Milliliters per minute normalized to 1.73 square meters of body surface area.",
+  },
+  {
+    code: "mOsm/kg",
+    displayName: "mOsm/kg",
+    description: "Milliosmoles per kilogram.",
+  },
+
+  // ---------------------------------------------------------------------------
+  // Pressure
+  // ---------------------------------------------------------------------------
+  {
+    code: "mmHg",
+    displayName: "mmHg",
+    description: "Millimeters of mercury.",
+  },
+  {
+    code: "kPa",
+    displayName: "kPa",
+    description: "Kilopascals.",
+  },
+
+  // ---------------------------------------------------------------------------
+  // Percentage
+  // ---------------------------------------------------------------------------
+  {
+    code: "%",
+    displayName: "%",
+    description: "Percentage.",
+  },
+
+  // ---------------------------------------------------------------------------
+  // Dimensionless
+  // ---------------------------------------------------------------------------
+  {
+    code: "ratio",
+    displayName: "Ratio",
+    description: "Dimensionless ratio.",
+  },
+  {
+    code: "index",
+    displayName: "Index",
+    description: "Dimensionless index.",
+  },
+  {
+    code: "COI",
+    displayName: "COI",
+    description: "Cut-off index.",
+  },
+  {
+    code: "titer",
+    displayName: "Titer",
+    description: "Antibody titer.",
+  },
+
+  // ---------------------------------------------------------------------------
+  // Molecular
+  // ---------------------------------------------------------------------------
+  {
+    code: "copies/mL",
+    displayName: "copies/mL",
+    description: "Copies per milliliter.",
+  },
+  {
+    code: "copies/uL",
+    displayName: "copies/μL",
+    description: "Copies per microliter.",
+  },
+
+  // ---------------------------------------------------------------------------
+  // Immunology
+  // ---------------------------------------------------------------------------
+  {
+    code: "AU/mL",
+    displayName: "AU/mL",
+    description: "Arbitrary units per milliliter.",
+  },
+  {
+    code: "BAU/mL",
+    displayName: "BAU/mL",
+    description: "Binding antibody units per milliliter.",
+  },
+  {
+    code: "kU/L",
+    displayName: "kU/L",
+    description: "Kilo units per liter.",
+  },
+] as const;
