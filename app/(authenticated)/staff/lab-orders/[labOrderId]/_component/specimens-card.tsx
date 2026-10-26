@@ -57,7 +57,12 @@ export default function SpecimensCard({ labOrderId }: { labOrderId: string }) {
   const [isShowingAll, setIsShowingAll] = useState(false);
 
   const order = data?.data;
-  const specimens = data?.data?.specimens;
+  const specimens = data?.data?.specimens.filter(
+    ({ status }) =>
+      isShowingAll ||
+      (status !== SpecimenStatus.CANCELLED &&
+        status !== SpecimenStatus.REJECTED),
+  );
 
   return (
     <Card>
@@ -127,7 +132,7 @@ export default function SpecimensCard({ labOrderId }: { labOrderId: string }) {
           </div>
         ) : specimens.length === 0 ? (
           <div className="flex flex-col items-center justify-center border rounded-md p-5 text-center">
-            <div className="bg-muted text-muted-foreground mb-3 flex size-11 items-center justify-center border">
+            <div className="bg-muted text-muted-foreground mb-3 flex size-[41px] items-center justify-center border">
               <TestTubes className="size-5" />
             </div>
             <h3 className="text-base font-semibold">
@@ -138,159 +143,152 @@ export default function SpecimensCard({ labOrderId }: { labOrderId: string }) {
             </p>
           </div>
         ) : (
-          specimens
-            .filter(
-              ({ status }) =>
-                isShowingAll ||
-                (status !== SpecimenStatus.CANCELLED &&
-                  status !== SpecimenStatus.REJECTED),
-            )
-            .map((specimen) => (
-              <div
-                key={specimen.id}
-                className={cn(
-                  "rounded-md border bg-muted/30 p-3",
-                  specimen.status === SpecimenStatus.CANCELLED ||
-                    specimen.status === SpecimenStatus.REJECTED
-                    ? "opacity-60"
-                    : "",
-                )}
-              >
-                <div className="mb-2 flex flex-wrap items-center gap-2">
-                  <div className="flex items-center gap-2 shrink-0">
-                    <span className="font-semibold">
-                      {specimen.specimenType.displayName}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-2 flex-1">
-                    <SpecimenStatusBadge status={specimen.status} />
-                    {specimen.status !== SpecimenStatus.CANCELLED &&
-                    specimen.status !== SpecimenStatus.REJECTED ? (
-                      <>
-                        <Button
-                          size={"icon-sm"}
-                          variant="ghost"
-                          className="size-6"
-                          onClick={(e) => {
-                            dispatch(setSelectedSpecimenId(specimen.id));
-                            dispatch(setIsEditSpecimenDialogOpen(true));
-                            setEditSpecimenDialogTrigger(e.currentTarget);
-                          }}
-                        >
-                          <SquarePen className="size-3.5" />
-                          <span className="sr-only">
-                            Edit specimen {specimen.specimenType.displayName}
-                          </span>
-                        </Button>
-                        <Button
-                          size={"icon-sm"}
-                          variant="ghost"
-                          className="size-6 text-destructive hover:bg-destructive/25 dark:hover:bg-destructive/50"
-                          onClick={(e) => {
-                            dispatch(setSelectedSpecimenId(specimen.id));
-                            dispatch(setIsCancelSpecimenDialogOpen(true));
-                            setCancelSpecimenDialogTrigger(e.currentTarget);
-                          }}
-                        >
-                          <Trash2 className="size-3.5" />
-                          <span className="sr-only">
-                            Cancel specimen {specimen.specimenType.displayName}
-                          </span>
-                        </Button>
-                        <Button
-                          size={"icon-sm"}
-                          variant="ghost"
-                          className="size-6 ml-auto"
-                        >
-                          <ClipboardClock className="size-4" />
-                          <span className="sr-only">
-                            Log collection time for specimen{" "}
-                            {specimen.specimenType.displayName}
-                          </span>
-                        </Button>
-                      </>
-                    ) : null}
-                  </div>
+          specimens.map((specimen) => (
+            <div
+              key={specimen.id}
+              className={cn(
+                "rounded-md border bg-muted/30 p-3",
+                specimen.status === SpecimenStatus.CANCELLED ||
+                  specimen.status === SpecimenStatus.REJECTED
+                  ? "opacity-60"
+                  : "",
+              )}
+            >
+              <div className="mb-2 flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="font-semibold">
+                    {specimen.specimenType.displayName}
+                  </span>
                 </div>
-                <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-                  <InfoRow
-                    label="Collection Time"
-                    value={
-                      <ClientDateTimeText
-                        formatStr="dd MMM yyyy, HH:mm"
-                        dateTime={specimen.collectedAt}
-                      />
-                    }
-                  />
-                  <InfoRow
-                    label="Received Time"
-                    value={
-                      <ClientDateTimeText
-                        formatStr="dd MMM yyyy, HH:mm"
-                        dateTime={specimen.receivedAt}
-                      />
-                    }
-                  />
-                  <div className="col-span-2">
-                    <InfoRow
-                      label="Assigned to:"
-                      value={
-                        <div className="flex flex-wrap gap-1 pt-0.5">
-                          {specimen.orderItems.length
-                            ? specimen.orderItems
-                                .filter(
-                                  ({ endedAt, endReason }) =>
-                                    (specimen.status ===
-                                      SpecimenStatus.CANCELLED &&
-                                      endReason ===
-                                        SpecimenAssignmentEndReason.SPECIMEN_CANCELLED) ||
-                                    (specimen.status ===
-                                      SpecimenStatus.REJECTED &&
-                                      endReason ===
-                                        SpecimenAssignmentEndReason.SPECIMEN_REJECTED) ||
-                                    !endedAt,
-                                )
-                                .map(
-                                  ({
-                                    labOrderItem: {
-                                      performable: { id, displayName },
-                                    },
-                                  }) => (
-                                    <Badge key={id} variant="secondary">
-                                      {displayName}
-                                    </Badge>
-                                  ),
-                                )
-                            : "—"}
-                        </div>
-                      }
-                    />
-                  </div>
+                <div className="flex items-center gap-2 flex-1">
+                  <SpecimenStatusBadge status={specimen.status} />
+                  {specimen.status !== SpecimenStatus.CANCELLED &&
+                  specimen.status !== SpecimenStatus.REJECTED ? (
+                    <>
+                      <Button
+                        size={"icon-sm"}
+                        variant="ghost"
+                        className="size-6"
+                        onClick={(e) => {
+                          dispatch(setSelectedSpecimenId(specimen.id));
+                          dispatch(setIsEditSpecimenDialogOpen(true));
+                          setEditSpecimenDialogTrigger(e.currentTarget);
+                        }}
+                      >
+                        <SquarePen className="size-3.5" />
+                        <span className="sr-only">
+                          Edit specimen {specimen.specimenType.displayName}
+                        </span>
+                      </Button>
+                      <Button
+                        size={"icon-sm"}
+                        variant="ghost"
+                        className="size-6 text-destructive hover:bg-destructive/25 dark:hover:bg-destructive/50"
+                        onClick={(e) => {
+                          dispatch(setSelectedSpecimenId(specimen.id));
+                          dispatch(setIsCancelSpecimenDialogOpen(true));
+                          setCancelSpecimenDialogTrigger(e.currentTarget);
+                        }}
+                      >
+                        <Trash2 className="size-3.5" />
+                        <span className="sr-only">
+                          Cancel specimen {specimen.specimenType.displayName}
+                        </span>
+                      </Button>
+                      <Button
+                        size={"icon-sm"}
+                        variant="ghost"
+                        className="size-6 ml-auto"
+                      >
+                        <ClipboardClock className="size-4" />
+                        <span className="sr-only">
+                          Log collection time for specimen{" "}
+                          {specimen.specimenType.displayName}
+                        </span>
+                      </Button>
+                    </>
+                  ) : null}
                 </div>
-                {specimen.note && (
-                  <Alert className="mt-3 px-2.5 pt-1.5 pb-2">
-                    <AlertTitle className="text-muted-foreground">
-                      Note :
-                    </AlertTitle>
-                    <AlertDescription>{specimen.note}</AlertDescription>
-                  </Alert>
-                )}
-                {specimen.cancellationReason && (
-                  <Alert className="mt-3 px-2.5 pt-1.5 pb-2 border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950">
-                    <AlertTitle className="text-muted-foreground">
-                      Cancellation Reason : {specimen.cancellationReason}
-                    </AlertTitle>
-                  </Alert>
-                )}
-                {specimen.rejectionReason && (
-                  <Alert className="mt-3 px-2.5 pt-1.5 pb-2 border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950">
-                    <AlertTitle className="text-muted-foreground">
-                      Rejection Reason : {specimen.rejectionReason}
-                    </AlertTitle>
-                  </Alert>
-                )}
               </div>
-            ))
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+                <InfoRow
+                  label="Collection Time"
+                  value={
+                    <ClientDateTimeText
+                      formatStr="dd MMM yyyy, HH:mm"
+                      dateTime={specimen.collectedAt}
+                    />
+                  }
+                />
+                <InfoRow
+                  label="Received Time"
+                  value={
+                    <ClientDateTimeText
+                      formatStr="dd MMM yyyy, HH:mm"
+                      dateTime={specimen.receivedAt}
+                    />
+                  }
+                />
+                <div className="col-span-2">
+                  <InfoRow
+                    label="Assigned to:"
+                    value={
+                      <div className="flex flex-wrap gap-1 pt-0.5">
+                        {specimen.orderItems.length
+                          ? specimen.orderItems
+                              .filter(
+                                ({ endedAt, endReason }) =>
+                                  (specimen.status ===
+                                    SpecimenStatus.CANCELLED &&
+                                    endReason ===
+                                      SpecimenAssignmentEndReason.SPECIMEN_CANCELLED) ||
+                                  (specimen.status ===
+                                    SpecimenStatus.REJECTED &&
+                                    endReason ===
+                                      SpecimenAssignmentEndReason.SPECIMEN_REJECTED) ||
+                                  !endedAt,
+                              )
+                              .map(
+                                ({
+                                  labOrderItem: {
+                                    performable: { id, displayName },
+                                  },
+                                }) => (
+                                  <Badge key={id} variant="secondary">
+                                    {displayName}
+                                  </Badge>
+                                ),
+                              )
+                          : "—"}
+                      </div>
+                    }
+                  />
+                </div>
+              </div>
+              {specimen.note && (
+                <Alert className="mt-3 px-2.5 pt-1.5 pb-2">
+                  <AlertTitle className="text-muted-foreground">
+                    Note :
+                  </AlertTitle>
+                  <AlertDescription>{specimen.note}</AlertDescription>
+                </Alert>
+              )}
+              {specimen.cancellationReason && (
+                <Alert className="mt-3 px-2.5 pt-1.5 pb-2 border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950">
+                  <AlertTitle className="text-muted-foreground">
+                    Cancellation Reason : {specimen.cancellationReason}
+                  </AlertTitle>
+                </Alert>
+              )}
+              {specimen.rejectionReason && (
+                <Alert className="mt-3 px-2.5 pt-1.5 pb-2 border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950">
+                  <AlertTitle className="text-muted-foreground">
+                    Rejection Reason : {specimen.rejectionReason}
+                  </AlertTitle>
+                </Alert>
+              )}
+            </div>
+          ))
         )}
       </CardContent>
     </Card>
