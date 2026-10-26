@@ -33,7 +33,7 @@ export default async function AuthenticatedLayout({
           <AppHeader breadcrumbData={Object.fromEntries(breadcrumbData)} />
           <div className="flex flex-1">
             <AppSidebar sidebarData={sidebarData} />
-            <SidebarInset className="min-w-0 min-h-[calc(100svh-var(--header-height)-17px)] h-[calc(100%-var(--header-height)-17px)]">
+            <SidebarInset className="min-w-0 h-[calc(100lvh-var(--header-height)-17px)]">
               {children}
             </SidebarInset>
           </div>

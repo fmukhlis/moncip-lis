@@ -29,7 +29,7 @@ import {
 
 export default function ConnectionSettings() {
   return (
-    <div className="relative flex flex-col gap-2 p-2">
+    <div className="overflow-y-auto relative flex flex-col gap-2 p-2">
       <ConnectionSettingsHeader />
       <ConnectionsCount />
       <Tabs defaultValue="connections" className="gap-2">

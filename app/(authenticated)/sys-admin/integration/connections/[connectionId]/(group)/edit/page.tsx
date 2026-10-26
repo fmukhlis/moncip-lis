@@ -9,7 +9,7 @@ export default async function EditIntegrationConnection({
   const { connectionId: id } = await params;
 
   return (
-    <div className="relative flex flex-col gap-2 p-2">
+    <div className="overflow-y-auto relative flex flex-col gap-2 p-2">
       <EditIntegrationConnectionHeader id={id} />
       <EditIntegrationConnectionForm id={id} />
     </div>
