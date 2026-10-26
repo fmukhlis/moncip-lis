@@ -5,7 +5,7 @@ import { SyncLabOrderablesCard } from "./_component/sync-lab-orderables-card";
 
 export default async function DataSynchronization() {
   return (
-    <div className="relative flex flex-col gap-2 p-2">
+    <div className="overflow-y-auto relative flex flex-col gap-2 p-2">
       <DataSynchronizationHeader />
       <div className="grid gap-2 grid-cols-[repeat(auto-fit,minmax(290px,1fr))]">
         <SyncLabOrderablesCard />

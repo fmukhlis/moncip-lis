@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 
 export default async function SysAdminOrganization() {
   return (
-    <div className="relative flex flex-col gap-2 p-2">
+    <div className="overflow-y-auto relative flex flex-col gap-2 p-2">
       <Header />
       <div className="grid sm:grid-cols-5 gap-2 items-start">
         <UserManagementCard />

@@ -24,7 +24,7 @@ export default async function IntegrationConnectionDetail({
   }
 
   return (
-    <div className="relative flex flex-col gap-2 p-2">
+    <div className="overflow-y-auto relative flex flex-col gap-2 p-2">
       <IntegrationConnectionDetailHeader />
       <IntegrationConnectionOverview id={id} />
       <IntegrationConnectionDetailStats id={id} />
