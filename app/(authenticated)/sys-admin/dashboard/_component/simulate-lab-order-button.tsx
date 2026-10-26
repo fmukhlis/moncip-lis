@@ -64,7 +64,7 @@ export default function SimulateLabOrderButton() {
         headers: {
           "Content-Type": "application/json",
           Authorization:
-            "Bearer moncip_simr_56c76da98574a7abb81428b0733cd48a748ccefb25ba2a66177e1b2e4666cdf9",
+            "Bearer moncip_monc_f8c35f25241bcc9bdfcb718e4c07622a1a4ea2425995d45a4f27696c5d5cd805",
         },
         body: JSON.stringify(payload),
       });
