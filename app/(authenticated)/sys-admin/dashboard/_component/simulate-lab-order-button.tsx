@@ -13,28 +13,28 @@ export default function SimulateLabOrderButton() {
     setLoading(true);
 
     const payload = {
-      messageId: "ABCDE7",
+      messageId: "MSG_1",
       eventType: "CLINICAL_ORDER_CREATED",
-      idempotencyKey: "ABC-DE-7",
+      idempotencyKey: "KEY_1",
       patient: {
-        id: "PAT124",
-        mrn: "MRN124",
+        id: "PAT_1",
+        mrn: "MRN_1",
         sex: "MALE",
         name: "Bob",
-        phone: "1234567890",
+        phone: "081234567890",
         address: "123 Main St, Anytown, USA",
-        dateOfBirth: "1998-01-01",
+        dateOfBirth: "1998-01-06",
       },
       encounter: {
-        id: "ENC125",
-        no: "ENC-125",
+        id: "ENC_1",
+        no: "ENC-001",
         type: "INPATIENT",
         status: "Active",
       },
-      orderingProvider: { id: "OP123", name: "dr. Alice" },
+      orderingProvider: { id: "OP_123", name: "dr. Alice" },
       order: {
-        id: "ORD126",
-        no: "ORD-126",
+        id: "ORD_1",
+        no: "ORD-1",
         status: "ORDERED",
         priority: "ROUTINE",
         orderedAt: new Date().toISOString(),
@@ -42,13 +42,13 @@ export default function SimulateLabOrderButton() {
       },
       items: [
         {
-          id: "ITEM129",
+          id: "ITEM_1",
           priority: "ROUTINE",
           sortOrder: 1,
           orderableId: "HIS-CAT-GLU",
         },
         {
-          id: "ITEM130",
+          id: "ITEM_2",
           priority: "ROUTINE",
           sortOrder: 2,
           orderableId: "HIS-CAT-CBC",
@@ -64,7 +64,7 @@ export default function SimulateLabOrderButton() {
         headers: {
           "Content-Type": "application/json",
           Authorization:
-            "Bearer moncip_monc_b85b9646ca15e59feecd4913acd941e7b585cf85c92658703a8dbc70fe971cd4",
+            "Bearer moncip_simr_56c76da98574a7abb81428b0733cd48a748ccefb25ba2a66177e1b2e4666cdf9",
         },
         body: JSON.stringify(payload),
       });
