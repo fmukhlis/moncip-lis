@@ -1,7 +1,7 @@
 "use client";
 
-import z from "zod";
 import SecretInput from "@/components/ui/secret-input";
+import { z } from "zod";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -37,18 +37,19 @@ import {
 } from "@/components/ui/select";
 
 export default function CreateUserDialog() {
+  // Global state
   const isOpen = useAppSelector(
     (state) => state.organization.isCreateUserDialogOpen,
   );
-
   const dispatch = useAppDispatch();
 
+  // Server state
   const { data: departmentsData, isFetching } = useGetDepartmentsActionQuery({
     isActive: true,
   });
-
   const [createUserAction] = useCreateUserActionMutation();
 
+  // Form state
   const form = useForm({
     resolver: zodResolver(CreateUserActionSchema),
     defaultValues: {
@@ -61,7 +62,6 @@ export default function CreateUserDialog() {
       departmentId: undefined,
     },
   });
-
   const { control, handleSubmit, reset, formState } = form;
 
   async function onSubmit(data: z.infer<typeof CreateUserActionSchema>) {
@@ -185,22 +185,30 @@ export default function CreateUserDialog() {
                           <SelectValue placeholder="Select department..." />
                         </SelectTrigger>
                         <SelectContent>
-                          {departmentsData?.data.map((department) => (
-                            <SelectItem
-                              key={department.id}
-                              value={department.id}
-                            >
-                              <div className="flex items-center gap-2 min-w-0">
-                                <span
-                                  className="inline-block size-2.5 rounded-full flex-shrink-0"
-                                  style={{ backgroundColor: department.color }}
-                                />
-                                <span className="truncate">
-                                  {department.displayName}
-                                </span>
-                              </div>
-                            </SelectItem>
-                          ))}
+                          {departmentsData?.data.length ? (
+                            departmentsData?.data.map((department) => (
+                              <SelectItem
+                                key={department.id}
+                                value={department.id}
+                              >
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <span
+                                    className="inline-block size-2.5 rounded-full flex-shrink-0"
+                                    style={{
+                                      backgroundColor: department.color,
+                                    }}
+                                  />
+                                  <span className="truncate">
+                                    {department.displayName}
+                                  </span>
+                                </div>
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <div className="p-1 px-2 text-sm text-muted-foreground text-center">
+                              No data available.
+                            </div>
+                          )}
                         </SelectContent>
                       </Select>
                       {fieldState.invalid && (
