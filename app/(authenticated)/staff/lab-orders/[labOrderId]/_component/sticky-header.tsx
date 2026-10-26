@@ -11,7 +11,7 @@ import { useReactToPrint } from "react-to-print";
 import { Card, CardHeader } from "@/components/ui/card";
 import { MoreHorizontal, Printer } from "lucide-react";
 import { useGetLabOrderActionQuery } from "@/features/lab-order/lab-order.api";
-import { Fragment, useEffect, useRef, useState } from "react";
+import { Fragment, JSX, useEffect, useRef, useState } from "react";
 import {
   Tooltip,
   TooltipContent,
@@ -26,7 +26,7 @@ export default function StickyHeader({ labOrderId }: { labOrderId: string }) {
   const reactToPrintFn = useReactToPrint({});
 
   const [isMounted, setIsMounted] = useState(false);
-  const [printContent, setPrintContent] = useState(<></>);
+  const [printContent, setPrintContent] = useState<JSX.Element | null>(null);
 
   const order = data?.data;
 
@@ -34,9 +34,60 @@ export default function StickyHeader({ labOrderId }: { labOrderId: string }) {
     return contentRef.current;
   };
 
+  const handlePrintLabelClick = (o: NonNullable<typeof order>) => {
+    setPrintContent(
+      <>
+        {o.specimens
+          .filter(
+            ({ status }) =>
+              status !== SpecimenStatus.CANCELLED &&
+              status !== SpecimenStatus.REJECTED,
+          )
+          .map(({ id, no, specimenType }) => (
+            <Fragment key={id}>
+              <div className="flex flex-col break-after-page p-1">
+                <div className="flex gap-1 text-[10px]">
+                  <span className="whitespace-nowrap">
+                    MRN : <span className="">{o.patient.mrn}</span>
+                  </span>
+                  <span className="">|</span>
+                  <span className="whitespace-nowrap">
+                    DoB :{" "}
+                    <span className="">
+                      {o.patient.dateOfBirth
+                        ? format(o.patient.dateOfBirth, "dd-MMM-yyyy")
+                        : "—"}
+                    </span>
+                  </span>
+                </div>
+                <span className="font-semibold text-xs">{o.patient.name}</span>
+                <Barcode
+                  value={no}
+                  height={20}
+                  fontSize={7}
+                  marginTop={3}
+                  marginLeft={3}
+                  marginRight={3}
+                  marginBottom={3}
+                  className="w-full shrink-0"
+                />
+                <div className="text-[10px] line-clamp-1 flex gap-1">
+                  <span className="shrink-0">{specimenType.displayName}</span>
+                  <span className="shrink-0">|</span>
+                  <span className="truncate">
+                    {format(new Date(), "dd/MM/yyyy HH:mm")}
+                  </span>
+                </div>
+              </div>
+            </Fragment>
+          ))}
+      </>,
+    );
+  };
+
   useEffect(() => {
     setIsMounted(true);
-    if (isMounted) {
+    if (isMounted && reactToPrintContent()) {
       reactToPrintFn(reactToPrintContent);
     }
   }, [printContent, isMounted, reactToPrintFn]);
@@ -87,63 +138,9 @@ export default function StickyHeader({ labOrderId }: { labOrderId: string }) {
                 size="sm"
                 variant="outline"
                 onClick={() => {
-                  setPrintContent(
-                    <>
-                      {order.specimens
-                        .filter(
-                          ({ status }) =>
-                            status !== SpecimenStatus.CANCELLED &&
-                            status !== SpecimenStatus.REJECTED,
-                        )
-                        .map(({ id, no, specimenType }) => (
-                          <Fragment key={id}>
-                            <div className="flex flex-col break-after-page p-1">
-                              <div className="flex gap-1 text-[10px]">
-                                <span className="whitespace-nowrap">
-                                  MRN :{" "}
-                                  <span className="">{order.patient.mrn}</span>
-                                </span>
-                                <span className="">|</span>
-                                <span className="whitespace-nowrap">
-                                  DoB :{" "}
-                                  <span className="">
-                                    {order.patient.dateOfBirth
-                                      ? format(
-                                          order.patient.dateOfBirth,
-                                          "dd-MMM-yyyy",
-                                        )
-                                      : "—"}
-                                  </span>
-                                </span>
-                              </div>
-                              <span className="font-semibold text-xs">
-                                {order.patient.name}
-                              </span>
-                              <Barcode
-                                value={no}
-                                height={20}
-                                fontSize={7}
-                                marginTop={3}
-                                marginLeft={3}
-                                marginRight={3}
-                                marginBottom={3}
-                                className="w-full shrink-0"
-                              />
-                              <div className="text-[10px] line-clamp-1 flex gap-1">
-                                <span className="shrink-0">
-                                  {specimenType.displayName}
-                                </span>
-                                <span className="shrink-0">|</span>
-                                <span className="truncate">
-                                  {format(new Date(), "dd/MM/yyyy HH:mm")}
-                                </span>
-                              </div>
-                            </div>
-                          </Fragment>
-                        ))}
-                    </>,
-                  );
+                  handlePrintLabelClick(order);
                 }}
+                disabled={!order.specimens.length}
               >
                 <Printer />
                 Print Label
