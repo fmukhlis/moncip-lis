@@ -1,6 +1,18 @@
 {
   "version": 1,
   "skills": {
+    "build-modern-redux-apps/modern-redux": {
+      "source": "reduxjs/redux-toolkit",
+      "sourceType": "github",
+      "skillPath": "packages/toolkit/skills/build-modern-redux-apps/modern-redux/SKILL.md",
+      "computedHash": "1f3bac7413e62b9315f19c60c9e73bf03ac6c9f9fb330977294980534a9c9957"
+    },
+    "build-modern-redux-apps/redux-dataflow": {
+      "source": "reduxjs/redux-toolkit",
+      "sourceType": "github",
+      "skillPath": "packages/toolkit/skills/build-modern-redux-apps/redux-dataflow/SKILL.md",
+      "computedHash": "c86b4c635b77076adb7480a8ef4bea6fa8e1f77d74627ad67a0b70cda6e4ff50"
+    },
     "code-review": {
       "source": "mattpocock/skills",
       "sourceType": "github",
@@ -37,11 +49,35 @@
       "skillPath": "skills/engineering/improve-codebase-architecture/SKILL.md",
       "computedHash": "ac2c94885f34ff8492dc12aa4543182f661f32ea1722b8d6b6c2c7045af33ae3"
     },
+    "manage-server-data/adopt-rtk-query": {
+      "source": "reduxjs/redux-toolkit",
+      "sourceType": "github",
+      "skillPath": "packages/toolkit/skills/manage-server-data/adopt-rtk-query/SKILL.md",
+      "computedHash": "b55d687e07fcfa3e6e0ee6740d39b6371f9753f8ac89d12167e5daa14c121f63"
+    },
     "migrate-radix-to-base": {
       "source": "shadcn/ui",
       "sourceType": "github",
       "skillPath": "skills/migrate-radix-to-base/SKILL.md",
       "computedHash": "e1f2030ee5059be3dff0812ca0e4b995ee9fa3132176f049ebe6c90346a6755e"
+    },
+    "model-redux-state/build-slices-and-selectors": {
+      "source": "reduxjs/redux-toolkit",
+      "sourceType": "github",
+      "skillPath": "packages/toolkit/skills/model-redux-state/build-slices-and-selectors/SKILL.md",
+      "computedHash": "95084920357bcff68b049b2227d18cd04e1f1c1da70af498119abb83e6e9716c"
+    },
+    "model-redux-state/design-state-ownership": {
+      "source": "reduxjs/redux-toolkit",
+      "sourceType": "github",
+      "skillPath": "packages/toolkit/skills/model-redux-state/design-state-ownership/SKILL.md",
+      "computedHash": "8fc7d19d69d3d5b945c7963d8058e4d44641370446faed519e88364db91d7494"
+    },
+    "orchestrate-side-effects/handle-side-effects": {
+      "source": "reduxjs/redux-toolkit",
+      "sourceType": "github",
+      "skillPath": "packages/toolkit/skills/orchestrate-side-effects/handle-side-effects/SKILL.md",
+      "computedHash": "92663b254eefbac694f51a0af72925f290de120cdd6eab1b3d422f6350536b97"
     },
     "prototype": {
       "source": "mattpocock/skills",
