@@ -4,7 +4,11 @@ import prisma from "@/lib/prisma";
 import saltAndHash from "@/lib/salt-and-hash";
 import { z } from "zod";
 import { Prisma } from "@/generated/prisma";
-import { userDetailSelect, userListSelect } from "./user.select";
+import {
+  userDetailSelect,
+  userListSelect,
+  userOptionSelect,
+} from "./user.select";
 import {
   isPaginated,
   buildPrismaPage,
@@ -17,6 +21,7 @@ import {
   CreateUserSchema,
   DeleteUserSchema,
   UpdateUserSchema,
+  GetSpecimenCollectorCandidatesSchema,
 } from "./user.schema";
 
 type DatabaseClient = typeof prisma;
@@ -106,6 +111,27 @@ export async function getUser(
   return db.user.findFirst({
     where: { id, laboratoryId },
     select: userDetailSelect,
+  });
+}
+
+export async function getSpecimenCollectorCandidates(
+  db: Pick<DatabaseClient, "user">,
+  { laboratoryId }: z.infer<typeof GetSpecimenCollectorCandidatesSchema>,
+) {
+  return db.user.findMany({
+    where: { laboratoryId, role: { not: "SYS_ADMIN" } },
+    select: userOptionSelect,
+    orderBy: { name: "asc" },
+  });
+}
+
+export async function getSpecimenCollectorCandidate(
+  db: Pick<DatabaseClient, "user">,
+  { id, laboratoryId }: z.infer<typeof GetUserSchema>,
+) {
+  return db.user.findFirst({
+    where: { id, laboratoryId, role: { not: "SYS_ADMIN" } },
+    select: userOptionSelect,
   });
 }
 

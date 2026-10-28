@@ -2,6 +2,7 @@
 
 import prisma from "@/lib/prisma";
 import { z } from "zod";
+import { SpecimenStatus } from "@/generated/prisma";
 import { specimenDetailSelect } from "./specimen.select";
 import { buildSpecimenNo, buildSpecimenPeriod } from "@/lib/generate-item-no";
 import {
@@ -9,6 +10,7 @@ import {
   UpdateSpecimenSchema,
   ReserveSpecimenNoSchema,
   GetSpecimenSchema,
+  CollectSpecimenSchema,
 } from "./specimen.schema";
 
 type DatabaseClient = typeof prisma;
@@ -118,6 +120,29 @@ export async function updateSpecimen(
         : undefined,
       rejectionReason,
       cancellationReason,
+    },
+    select: specimenDetailSelect,
+  });
+}
+
+export async function collectSpecimen(
+  db: Pick<DatabaseClient, "specimen">,
+  {
+    id,
+    note,
+    status,
+    collectedAt,
+    collectedById,
+    laboratoryId,
+  }: z.infer<typeof CollectSpecimenSchema> & { status: SpecimenStatus },
+) {
+  return db.specimen.update({
+    where: { id, laboratoryId },
+    data: {
+      status,
+      collectedAt,
+      collectedById,
+      note: note === undefined ? undefined : note.length ? note : null,
     },
     select: specimenDetailSelect,
   });

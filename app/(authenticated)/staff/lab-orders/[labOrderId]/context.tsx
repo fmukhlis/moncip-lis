@@ -6,10 +6,12 @@ interface LabOrderDetailContext {
   editSpecimenDialogTrigger: HTMLButtonElement | null;
   createSpecimenDialogTrigger: HTMLButtonElement | null;
   cancelSpecimenDialogTrigger: HTMLButtonElement | null;
+  collectSpecimenDialogTrigger: HTMLButtonElement | null;
 
   setEditSpecimenDialogTrigger: (value: HTMLButtonElement) => void;
   setCreateSpecimenDialogTrigger: (value: HTMLButtonElement) => void;
   setCancelSpecimenDialogTrigger: (value: HTMLButtonElement) => void;
+  setCollectSpecimenDialogTrigger: (value: HTMLButtonElement) => void;
 }
 
 const LabOrderDetailContext = createContext<LabOrderDetailContext | undefined>(
@@ -34,16 +36,23 @@ export function LabOrderDetailProvider({
     setCancelSpecimenDialogActiveTrigger,
   ] = useState<HTMLButtonElement | null>(null);
 
+  const [
+    collectSpecimenDialogActiveTrigger,
+    setCollectSpecimenDialogActiveTrigger,
+  ] = useState<HTMLButtonElement | null>(null);
+
   return (
     <LabOrderDetailContext.Provider
       value={{
         editSpecimenDialogTrigger: editSpecimenDialogActiveTrigger,
         cancelSpecimenDialogTrigger: cancelSpecimenDialogActiveTrigger,
         createSpecimenDialogTrigger: createSpecimenDialogActiveTrigger,
+        collectSpecimenDialogTrigger: collectSpecimenDialogActiveTrigger,
 
         setEditSpecimenDialogTrigger: setEditSpecimenDialogActiveTrigger,
         setCancelSpecimenDialogTrigger: setCancelSpecimenDialogActiveTrigger,
         setCreateSpecimenDialogTrigger: setCreateSpecimenDialogActiveTrigger,
+        setCollectSpecimenDialogTrigger: setCollectSpecimenDialogActiveTrigger,
       }}
     >
       {children}

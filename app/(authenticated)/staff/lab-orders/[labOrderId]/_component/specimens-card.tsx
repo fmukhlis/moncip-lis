@@ -30,6 +30,7 @@ import {
   setIsEditSpecimenDialogOpen,
   setIsCreateSpecimenDialogOpen,
   setIsCancelSpecimenDialogOpen,
+  setIsCollectSpecimenDialogOpen,
 } from "../slice";
 import {
   Card,
@@ -52,6 +53,7 @@ export default function SpecimensCard({ labOrderId }: { labOrderId: string }) {
     setEditSpecimenDialogTrigger,
     setCancelSpecimenDialogTrigger,
     setCreateSpecimenDialogTrigger,
+    setCollectSpecimenDialogTrigger,
   } = useLabOrderDetailContext();
 
   const [isShowingAll, setIsShowingAll] = useState(false);
@@ -199,10 +201,17 @@ export default function SpecimensCard({ labOrderId }: { labOrderId: string }) {
                         size={"icon-sm"}
                         variant="ghost"
                         className="size-6 ml-auto"
+                        onClick={(e) => {
+                          dispatch(setSelectedSpecimenId(specimen.id));
+                          dispatch(setIsCollectSpecimenDialogOpen(true));
+                          setCollectSpecimenDialogTrigger(e.currentTarget);
+                        }}
                       >
                         <ClipboardClock className="size-4" />
                         <span className="sr-only">
-                          Log collection time for specimen{" "}
+                          {specimen.status === SpecimenStatus.PENDING
+                            ? "Log collection for specimen"
+                            : "Update collection for specimen"}{" "}
                           {specimen.specimenType.displayName}
                         </span>
                       </Button>
@@ -214,10 +223,20 @@ export default function SpecimensCard({ labOrderId }: { labOrderId: string }) {
                 <InfoRow
                   label="Collection Time"
                   value={
-                    <ClientDateTimeText
-                      formatStr="dd MMM yyyy, HH:mm"
-                      dateTime={specimen.collectedAt}
-                    />
+                    <div className="flex flex-col">
+                      <ClientDateTimeText
+                        formatStr="dd MMM yyyy, HH:mm"
+                        dateTime={specimen.collectedAt}
+                      />
+                      {specimen.collectedBy && (
+                        <span className="text-xs text-muted-foreground">
+                          by{" "}
+                          {specimen.collectedBy.name ??
+                            specimen.collectedBy.username ??
+                            "Unknown user"}
+                        </span>
+                      )}
+                    </div>
                   }
                 />
                 <InfoRow

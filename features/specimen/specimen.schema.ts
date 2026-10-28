@@ -59,3 +59,30 @@ export const UpdateSpecimenSchema = UpdateSpecimenActionSchema.safeExtend({
   cancelledAt: z.coerce.date().optional(),
   laboratoryId: requiredCuid2("Laboratory"),
 });
+
+// Allow a small clock skew between the browser and the server.
+const COLLECTED_AT_FUTURE_TOLERANCE_MS = 60_000;
+
+const collectedAtSchema = z.coerce
+  .date()
+  .refine((date) => date.getTime() > 0, "Collection time is invalid.")
+  .refine(
+    (date) => date.getTime() <= Date.now() + COLLECTED_AT_FUTURE_TOLERANCE_MS,
+    "Collection time cannot be in the future.",
+  );
+
+export const CollectSpecimenActionSchema = z.object({
+  id: requiredCuid2("Specimen"),
+  labOrderId: requiredCuid2("Lab Order"),
+  collectedAt: collectedAtSchema,
+  collectedById: requiredCuid2("Collector"),
+  note: z
+    .string()
+    .trim()
+    .max(500, "Note must be at most 500 characters.")
+    .optional(),
+});
+
+export const CollectSpecimenSchema = CollectSpecimenActionSchema.safeExtend({
+  laboratoryId: requiredCuid2("Laboratory"),
+});
