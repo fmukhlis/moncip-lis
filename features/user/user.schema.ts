@@ -67,6 +67,10 @@ export const GetUserSchema = GetUserActionSchema.extend({
   laboratoryId: requiredCuid2("Laboratory"),
 });
 
+export const GetSpecimenCollectorCandidatesSchema = z.object({
+  laboratoryId: requiredCuid2("Laboratory"),
+});
+
 export const UpdateUserActionSchema = CreateUserActionSchema.partial()
   .extend({
     id: requiredCuid2("User"),

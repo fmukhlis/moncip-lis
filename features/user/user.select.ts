@@ -20,6 +20,13 @@ export const userListSelect = {
   },
 } satisfies Prisma.UserSelect;
 
+export const userOptionSelect = {
+  id: true,
+  name: true,
+  username: true,
+  role: true,
+} satisfies Prisma.UserSelect;
+
 export const userDetailSelect = {
   ...userBaseSelect,
   createdAt: true,

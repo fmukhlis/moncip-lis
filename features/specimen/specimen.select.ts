@@ -46,6 +46,15 @@ export const specimenDetailSelect = {
   rejectedAt: true,
   cancelledAt: true,
   collectedAt: true,
+  labOrderId: true,
+  collectedById: true,
+  collectedBy: {
+    select: {
+      id: true,
+      name: true,
+      username: true,
+    },
+  },
   orderItems: {
     select: {
       id: true,

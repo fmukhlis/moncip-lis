@@ -11,7 +11,19 @@ import { UnauthorizedError } from "../authentication/authentication.error";
 import { CreateAuditLogSchema } from "../audit-log/audit-log.schema";
 import { ensureUserAuthenticated } from "@/lib/ensure-user-authenticated";
 import { ensureLabOrderIsEditable } from "../lab-order/lab-order.policy";
-import { ensureSpecimenIsEditable } from "./specimen.policy";
+import {
+  ensureSpecimenIsEditable,
+  ensureSpecimenCanBeCollected,
+  resolveCollectedStatus,
+} from "./specimen.policy";
+import {
+  getSpecimenCollectorCandidate,
+  getSpecimenCollectorCandidates,
+} from "../user/user.service";
+import {
+  GetUserSchema,
+  GetSpecimenCollectorCandidatesSchema,
+} from "../user/user.schema";
 import { updateManyLabOrderItemSpecimen } from "../lab-order-item-specimen/lab-order-item-specimen.service";
 import { UpdateManyLabOrderItemSpecimenSchema } from "../lab-order-item-specimen/lab-order-item-specimen.schema";
 import { ensureLabOrderItemHasNoActiveSpecimen } from "../lab-order-item/lab-order-item.policy";
@@ -24,16 +36,19 @@ import {
   getSpecimen,
   createSpecimen,
   updateSpecimen,
+  collectSpecimen,
   reserveSpecimenNo,
 } from "./specimen.service";
 import {
   GetSpecimenSchema,
   CreateSpecimenSchema,
   UpdateSpecimenSchema,
+  CollectSpecimenSchema,
   GetSpecimenActionSchema,
   ReserveSpecimenNoSchema,
   CreateSpecimenActionSchema,
   UpdateSpecimenActionSchema,
+  CollectSpecimenActionSchema,
 } from "./specimen.schema";
 
 export async function createSpecimenAction(
@@ -401,4 +416,150 @@ export async function updateSpecimenAction(
       collectedAt: specimen.collectedAt?.toISOString(),
     },
   };
+}
+
+export async function collectSpecimenAction(
+  params: z.infer<typeof CollectSpecimenActionSchema>,
+) {
+  const user = await ensureUserAuthenticated();
+
+  if (!authorize(user, "SPECIMEN:UPDATE")) {
+    throw new UnauthorizedError(
+      "You don't have permission to collect this specimen.",
+    );
+  }
+
+  const { id: actorId, laboratoryId } = user;
+
+  const specimen = await prisma.$transaction(async (tx) => {
+    // Load the order first and make sure it's editable before collecting.
+    const parsedGetLabOrderParams = GetLabOrderSchema.parse({
+      laboratoryId,
+      id: params.labOrderId,
+    });
+
+    const labOrder = await getLabOrder(tx, parsedGetLabOrderParams);
+
+    if (!labOrder) {
+      throw new Error("Order is not found");
+    }
+
+    ensureLabOrderIsEditable(labOrder);
+
+    const parsedGetSpecimenParams = GetSpecimenSchema.parse({
+      id: params.id,
+      laboratoryId,
+    });
+
+    const existingSpecimen = await getSpecimen(tx, parsedGetSpecimenParams);
+
+    if (!existingSpecimen) {
+      throw new Error("Specimen is not found");
+    }
+
+    ensureSpecimenIsEditable(existingSpecimen);
+    ensureSpecimenCanBeCollected(existingSpecimen);
+
+    const parsedCollectSpecimenParams = CollectSpecimenSchema.parse({
+      ...params,
+      laboratoryId,
+    });
+
+    // The specimen must belong to the order supplied by the caller.
+    if (existingSpecimen.labOrderId !== parsedGetLabOrderParams.id) {
+      throw new Error("Specimen is not part of this order");
+    }
+
+    // A specimen cannot be collected after it was received.
+    if (
+      existingSpecimen.receivedAt &&
+      parsedCollectSpecimenParams.collectedAt > existingSpecimen.receivedAt
+    ) {
+      throw new Error(
+        "Collection time cannot be after the specimen is received",
+      );
+    }
+
+    // The collector must be an active user of the same laboratory.
+    const collector = await getSpecimenCollectorCandidate(
+      tx,
+      GetUserSchema.parse({
+        id: parsedCollectSpecimenParams.collectedById,
+        laboratoryId,
+      }),
+    );
+
+    if (!collector) {
+      throw new Error("Collector is not found");
+    }
+
+    const updatedSpecimen = await collectSpecimen(tx, {
+      ...parsedCollectSpecimenParams,
+      status: resolveCollectedStatus(existingSpecimen.status),
+    });
+
+    // Create a new audit log entry for the collection action.
+    const parsedCreateAuditLogParams = CreateAuditLogSchema.parse({
+      action: AUDIT_ACTIONS.SPECIMEN_COLLECTED,
+      actorId,
+      entityId: updatedSpecimen.id,
+      metadata: {
+        previousStatus: existingSpecimen.status,
+        status: updatedSpecimen.status,
+        previousCollectedAt:
+          existingSpecimen.collectedAt?.toISOString() ?? null,
+        collectedAt: updatedSpecimen.collectedAt?.toISOString() ?? null,
+        collectedById: updatedSpecimen.collectedById,
+        collectedByName: collector.name ?? collector.username,
+      },
+      entityType: AuditLogEntityType.SPECIMEN,
+      laboratoryId,
+    });
+
+    await createAuditLog(tx, parsedCreateAuditLogParams);
+
+    return updatedSpecimen;
+  });
+
+  // Serialize dates here so the client doesn't have to do it manually.
+  return {
+    data: {
+      ...specimen,
+      orderItems: specimen.orderItems.map(
+        ({ assignedAt, endedAt, ...rest }) => ({
+          ...rest,
+          endedAt: endedAt?.toISOString(),
+          assignedAt: assignedAt.toISOString(),
+        }),
+      ),
+      createdAt: specimen.createdAt.toISOString(),
+      updatedAt: specimen.updatedAt.toISOString(),
+      receivedAt: specimen.receivedAt?.toISOString(),
+      rejectedAt: specimen.rejectedAt?.toISOString(),
+      cancelledAt: specimen.cancelledAt?.toISOString(),
+      collectedAt: specimen.collectedAt?.toISOString(),
+    },
+  };
+}
+
+export async function getSpecimenCollectorCandidatesAction() {
+  const user = await ensureUserAuthenticated();
+
+  if (!authorize(user, "SPECIMEN:UPDATE")) {
+    throw new UnauthorizedError(
+      "You don't have permission to view specimen collectors.",
+    );
+  }
+
+  const { laboratoryId } = user;
+
+  const parsedGetSpecimenCollectorCandidatesParams =
+    GetSpecimenCollectorCandidatesSchema.parse({ laboratoryId });
+
+  const candidates = await getSpecimenCollectorCandidates(
+    prisma,
+    parsedGetSpecimenCollectorCandidatesParams,
+  );
+
+  return { data: candidates };
 }

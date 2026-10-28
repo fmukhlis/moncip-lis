@@ -84,6 +84,13 @@ export const labOrderDetailSelect = {
       },
       receivedAt: true,
       collectedAt: true,
+      collectedBy: {
+        select: {
+          id: true,
+          name: true,
+          username: true,
+        },
+      },
       specimenType: {
         select: {
           id: true,
