@@ -87,7 +87,7 @@ export default function StickyHeader({ labOrderId }: { labOrderId: string }) {
 
   useEffect(() => {
     setIsMounted(true);
-    if (isMounted && reactToPrintContent()) {
+    if (isMounted && reactToPrintContent()?.hasChildNodes()) {
       reactToPrintFn(reactToPrintContent);
     }
   }, [printContent, isMounted, reactToPrintFn]);
