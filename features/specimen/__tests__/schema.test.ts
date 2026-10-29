@@ -1,6 +1,8 @@
 import {
   CollectSpecimenActionSchema,
   CollectSpecimenSchema,
+  SpecimenReceiptActionSchema,
+  SpecimenReceiptSchema,
 } from "../specimen.schema";
 
 /**
@@ -13,6 +15,7 @@ const TEST_IDS = {
   id: "tz4a98xxat96iws9zmbrgj3a",
   labOrderId: "ckqp6y6q50000qzrm8b1v3f7d",
   collectedById: "clx1a2b3c4d5e6f7g8h9i0jk",
+  receivedById: "cm9z8y7x6w5v4u3t2s1r0qpo",
   laboratoryId: "c9wq3x1v70000qzrm5t2h8k4d",
 } as const;
 
@@ -211,5 +214,194 @@ describe("CollectSpecimenSchema", () => {
     const result = CollectSpecimenSchema.safeParse(makeInput());
 
     expect(result.success).toBe(false);
+  });
+});
+
+function makeReceiptInput(
+  overrides: Record<string, unknown> = {},
+): Record<string, unknown> {
+  return {
+    id: TEST_IDS.id,
+    labOrderId: TEST_IDS.labOrderId,
+    receivedAt: new Date(Date.now() - 60_000).toISOString(),
+    receivedById: TEST_IDS.receivedById,
+    ...overrides,
+  };
+}
+
+function receiptIssuesOf(input: unknown): IssuedError[] {
+  const result = SpecimenReceiptActionSchema.safeParse(input);
+
+  expect(result.success).toBe(false);
+
+  return result.success ? [] : (result.error.issues as IssuedError[]);
+}
+
+describe("SpecimenReceiptActionSchema", () => {
+  it("accepts a complete payload and coerces receivedAt to a Date", () => {
+    const input = makeReceiptInput();
+    const result = SpecimenReceiptActionSchema.safeParse(input);
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+
+    expect(result.data).toEqual({
+      id: TEST_IDS.id,
+      labOrderId: TEST_IDS.labOrderId,
+      receivedAt: new Date(String(input.receivedAt)),
+      receivedById: TEST_IDS.receivedById,
+    });
+  });
+
+  it("accepts a Date instance for receivedAt", () => {
+    const receivedAt = new Date(Date.now() - 60_000);
+
+    const result = SpecimenReceiptActionSchema.safeParse(
+      makeReceiptInput({ receivedAt }),
+    );
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.receivedAt.getTime()).toBe(receivedAt.getTime());
+    }
+  });
+
+  it.each([
+    ["an unparsable string", "not-a-date"],
+    ["a number that is not a timestamp", Number.NaN],
+    ["null", null],
+    ["the epoch", new Date(0)],
+    ["a date before the epoch", new Date(-1)],
+  ])("rejects %s", (_label, receivedAt) => {
+    expect(receiptIssuesOf(makeReceiptInput({ receivedAt }))[0].path).toEqual([
+      "receivedAt",
+    ]);
+  });
+
+  it("rejects a receipt time in the future", () => {
+    const [issue] = receiptIssuesOf(
+      makeReceiptInput({ receivedAt: new Date(Date.now() + 5 * 60_000) }),
+    );
+
+    expect(issue.path).toEqual(["receivedAt"]);
+    expect(issue.message).toBe("Received time cannot be in the future.");
+  });
+
+  it("tolerates a small clock skew between the browser and the server", () => {
+    const result = SpecimenReceiptActionSchema.safeParse(
+      makeReceiptInput({ receivedAt: new Date(Date.now() + 30_000) }),
+    );
+
+    expect(result.success).toBe(true);
+  });
+
+  it.each(["id", "labOrderId", "receivedById"] as const)(
+    "requires a valid %s",
+    (field) => {
+      const input = makeReceiptInput();
+      delete input[field];
+
+      expect(receiptIssuesOf(input)[0].path).toEqual([field]);
+    },
+  );
+
+  it.each([
+    ["an empty string", ""],
+    ["a non-cuid2 value", "Not A Cuid2"],
+    ["a number", 42],
+  ])("rejects a receiver that is %s", (_label, receivedById) => {
+    expect(receiptIssuesOf(makeReceiptInput({ receivedById }))[0].path).toEqual(
+      ["receivedById"],
+    );
+  });
+
+  it("strips server-managed keys supplied by the caller", () => {
+    const result = SpecimenReceiptActionSchema.safeParse(
+      makeReceiptInput({
+        status: "RECEIVED",
+        laboratoryId: TEST_IDS.laboratoryId,
+        collectedAt: new Date().toISOString(),
+        receivedBy: { connect: { id: TEST_IDS.collectedById } },
+      }),
+    );
+
+    expect(result.success).toBe(true);
+    if (!result.success) return;
+
+    expect(result.data).not.toHaveProperty("status");
+    expect(result.data).not.toHaveProperty("laboratoryId");
+    expect(result.data).not.toHaveProperty("collectedAt");
+    expect(result.data).not.toHaveProperty("receivedBy");
+  });
+
+  describe("note", () => {
+    it("omits the note when it is not supplied", () => {
+      const result = SpecimenReceiptActionSchema.safeParse(makeReceiptInput());
+
+      expect(result.success).toBe(true);
+      if (result.success) expect(result.data).not.toHaveProperty("note");
+    });
+
+    it("trims the note when it is provided", () => {
+      const result = SpecimenReceiptActionSchema.safeParse(
+        makeReceiptInput({ note: "  kept from the collection  " }),
+      );
+
+      expect(result.success).toBe(true);
+      if (result.success)
+        expect(result.data.note).toBe("kept from the collection");
+    });
+
+    it("accepts an empty note so the service can clear it", () => {
+      const result = SpecimenReceiptActionSchema.safeParse(
+        makeReceiptInput({ note: "   " }),
+      );
+
+      expect(result.success).toBe(true);
+      if (result.success) expect(result.data.note).toBe("");
+    });
+
+    it("keeps exactly 500 characters but rejects 501", () => {
+      const accepted = SpecimenReceiptActionSchema.safeParse(
+        makeReceiptInput({ note: `  ${"a".repeat(500)}  ` }),
+      );
+      const rejected = SpecimenReceiptActionSchema.safeParse(
+        makeReceiptInput({ note: `  ${"a".repeat(501)}  ` }),
+      );
+
+      expect(accepted.success).toBe(true);
+      if (accepted.success) expect(accepted.data.note).toBe("a".repeat(500));
+      expect(rejected.success).toBe(false);
+    });
+
+    it.each([
+      ["a number", 42],
+      ["an object", { text: "kept" }],
+      ["an array", ["kept"]],
+    ])("rejects %s", (_label, note) => {
+      expect(receiptIssuesOf(makeReceiptInput({ note }))[0].path).toEqual([
+        "note",
+      ]);
+    });
+  });
+});
+
+describe("SpecimenReceiptSchema", () => {
+  it("adds the laboratory scope resolved from the session", () => {
+    const result = SpecimenReceiptSchema.safeParse({
+      ...makeReceiptInput(),
+      laboratoryId: TEST_IDS.laboratoryId,
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.laboratoryId).toBe(TEST_IDS.laboratoryId);
+    }
+  });
+
+  it("requires the laboratory scope", () => {
+    expect(SpecimenReceiptSchema.safeParse(makeReceiptInput()).success).toBe(
+      false,
+    );
   });
 });

@@ -150,7 +150,8 @@ model User {
   accounts      Account[]
   sessions      Session[]
   auditLogs     AuditLog[]
-  collectedSpecimens Specimen[]
+  collectedSpecimens Specimen[] @relation("SpecimenCollector")
+  receivedSpecimens  Specimen[] @relation("SpecimenReceiver")
   department    Department?     @relation(fields: [departmentId], references: [id])
   laboratory    Laboratory?     @relation(fields: [laboratoryId], references: [id])
   // Optional for WebAuthn support
@@ -727,6 +728,7 @@ model Specimen {
   laboratoryId   String
   specimenTypeId String
   collectedById  String?
+  receivedById   String?
 
   no                 String
   note               String?
@@ -740,7 +742,8 @@ model Specimen {
   patient      Patient                @relation(fields: [patientId], references: [id])
   labOrder     LabOrder               @relation(fields: [labOrderId], references: [id])
   laboratory   Laboratory             @relation(fields: [laboratoryId], references: [id])
-  collectedBy  User?                  @relation(fields: [collectedById], references: [id])
+  collectedBy  User?                  @relation("SpecimenCollector", fields: [collectedById], references: [id])
+  receivedBy   User?                  @relation("SpecimenReceiver", fields: [receivedById], references: [id])
   orderItems   LabOrderItemSpecimen[]
   specimenType SpecimenType           @relation(fields: [specimenTypeId], references: [id])
 
@@ -757,6 +760,7 @@ model Specimen {
   @@index([laboratoryId, labOrderId])
   @@index([laboratoryId, specimenTypeId])
   @@index([laboratoryId, collectedById])
+  @@index([laboratoryId, receivedById])
 }
 
 model SpecimenCounter {

@@ -13,7 +13,7 @@ import { useComboboxAnchor } from "@/components/ui/combobox";
 import { useLabOrderDetailContext } from "../context";
 import { useGetLabOrderActionQuery } from "@/features/lab-order/lab-order.api";
 import { UpdateSpecimenActionSchema } from "@/features/specimen/specimen.schema";
-import { setIsEditSpecimenDialogOpen } from "../slice";
+import { setIsReassignSpecimenDialogOpen } from "../slice";
 import { useEffect, useMemo, useState } from "react";
 import { useAppDispatch, useAppSelector } from "@/hooks";
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
@@ -39,14 +39,14 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 type FormValues = z.infer<typeof UpdateSpecimenActionSchema>;
 
-export default function EditSpecimenDialog({
+export default function ReassignSpecimenDialog({
   labOrderId,
 }: {
   labOrderId: string;
 }) {
   // Global state
   const isOpen = useAppSelector(
-    (state) => state.labOrderDetail.isEditSpecimenDialogOpen,
+    (state) => state.labOrderDetail.isReassignSpecimenDialogOpen,
   );
   const specimenId = useAppSelector(
     (state) => state.labOrderDetail.selectedSpecimenId,
@@ -68,7 +68,7 @@ export default function EditSpecimenDialog({
 
   const comboboxContentContainerRef = useComboboxAnchor();
 
-  const { editSpecimenDialogTrigger } = useLabOrderDetailContext();
+  const { reassignSpecimenDialogTrigger } = useLabOrderDetailContext();
 
   const [specimenType, setSpecimenType] = useState<
     (typeof specimenTypeOptions)[number] | null
@@ -161,16 +161,16 @@ export default function EditSpecimenDialog({
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
     try {
       const res = await updateSpecimenAction(data).unwrap();
-      dispatch(setIsEditSpecimenDialogOpen(false));
+      dispatch(setIsReassignSpecimenDialogOpen(false));
       setTimeout(() => {
         reset();
       }, 200);
       toast.success(
-        `Specimen "${res?.data?.specimenType.displayName}" updated`,
+        `Specimen "${res?.data?.specimenType.displayName}" reassigned`,
       );
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : `Failed to update specimen`,
+        error instanceof Error ? error.message : `Failed to reassign specimen`,
       );
     }
   };
@@ -218,15 +218,18 @@ export default function EditSpecimenDialog({
         if (formState.isSubmitting) {
           return;
         }
-        dispatch(setIsEditSpecimenDialogOpen(open));
+        dispatch(setIsReassignSpecimenDialogOpen(open));
       }}
     >
       <FormProvider {...methods}>
-        <form id="edit-specimen" onSubmit={handleSubmit(onSubmit, console.log)}>
+        <form
+          id="reassign-specimen"
+          onSubmit={handleSubmit(onSubmit, console.log)}
+        >
           <DialogContent
             onCloseAutoFocus={(e) => {
               e.preventDefault();
-              editSpecimenDialogTrigger?.focus();
+              reassignSpecimenDialogTrigger?.focus();
             }}
             onEscapeKeyDown={(e) => {
               if (isSpecimenTypeComboboxOpen) {
@@ -239,11 +242,11 @@ export default function EditSpecimenDialog({
                 {isFetchingSpecimenData || !specimenData?.data ? (
                   <>
                     <Skeleton className="h-[18px] w-48" />
-                    <span className="sr-only">Edit Specimen</span>
+                    <span className="sr-only">Reassign Specimen</span>
                   </>
                 ) : (
                   <span>
-                    {`Edit "${specimenData.data.specimenType.displayName}"`}
+                    {`Reassign "${specimenData.data.specimenType.displayName}"`}
                   </span>
                 )}
               </DialogTitle>
@@ -259,7 +262,7 @@ export default function EditSpecimenDialog({
                   (typeof specimenTypeOptions)[number]
                 >
                   name="specimenTypeId"
-                  formId="edit-specimen"
+                  formId="reassign-specimen"
                   disabled={isFetchingSpecimenData || isFetchingOrderData}
                   extractValueToFieldValue={(value) => value?.value}
                   comboboxProps={{
@@ -313,7 +316,7 @@ export default function EditSpecimenDialog({
                 />
                 <CheckboxGroupField<FormValues>
                   name="orderItemIds"
-                  formId="edit-specimen"
+                  formId="reassign-specimen"
                   disabled={isFetchingSpecimenData || isFetchingOrderData}
                   className="w-fit"
                   options={associableTests}
@@ -328,7 +331,7 @@ export default function EditSpecimenDialog({
                   if (formState.isSubmitting) {
                     return;
                   }
-                  dispatch(setIsEditSpecimenDialogOpen(false));
+                  dispatch(setIsReassignSpecimenDialogOpen(false));
                 }}
                 disabled={formState.isSubmitting}
               >
@@ -336,7 +339,7 @@ export default function EditSpecimenDialog({
               </Button>
               <Button
                 type="submit"
-                form="edit-specimen"
+                form="reassign-specimen"
                 disabled={
                   formState.isSubmitting ||
                   isFetchingSpecimenData ||
@@ -346,10 +349,10 @@ export default function EditSpecimenDialog({
                 {formState.isSubmitting ? (
                   <div className="flex gap-1 items-center">
                     <Spinner />
-                    Updating...
+                    Reassigning...
                   </div>
                 ) : (
-                  <div>Update</div>
+                  <div>Reassign</div>
                 )}
               </Button>
             </DialogFooter>

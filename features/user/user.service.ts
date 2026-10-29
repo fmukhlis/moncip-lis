@@ -21,7 +21,7 @@ import {
   CreateUserSchema,
   DeleteUserSchema,
   UpdateUserSchema,
-  GetSpecimenCollectorCandidatesSchema,
+  GetSpecimenPersonnelCandidatesSchema,
 } from "./user.schema";
 
 type DatabaseClient = typeof prisma;
@@ -114,9 +114,13 @@ export async function getUser(
   });
 }
 
-export async function getSpecimenCollectorCandidates(
+/**
+ * The users that can appear on a specimen record, either as the collector or as
+ * the receiver.
+ */
+export async function getSpecimenPersonnelCandidates(
   db: Pick<DatabaseClient, "user">,
-  { laboratoryId }: z.infer<typeof GetSpecimenCollectorCandidatesSchema>,
+  { laboratoryId }: z.infer<typeof GetSpecimenPersonnelCandidatesSchema>,
 ) {
   return db.user.findMany({
     where: { laboratoryId, role: { not: "SYS_ADMIN" } },
@@ -125,7 +129,7 @@ export async function getSpecimenCollectorCandidates(
   });
 }
 
-export async function getSpecimenCollectorCandidate(
+export async function getSpecimenPersonnelCandidate(
   db: Pick<DatabaseClient, "user">,
   { id, laboratoryId }: z.infer<typeof GetUserSchema>,
 ) {

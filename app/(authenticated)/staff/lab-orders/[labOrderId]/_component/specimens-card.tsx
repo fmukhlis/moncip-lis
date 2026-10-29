@@ -17,21 +17,9 @@ import {
   SpecimenStatus,
   SpecimenAssignmentEndReason,
 } from "@/generated/prisma";
-import {
-  Plus,
-  Trash2,
-  SquarePen,
-  TestTubes,
-  CheckCheck,
-  ClipboardClock,
-} from "lucide-react";
-import {
-  setSelectedSpecimenId,
-  setIsEditSpecimenDialogOpen,
-  setIsCreateSpecimenDialogOpen,
-  setIsCancelSpecimenDialogOpen,
-  setIsCollectSpecimenDialogOpen,
-} from "../slice";
+import { Plus, TestTubes, CheckCheck } from "lucide-react";
+import { setIsCreateSpecimenDialogOpen } from "../slice";
+import SpecimenActions from "./specimen-actions";
 import {
   Card,
   CardTitle,
@@ -49,12 +37,7 @@ export default function SpecimensCard({ labOrderId }: { labOrderId: string }) {
   // Global state
   const dispatch = useAppDispatch();
 
-  const {
-    setEditSpecimenDialogTrigger,
-    setCancelSpecimenDialogTrigger,
-    setCreateSpecimenDialogTrigger,
-    setCollectSpecimenDialogTrigger,
-  } = useLabOrderDetailContext();
+  const { setCreateSpecimenDialogTrigger } = useLabOrderDetailContext();
 
   const [isShowingAll, setIsShowingAll] = useState(false);
 
@@ -153,56 +136,7 @@ export default function SpecimensCard({ labOrderId }: { labOrderId: string }) {
                   <SpecimenStatusBadge status={specimen.status} />
                   {specimen.status !== SpecimenStatus.CANCELLED &&
                   specimen.status !== SpecimenStatus.REJECTED ? (
-                    <>
-                      <Button
-                        size={"icon-sm"}
-                        variant="ghost"
-                        className="size-6"
-                        onClick={(e) => {
-                          dispatch(setSelectedSpecimenId(specimen.id));
-                          dispatch(setIsEditSpecimenDialogOpen(true));
-                          setEditSpecimenDialogTrigger(e.currentTarget);
-                        }}
-                      >
-                        <SquarePen className="size-3.5" />
-                        <span className="sr-only">
-                          Edit specimen {specimen.specimenType.displayName}
-                        </span>
-                      </Button>
-                      <Button
-                        size={"icon-sm"}
-                        variant="ghost"
-                        className="size-6 text-destructive hover:bg-destructive/25 dark:hover:bg-destructive/50"
-                        onClick={(e) => {
-                          dispatch(setSelectedSpecimenId(specimen.id));
-                          dispatch(setIsCancelSpecimenDialogOpen(true));
-                          setCancelSpecimenDialogTrigger(e.currentTarget);
-                        }}
-                      >
-                        <Trash2 className="size-3.5" />
-                        <span className="sr-only">
-                          Cancel specimen {specimen.specimenType.displayName}
-                        </span>
-                      </Button>
-                      <Button
-                        size={"icon-sm"}
-                        variant="ghost"
-                        className="size-6 ml-auto"
-                        onClick={(e) => {
-                          dispatch(setSelectedSpecimenId(specimen.id));
-                          dispatch(setIsCollectSpecimenDialogOpen(true));
-                          setCollectSpecimenDialogTrigger(e.currentTarget);
-                        }}
-                      >
-                        <ClipboardClock className="size-4" />
-                        <span className="sr-only">
-                          {specimen.status === SpecimenStatus.PENDING
-                            ? "Log collection for specimen"
-                            : "Update collection for specimen"}{" "}
-                          {specimen.specimenType.displayName}
-                        </span>
-                      </Button>
-                    </>
+                    <SpecimenActions specimen={specimen} />
                   ) : null}
                 </div>
               </div>
@@ -229,10 +163,20 @@ export default function SpecimensCard({ labOrderId }: { labOrderId: string }) {
                 <InfoRow
                   label="Received Time"
                   value={
-                    <ClientDateTimeText
-                      formatStr="dd MMM yyyy, HH:mm"
-                      dateTime={specimen.receivedAt}
-                    />
+                    <div className="flex flex-col">
+                      <ClientDateTimeText
+                        formatStr="dd MMM yyyy, HH:mm"
+                        dateTime={specimen.receivedAt}
+                      />
+                      {specimen.receivedBy && (
+                        <span className="text-xs text-muted-foreground">
+                          by{" "}
+                          {specimen.receivedBy.name ??
+                            specimen.receivedBy.username ??
+                            "Unknown user"}
+                        </span>
+                      )}
+                    </div>
                   }
                 />
                 <div className="col-span-2">

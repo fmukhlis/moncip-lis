@@ -5,13 +5,15 @@ import {
   createSpecimenAction,
   updateSpecimenAction,
   collectSpecimenAction,
-  getSpecimenCollectorCandidatesAction,
+  receiveSpecimenAction,
+  getSpecimenPersonnelCandidatesAction,
 } from "./specimen.action";
 import {
   GetSpecimenActionSchema,
   CreateSpecimenActionSchema,
   UpdateSpecimenActionSchema,
   CollectSpecimenActionSchema,
+  SpecimenReceiptActionSchema,
 } from "./specimen.schema";
 
 const apiSlice = serverFunctionSlice.injectEndpoints({
@@ -106,13 +108,36 @@ const apiSlice = serverFunctionSlice.injectEndpoints({
         ),
       ],
     }),
-    getSpecimenCollectorCandidatesAction: builder.query<
-      Awaited<ReturnType<typeof getSpecimenCollectorCandidatesAction>>,
+    receiveSpecimenAction: builder.mutation<
+      Awaited<ReturnType<typeof receiveSpecimenAction>>,
+      z.infer<typeof SpecimenReceiptActionSchema>
+    >({
+      queryFn: async (arg) => {
+        try {
+          const res = await receiveSpecimenAction(arg);
+          return { data: res };
+        } catch (error) {
+          return {
+            status: "CUSTOM_ERROR",
+            error: error instanceof Error ? error.message : "Unknown error",
+          };
+        }
+      },
+      invalidatesTags: (result, err, { id }) => [
+        { type: "Specimen", id },
+        { type: "Specimen", id: "LIST" },
+        ...(result?.data.orderItems ?? []).flatMap(
+          ({ labOrderItem: { id } }) => [{ type: "LabOrderItem" as const, id }],
+        ),
+      ],
+    }),
+    getSpecimenPersonnelCandidatesAction: builder.query<
+      Awaited<ReturnType<typeof getSpecimenPersonnelCandidatesAction>>,
       void
     >({
       queryFn: async () => {
         try {
-          const res = await getSpecimenCollectorCandidatesAction();
+          const res = await getSpecimenPersonnelCandidatesAction();
           return { data: res };
         } catch (error) {
           return {
@@ -130,5 +155,6 @@ export const {
   useCreateSpecimenActionMutation,
   useUpdateSpecimenActionMutation,
   useCollectSpecimenActionMutation,
-  useGetSpecimenCollectorCandidatesActionQuery,
+  useReceiveSpecimenActionMutation,
+  useGetSpecimenPersonnelCandidatesActionQuery,
 } = apiSlice;

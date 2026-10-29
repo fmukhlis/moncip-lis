@@ -14,15 +14,17 @@ import { ensureLabOrderIsEditable } from "../lab-order/lab-order.policy";
 import {
   ensureSpecimenIsEditable,
   ensureSpecimenCanBeCollected,
+  ensureSpecimenCanBeReceived,
   resolveCollectedStatus,
+  resolveReceivedStatus,
 } from "./specimen.policy";
 import {
-  getSpecimenCollectorCandidate,
-  getSpecimenCollectorCandidates,
+  getSpecimenPersonnelCandidate,
+  getSpecimenPersonnelCandidates,
 } from "../user/user.service";
 import {
   GetUserSchema,
-  GetSpecimenCollectorCandidatesSchema,
+  GetSpecimenPersonnelCandidatesSchema,
 } from "../user/user.schema";
 import { updateManyLabOrderItemSpecimen } from "../lab-order-item-specimen/lab-order-item-specimen.service";
 import { UpdateManyLabOrderItemSpecimenSchema } from "../lab-order-item-specimen/lab-order-item-specimen.schema";
@@ -37,6 +39,7 @@ import {
   createSpecimen,
   updateSpecimen,
   collectSpecimen,
+  receiveSpecimen,
   reserveSpecimenNo,
 } from "./specimen.service";
 import {
@@ -49,7 +52,32 @@ import {
   CreateSpecimenActionSchema,
   UpdateSpecimenActionSchema,
   CollectSpecimenActionSchema,
+  SpecimenReceiptActionSchema,
+  SpecimenReceiptSchema,
 } from "./specimen.schema";
+
+/**
+ * Serializes the dates of a specimen so the client doesn't have to do it
+ * manually.
+ */
+function serializeSpecimen(
+  specimen: NonNullable<Awaited<ReturnType<typeof getSpecimen>>>,
+) {
+  return {
+    ...specimen,
+    orderItems: specimen.orderItems.map(({ assignedAt, endedAt, ...rest }) => ({
+      ...rest,
+      endedAt: endedAt?.toISOString(),
+      assignedAt: assignedAt.toISOString(),
+    })),
+    createdAt: specimen.createdAt.toISOString(),
+    updatedAt: specimen.updatedAt.toISOString(),
+    receivedAt: specimen.receivedAt?.toISOString(),
+    rejectedAt: specimen.rejectedAt?.toISOString(),
+    cancelledAt: specimen.cancelledAt?.toISOString(),
+    collectedAt: specimen.collectedAt?.toISOString(),
+  };
+}
 
 export async function createSpecimenAction(
   params: z.infer<typeof CreateSpecimenActionSchema>,
@@ -122,25 +150,7 @@ export async function createSpecimenAction(
     return specimen;
   });
 
-  // Serialize dates here so the client doesn't have to do it manually.
-  return {
-    data: {
-      ...specimen,
-      orderItems: specimen.orderItems.map(
-        ({ assignedAt, endedAt, ...rest }) => ({
-          ...rest,
-          endedAt: endedAt?.toISOString(),
-          assignedAt: assignedAt.toISOString(),
-        }),
-      ),
-      createdAt: specimen.createdAt.toISOString(),
-      updatedAt: specimen.updatedAt.toISOString(),
-      receivedAt: specimen.receivedAt?.toISOString(),
-      rejectedAt: specimen.rejectedAt?.toISOString(),
-      cancelledAt: specimen.cancelledAt?.toISOString(),
-      collectedAt: specimen.collectedAt?.toISOString(),
-    },
-  };
+  return { data: serializeSpecimen(specimen) };
 }
 
 export async function getSpecimenAction(
@@ -164,24 +174,7 @@ export async function getSpecimenAction(
   const specimen = await getSpecimen(prisma, parsedGetSpecimenParams);
 
   return {
-    data: specimen
-      ? {
-          ...specimen,
-          orderItems: specimen.orderItems.map(
-            ({ assignedAt, endedAt, ...rest }) => ({
-              ...rest,
-              endedAt: endedAt?.toISOString(),
-              assignedAt: assignedAt.toISOString(),
-            }),
-          ),
-          createdAt: specimen.createdAt.toISOString(),
-          updatedAt: specimen.updatedAt.toISOString(),
-          receivedAt: specimen.receivedAt?.toISOString(),
-          rejectedAt: specimen.rejectedAt?.toISOString(),
-          cancelledAt: specimen.cancelledAt?.toISOString(),
-          collectedAt: specimen.collectedAt?.toISOString(),
-        }
-      : null,
+    data: specimen ? serializeSpecimen(specimen) : null,
   };
 }
 
@@ -397,25 +390,7 @@ export async function updateSpecimenAction(
     return await updateSpecimen(tx, parsedUpdateSpecimenParams);
   });
 
-  // Serialize dates here so the client doesn't have to do it manually.
-  return {
-    data: {
-      ...specimen,
-      orderItems: specimen.orderItems.map(
-        ({ assignedAt, endedAt, ...rest }) => ({
-          ...rest,
-          endedAt: endedAt?.toISOString(),
-          assignedAt: assignedAt.toISOString(),
-        }),
-      ),
-      createdAt: specimen.createdAt.toISOString(),
-      updatedAt: specimen.updatedAt.toISOString(),
-      receivedAt: specimen.receivedAt?.toISOString(),
-      rejectedAt: specimen.rejectedAt?.toISOString(),
-      cancelledAt: specimen.cancelledAt?.toISOString(),
-      collectedAt: specimen.collectedAt?.toISOString(),
-    },
-  };
+  return { data: serializeSpecimen(specimen) };
 }
 
 export async function collectSpecimenAction(
@@ -481,7 +456,7 @@ export async function collectSpecimenAction(
     }
 
     // The collector must be an active user of the same laboratory.
-    const collector = await getSpecimenCollectorCandidate(
+    const collector = await getSpecimenPersonnelCandidate(
       tx,
       GetUserSchema.parse({
         id: parsedCollectSpecimenParams.collectedById,
@@ -521,44 +496,136 @@ export async function collectSpecimenAction(
     return updatedSpecimen;
   });
 
-  // Serialize dates here so the client doesn't have to do it manually.
-  return {
-    data: {
-      ...specimen,
-      orderItems: specimen.orderItems.map(
-        ({ assignedAt, endedAt, ...rest }) => ({
-          ...rest,
-          endedAt: endedAt?.toISOString(),
-          assignedAt: assignedAt.toISOString(),
-        }),
-      ),
-      createdAt: specimen.createdAt.toISOString(),
-      updatedAt: specimen.updatedAt.toISOString(),
-      receivedAt: specimen.receivedAt?.toISOString(),
-      rejectedAt: specimen.rejectedAt?.toISOString(),
-      cancelledAt: specimen.cancelledAt?.toISOString(),
-      collectedAt: specimen.collectedAt?.toISOString(),
-    },
-  };
+  return { data: serializeSpecimen(specimen) };
 }
 
-export async function getSpecimenCollectorCandidatesAction() {
+export async function receiveSpecimenAction(
+  params: z.infer<typeof SpecimenReceiptActionSchema>,
+) {
   const user = await ensureUserAuthenticated();
 
   if (!authorize(user, "SPECIMEN:UPDATE")) {
     throw new UnauthorizedError(
-      "You don't have permission to view specimen collectors.",
+      "You don't have permission to receive this specimen.",
+    );
+  }
+
+  const { id: actorId, laboratoryId } = user;
+
+  const specimen = await prisma.$transaction(async (tx) => {
+    // Load the order first and make sure it's editable before receiving.
+    const parsedGetLabOrderParams = GetLabOrderSchema.parse({
+      laboratoryId,
+      id: params.labOrderId,
+    });
+
+    const labOrder = await getLabOrder(tx, parsedGetLabOrderParams);
+
+    if (!labOrder) {
+      throw new Error("Order is not found");
+    }
+
+    ensureLabOrderIsEditable(labOrder);
+
+    const parsedGetSpecimenParams = GetSpecimenSchema.parse({
+      id: params.id,
+      laboratoryId,
+    });
+
+    const existingSpecimen = await getSpecimen(tx, parsedGetSpecimenParams);
+
+    if (!existingSpecimen) {
+      throw new Error("Specimen is not found");
+    }
+
+    ensureSpecimenIsEditable(existingSpecimen);
+    ensureSpecimenCanBeReceived(existingSpecimen);
+
+    const parsedSpecimenReceiptParams = SpecimenReceiptSchema.parse({
+      ...params,
+      laboratoryId,
+    });
+
+    // The specimen must belong to the order supplied by the caller.
+    if (existingSpecimen.labOrderId !== parsedGetLabOrderParams.id) {
+      throw new Error("Specimen is not part of this order");
+    }
+
+    // A specimen cannot be received before it was collected.
+    if (
+      existingSpecimen.collectedAt &&
+      parsedSpecimenReceiptParams.receivedAt < existingSpecimen.collectedAt
+    ) {
+      throw new Error(
+        "Received time cannot be before the specimen is collected",
+      );
+    }
+
+    // The receiver must be an active user of the same laboratory.
+    const receiver = await getSpecimenPersonnelCandidate(
+      tx,
+      GetUserSchema.parse({
+        id: parsedSpecimenReceiptParams.receivedById,
+        laboratoryId,
+      }),
+    );
+
+    if (!receiver) {
+      throw new Error("Receiver is not found");
+    }
+
+    const updatedSpecimen = await receiveSpecimen(tx, {
+      ...parsedSpecimenReceiptParams,
+      // A collected specimen becomes received, while a received specimen keeps
+      // its status so correcting the receipt record never moves it backwards.
+      status: resolveReceivedStatus(existingSpecimen.status),
+    });
+
+    // Create a new audit log entry for the receipt action.
+    const parsedCreateAuditLogParams = CreateAuditLogSchema.parse({
+      action: AUDIT_ACTIONS.SPECIMEN_RECEIVED,
+      actorId,
+      entityId: updatedSpecimen.id,
+      metadata: {
+        previousStatus: existingSpecimen.status,
+        status: updatedSpecimen.status,
+        previousReceivedAt: existingSpecimen.receivedAt?.toISOString() ?? null,
+        receivedAt: updatedSpecimen.receivedAt?.toISOString() ?? null,
+        previousReceivedById: existingSpecimen.receivedById,
+        receivedById: updatedSpecimen.receivedById,
+        receivedByName: receiver.name ?? receiver.username,
+        previousNote: existingSpecimen.note,
+        note: updatedSpecimen.note,
+      },
+      entityType: AuditLogEntityType.SPECIMEN,
+      laboratoryId,
+    });
+
+    await createAuditLog(tx, parsedCreateAuditLogParams);
+
+    return updatedSpecimen;
+  });
+
+  return { data: serializeSpecimen(specimen) };
+}
+
+export async function getSpecimenPersonnelCandidatesAction() {
+  const user = await ensureUserAuthenticated();
+
+  if (!authorize(user, "SPECIMEN:UPDATE")) {
+    throw new UnauthorizedError(
+      "You don't have permission to view specimen personnel.",
     );
   }
 
   const { laboratoryId } = user;
 
-  const parsedGetSpecimenCollectorCandidatesParams =
-    GetSpecimenCollectorCandidatesSchema.parse({ laboratoryId });
+  const parsedGetSpecimenPersonnelCandidatesParams =
+    GetSpecimenPersonnelCandidatesSchema.parse({ laboratoryId });
 
-  const candidates = await getSpecimenCollectorCandidates(
+  const candidates = await getSpecimenPersonnelCandidates(
     prisma,
-    parsedGetSpecimenCollectorCandidatesParams,
+    parsedGetSpecimenPersonnelCandidatesParams,
   );
 
   return { data: candidates };
