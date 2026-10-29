@@ -84,19 +84,6 @@ export default function SpecimensCard({ labOrderId }: { labOrderId: string }) {
             >
               <CheckCheck className="size-3.5" />
             </Toggle>
-            {/* <Button size={"icon-sm"} variant={"secondary"}>
-              {!isShowingAll ? (
-                <>
-                  <Eye />
-                  <span>Show all</span>
-                </>
-              ) : (
-                <>
-                  <EyeOff />
-                  <span>Show active only</span>
-                </>
-              )}
-            </Button> */}
             <Button
               size={"icon-sm"}
               onClick={(e) => {
