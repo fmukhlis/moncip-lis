@@ -2,18 +2,20 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 type LabOrderDetailState = {
   selectedSpecimenId: string | null;
-  isEditSpecimenDialogOpen: boolean;
-  isCancelSpecimenDialogOpen: boolean;
   isCreateSpecimenDialogOpen: boolean;
+  isCancelSpecimenDialogOpen: boolean;
+  isReassignSpecimenDialogOpen: boolean;
   isCollectSpecimenDialogOpen: boolean;
+  isReceiveSpecimenDialogOpen: boolean;
 };
 
 const initialState: LabOrderDetailState = {
   selectedSpecimenId: null,
-  isEditSpecimenDialogOpen: false,
-  isCancelSpecimenDialogOpen: false,
   isCreateSpecimenDialogOpen: false,
+  isCancelSpecimenDialogOpen: false,
+  isReassignSpecimenDialogOpen: false,
   isCollectSpecimenDialogOpen: false,
+  isReceiveSpecimenDialogOpen: false,
 };
 
 const labOrderDetailSlice = createSlice({
@@ -23,27 +25,34 @@ const labOrderDetailSlice = createSlice({
     setSelectedSpecimenId: (state, action: PayloadAction<string | null>) => {
       state.selectedSpecimenId = action.payload;
     },
-    setIsEditSpecimenDialogOpen: (state, action: PayloadAction<boolean>) => {
-      state.isEditSpecimenDialogOpen = action.payload;
+    setIsCreateSpecimenDialogOpen: (state, action: PayloadAction<boolean>) => {
+      state.isCreateSpecimenDialogOpen = action.payload;
     },
     setIsCancelSpecimenDialogOpen: (state, action: PayloadAction<boolean>) => {
       state.isCancelSpecimenDialogOpen = action.payload;
     },
-    setIsCreateSpecimenDialogOpen: (state, action: PayloadAction<boolean>) => {
-      state.isCreateSpecimenDialogOpen = action.payload;
+    setIsReassignSpecimenDialogOpen: (
+      state,
+      action: PayloadAction<boolean>,
+    ) => {
+      state.isReassignSpecimenDialogOpen = action.payload;
     },
     setIsCollectSpecimenDialogOpen: (state, action: PayloadAction<boolean>) => {
       state.isCollectSpecimenDialogOpen = action.payload;
+    },
+    setIsReceiveSpecimenDialogOpen: (state, action: PayloadAction<boolean>) => {
+      state.isReceiveSpecimenDialogOpen = action.payload;
     },
   },
 });
 
 export const {
   setSelectedSpecimenId,
-  setIsEditSpecimenDialogOpen,
-  setIsCancelSpecimenDialogOpen,
   setIsCreateSpecimenDialogOpen,
+  setIsCancelSpecimenDialogOpen,
+  setIsReassignSpecimenDialogOpen,
   setIsCollectSpecimenDialogOpen,
+  setIsReceiveSpecimenDialogOpen,
 } = labOrderDetailSlice.actions;
 
 export default labOrderDetailSlice.reducer;

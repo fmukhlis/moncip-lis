@@ -14,9 +14,10 @@ import { Metadata } from "next";
 import { LabOrderDetailProvider } from "./context";
 import { ArrowLeft, FlaskConical, NotebookText } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import EditSpecimenDialog from "./_component/edit-specimen-dialog";
-import { CancelSpecimenDialog } from "./_component/cancel-specimen-dialog";
+import ReassignSpecimenDialog from "./_component/reassign-specimen-dialog";
+import CancelSpecimenDialog from "./_component/cancel-specimen-dialog";
 import CollectSpecimenDialog from "./_component/collect-specimen-dialog";
+import ReceiveSpecimenDialog from "./_component/receive-specimen-dialog";
 
 export const metadata: Metadata = {
   title: "Lab Order Detail",
@@ -97,10 +98,11 @@ export default async function StaffLabOrderDetail({
         </div>
 
         <Portal.Root>
-          <EditSpecimenDialog labOrderId={labOrderId} />
+          <ReassignSpecimenDialog labOrderId={labOrderId} />
           <CreateSpecimenDialog labOrderId={labOrderId} />
           <CancelSpecimenDialog labOrderId={labOrderId} />
           <CollectSpecimenDialog labOrderId={labOrderId} />
+          <ReceiveSpecimenDialog labOrderId={labOrderId} />
         </Portal.Root>
       </LabOrderDetailProvider>
     </div>

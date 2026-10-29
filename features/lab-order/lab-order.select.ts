@@ -83,6 +83,13 @@ export const labOrderDetailSelect = {
         },
       },
       receivedAt: true,
+      receivedBy: {
+        select: {
+          id: true,
+          name: true,
+          username: true,
+        },
+      },
       collectedAt: true,
       collectedBy: {
         select: {

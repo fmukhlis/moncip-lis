@@ -3,15 +3,17 @@
 import { createContext, useContext, useState } from "react";
 
 interface LabOrderDetailContext {
-  editSpecimenDialogTrigger: HTMLButtonElement | null;
   createSpecimenDialogTrigger: HTMLButtonElement | null;
   cancelSpecimenDialogTrigger: HTMLButtonElement | null;
+  reassignSpecimenDialogTrigger: HTMLButtonElement | null;
   collectSpecimenDialogTrigger: HTMLButtonElement | null;
+  receiveSpecimenDialogTrigger: HTMLButtonElement | null;
 
-  setEditSpecimenDialogTrigger: (value: HTMLButtonElement) => void;
   setCreateSpecimenDialogTrigger: (value: HTMLButtonElement) => void;
   setCancelSpecimenDialogTrigger: (value: HTMLButtonElement) => void;
+  setReassignSpecimenDialogTrigger: (value: HTMLButtonElement) => void;
   setCollectSpecimenDialogTrigger: (value: HTMLButtonElement) => void;
+  setReceiveSpecimenDialogTrigger: (value: HTMLButtonElement) => void;
 }
 
 const LabOrderDetailContext = createContext<LabOrderDetailContext | undefined>(
@@ -28,12 +30,14 @@ export function LabOrderDetailProvider({
     setCreateSpecimenDialogActiveTrigger,
   ] = useState<HTMLButtonElement | null>(null);
 
-  const [editSpecimenDialogActiveTrigger, setEditSpecimenDialogActiveTrigger] =
-    useState<HTMLButtonElement | null>(null);
-
   const [
     cancelSpecimenDialogActiveTrigger,
     setCancelSpecimenDialogActiveTrigger,
+  ] = useState<HTMLButtonElement | null>(null);
+
+  const [
+    reassignSpecimenDialogActiveTrigger,
+    setReassignSpecimenDialogActiveTrigger,
   ] = useState<HTMLButtonElement | null>(null);
 
   const [
@@ -41,18 +45,26 @@ export function LabOrderDetailProvider({
     setCollectSpecimenDialogActiveTrigger,
   ] = useState<HTMLButtonElement | null>(null);
 
+  const [
+    receiveSpecimenDialogActiveTrigger,
+    setReceiveSpecimenDialogActiveTrigger,
+  ] = useState<HTMLButtonElement | null>(null);
+
   return (
     <LabOrderDetailContext.Provider
       value={{
-        editSpecimenDialogTrigger: editSpecimenDialogActiveTrigger,
-        cancelSpecimenDialogTrigger: cancelSpecimenDialogActiveTrigger,
         createSpecimenDialogTrigger: createSpecimenDialogActiveTrigger,
+        cancelSpecimenDialogTrigger: cancelSpecimenDialogActiveTrigger,
+        reassignSpecimenDialogTrigger: reassignSpecimenDialogActiveTrigger,
         collectSpecimenDialogTrigger: collectSpecimenDialogActiveTrigger,
+        receiveSpecimenDialogTrigger: receiveSpecimenDialogActiveTrigger,
 
-        setEditSpecimenDialogTrigger: setEditSpecimenDialogActiveTrigger,
-        setCancelSpecimenDialogTrigger: setCancelSpecimenDialogActiveTrigger,
         setCreateSpecimenDialogTrigger: setCreateSpecimenDialogActiveTrigger,
+        setCancelSpecimenDialogTrigger: setCancelSpecimenDialogActiveTrigger,
+        setReassignSpecimenDialogTrigger:
+          setReassignSpecimenDialogActiveTrigger,
         setCollectSpecimenDialogTrigger: setCollectSpecimenDialogActiveTrigger,
+        setReceiveSpecimenDialogTrigger: setReceiveSpecimenDialogActiveTrigger,
       }}
     >
       {children}

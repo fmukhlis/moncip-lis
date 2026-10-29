@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { FieldGroup } from "@/components/ui/field";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SpecimenStatus } from "@/generated/prisma";
 import { useLabOrderDetailContext } from "../context";
 import { setIsCollectSpecimenDialogOpen } from "../slice";
 import { useAppDispatch, useAppSelector } from "@/hooks";
@@ -20,7 +21,7 @@ import { CollectSpecimenActionSchema } from "@/features/specimen/specimen.schema
 import {
   useCollectSpecimenActionMutation,
   useGetSpecimenActionQuery,
-  useGetSpecimenCollectorCandidatesActionQuery,
+  useGetSpecimenPersonnelCandidatesActionQuery,
 } from "@/features/specimen/specimen.api";
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
 import {
@@ -56,7 +57,7 @@ export default function CollectSpecimenDialog({
   const { data: specimenData, isFetching: isFetchingSpecimenData } =
     useGetSpecimenActionQuery(specimenId ? { id: specimenId } : skipToken);
   const { data: candidatesData, isFetching: isFetchingCandidates } =
-    useGetSpecimenCollectorCandidatesActionQuery(undefined, {
+    useGetSpecimenPersonnelCandidatesActionQuery(undefined, {
       skip: !isOpen,
     });
   const [collectSpecimenAction] = useCollectSpecimenActionMutation();
@@ -68,6 +69,11 @@ export default function CollectSpecimenDialog({
   const { handleSubmit, reset, getValues, setValue, formState } = methods;
 
   const { collectSpecimenDialogTrigger } = useLabOrderDetailContext();
+
+  const specimen = specimenData?.data;
+  // Before the specimen is collected this dialog logs the collection, afterwards
+  // the same dialog updates the existing collection record.
+  const isLoggingCollection = specimen?.status === SpecimenStatus.PENDING;
 
   const collectorOptions = useMemo(
     () =>
@@ -86,7 +92,9 @@ export default function CollectSpecimenDialog({
         reset();
       }, 200);
       toast.success(
-        `Collection of specimen "${res?.data?.specimenType.displayName}" saved`,
+        isLoggingCollection
+          ? `Collection of specimen "${res?.data?.specimenType.displayName}" saved`
+          : `Collection record of specimen "${res?.data?.specimenType.displayName}" updated`,
       );
     } catch (error) {
       toast.error(
@@ -181,7 +189,9 @@ export default function CollectSpecimenDialog({
                   </>
                 ) : (
                   <span>
-                    {`Collect "${specimenData?.data?.specimenType.displayName}"`}
+                    {isLoggingCollection
+                      ? `Log collection of "${specimen?.specimenType.displayName}"`
+                      : `Update collection record of "${specimen?.specimenType.displayName}"`}
                   </span>
                 )}
               </DialogTitle>

@@ -32,7 +32,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 type FormValues = z.infer<typeof UpdateSpecimenActionSchema>;
 
-export function CancelSpecimenDialog({ labOrderId }: { labOrderId: string }) {
+export default function CancelSpecimenDialog({
+  labOrderId,
+}: {
+  labOrderId: string;
+}) {
   // Global state
   const isOpen = useAppSelector(
     (state) => state.labOrderDetail.isCancelSpecimenDialogOpen,

@@ -55,6 +55,14 @@ export const specimenDetailSelect = {
       username: true,
     },
   },
+  receivedById: true,
+  receivedBy: {
+    select: {
+      id: true,
+      name: true,
+      username: true,
+    },
+  },
   orderItems: {
     select: {
       id: true,

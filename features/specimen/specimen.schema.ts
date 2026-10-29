@@ -61,28 +61,59 @@ export const UpdateSpecimenSchema = UpdateSpecimenActionSchema.safeExtend({
 });
 
 // Allow a small clock skew between the browser and the server.
-const COLLECTED_AT_FUTURE_TOLERANCE_MS = 60_000;
+const TIMESTAMP_FUTURE_TOLERANCE_MS = 60_000;
 
-const collectedAtSchema = z.coerce
-  .date()
-  .refine((date) => date.getTime() > 0, "Collection time is invalid.")
-  .refine(
-    (date) => date.getTime() <= Date.now() + COLLECTED_AT_FUTURE_TOLERANCE_MS,
-    "Collection time cannot be in the future.",
-  );
+/** A past-or-now timestamp, used by the collection and receipt records. */
+function pastTimestampSchema(timeLabel: string) {
+  return z.coerce
+    .date()
+    .refine((date) => date.getTime() > 0, `${timeLabel} is invalid.`)
+    .refine(
+      (date) => date.getTime() <= Date.now() + TIMESTAMP_FUTURE_TOLERANCE_MS,
+      `${timeLabel} cannot be in the future.`,
+    );
+}
+
+const collectedAtSchema = pastTimestampSchema("Collection time");
+const receivedAtSchema = pastTimestampSchema("Received time");
+
+/**
+ * The free-text note that is shared by the collection and the receipt records.
+ * An empty string is valid on purpose, because the services use it to clear the
+ * stored note, while an omitted note leaves it untouched.
+ */
+const specimenNoteSchema = z
+  .string()
+  .trim()
+  .max(500, "Note must be at most 500 characters.")
+  .optional();
 
 export const CollectSpecimenActionSchema = z.object({
   id: requiredCuid2("Specimen"),
   labOrderId: requiredCuid2("Lab Order"),
   collectedAt: collectedAtSchema,
   collectedById: requiredCuid2("Collector"),
-  note: z
-    .string()
-    .trim()
-    .max(500, "Note must be at most 500 characters.")
-    .optional(),
+  note: specimenNoteSchema,
 });
 
 export const CollectSpecimenSchema = CollectSpecimenActionSchema.safeExtend({
+  laboratoryId: requiredCuid2("Laboratory"),
+});
+
+/**
+ * The receipt record carries the received time and the receiving personnel, so
+ * receiving a specimen and updating its receipt record share the same payload.
+ * The note is the specimen note that the collection record also writes, which
+ * lets the receiver keep, extend, rewrite or clear it.
+ */
+export const SpecimenReceiptActionSchema = z.object({
+  id: requiredCuid2("Specimen"),
+  labOrderId: requiredCuid2("Lab Order"),
+  receivedAt: receivedAtSchema,
+  receivedById: requiredCuid2("Receiver"),
+  note: specimenNoteSchema,
+});
+
+export const SpecimenReceiptSchema = SpecimenReceiptActionSchema.safeExtend({
   laboratoryId: requiredCuid2("Laboratory"),
 });

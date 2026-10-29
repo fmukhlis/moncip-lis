@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 import { SpecimenStatus } from "@/generated/prisma";
 import { specimenDetailSelect } from "../specimen.select";
-import { collectSpecimen } from "../specimen.service";
+import { collectSpecimen, receiveSpecimen } from "../specimen.service";
 
 jest.mock("@/lib/prisma", () => ({
   __esModule: true,
@@ -12,6 +12,7 @@ const TEST_IDS = {
   id: "tz4a98xxat96iws9zmbrgj3a",
   labOrderId: "ckqp6y6q50000qzrm8b1v3f7d",
   collectedById: "clx1a2b3c4d5e6f7g8h9i0jk",
+  receivedById: "cm9z8y7x6w5v4u3t2s1r0qpo",
   laboratoryId: "c9wq3x1v70000qzrm5t2h8k4d",
 } as const;
 
@@ -103,7 +104,7 @@ describe("collectSpecimen", () => {
     expect(firstUpdateArgs(update).data.status).toBe(SpecimenStatus.RECEIVED);
   });
 
-  it("never touches the order item, received or cancellation fields", async () => {
+  it("never touches the order item, receipt or cancellation fields", async () => {
     const { db, update } = makeDatabase();
 
     await collectSpecimen(db, makeParams());
@@ -111,10 +112,26 @@ describe("collectSpecimen", () => {
     const { data } = firstUpdateArgs(update);
 
     expect(data).not.toHaveProperty("receivedAt");
+    expect(data).not.toHaveProperty("receivedById");
     expect(data).not.toHaveProperty("rejectedAt");
     expect(data).not.toHaveProperty("cancelledAt");
     expect(data).not.toHaveProperty("orderItems");
     expect(data).not.toHaveProperty("specimenType");
+  });
+
+  it("preserves the receipt record and the assignments when the collection record of a received specimen is corrected", async () => {
+    const { db, update } = makeDatabase();
+
+    await collectSpecimen(db, makeParams({ status: SpecimenStatus.RECEIVED }));
+
+    const { data } = firstUpdateArgs(update);
+
+    // The caller passes the current status through `resolveCollectedStatus`, so
+    // correcting a collection record never moves the specimen backwards.
+    expect(data.status).toBe(SpecimenStatus.RECEIVED);
+    expect(data).not.toHaveProperty("receivedAt");
+    expect(data).not.toHaveProperty("receivedById");
+    expect(data).not.toHaveProperty("orderItems");
   });
 
   it("returns the record returned by the client", async () => {
@@ -130,5 +147,135 @@ describe("collectSpecimen", () => {
     update.mockRejectedValueOnce(error);
 
     await expect(collectSpecimen(db, makeParams())).rejects.toBe(error);
+  });
+});
+
+const receivedAt = new Date("2026-10-27T10:15:00.000Z");
+
+function makeReceiveParams(
+  overrides: Partial<Parameters<typeof receiveSpecimen>[1]> = {},
+): Parameters<typeof receiveSpecimen>[1] {
+  return {
+    id: TEST_IDS.id,
+    labOrderId: TEST_IDS.labOrderId,
+    laboratoryId: TEST_IDS.laboratoryId,
+    receivedAt,
+    receivedById: TEST_IDS.receivedById,
+    status: SpecimenStatus.RECEIVED,
+    ...overrides,
+  };
+}
+
+describe("receiveSpecimen", () => {
+  it("updates the specimen scoped to its laboratory", async () => {
+    const { db, update } = makeDatabase();
+
+    await receiveSpecimen(db, makeReceiveParams());
+
+    const args = firstUpdateArgs(update);
+
+    expect(args.where).toEqual({
+      id: TEST_IDS.id,
+      laboratoryId: TEST_IDS.laboratoryId,
+    });
+    expect(args.select).toBe(specimenDetailSelect);
+  });
+
+  it("writes the status, the receipt record and the note", async () => {
+    const { db, update } = makeDatabase();
+
+    await receiveSpecimen(db, makeReceiveParams({ note: "hemolysed sample" }));
+
+    expect(firstUpdateArgs(update).data).toEqual({
+      status: SpecimenStatus.RECEIVED,
+      receivedAt,
+      receivedById: TEST_IDS.receivedById,
+      note: "hemolysed sample",
+    });
+  });
+
+  it("writes the status resolved by the caller", async () => {
+    const { db, update } = makeDatabase();
+
+    await receiveSpecimen(
+      db,
+      makeReceiveParams({ status: SpecimenStatus.RECEIVED }),
+    );
+
+    expect(firstUpdateArgs(update).data.status).toBe(SpecimenStatus.RECEIVED);
+  });
+
+  it("leaves the note untouched when it is omitted", async () => {
+    const { db, update } = makeDatabase();
+
+    await receiveSpecimen(db, makeReceiveParams());
+
+    const { data } = firstUpdateArgs(update);
+
+    expect(data).toHaveProperty("note");
+    expect(data.note).toBeUndefined();
+    expect(Object.keys(data).sort()).toEqual(
+      ["note", "receivedAt", "receivedById", "status"].sort(),
+    );
+  });
+
+  it("clears the note when an empty string is supplied", async () => {
+    const { db, update } = makeDatabase();
+
+    await receiveSpecimen(db, makeReceiveParams({ note: "" }));
+
+    expect(firstUpdateArgs(update).data.note).toBeNull();
+  });
+
+  it("keeps the collection record and the assignment history untouched", async () => {
+    const { db, update } = makeDatabase();
+
+    await receiveSpecimen(db, makeReceiveParams());
+
+    const { data } = firstUpdateArgs(update);
+
+    expect(data).not.toHaveProperty("collectedAt");
+    expect(data).not.toHaveProperty("collectedById");
+    expect(data).not.toHaveProperty("rejectedAt");
+    expect(data).not.toHaveProperty("cancelledAt");
+    expect(data).not.toHaveProperty("orderItems");
+    expect(data).not.toHaveProperty("specimenType");
+  });
+
+  it("keeps the status and the collection record when the receipt record of a received specimen is corrected", async () => {
+    const { db, update } = makeDatabase();
+
+    await receiveSpecimen(
+      db,
+      makeReceiveParams({
+        status: SpecimenStatus.RECEIVED,
+        note: "stored in the cold room",
+      }),
+    );
+
+    const { data } = firstUpdateArgs(update);
+
+    // The caller passes the current status through `resolveReceivedStatus`, so
+    // correcting a receipt record never moves the specimen backwards.
+    expect(data.status).toBe(SpecimenStatus.RECEIVED);
+    expect(data.note).toBe("stored in the cold room");
+    expect(data).not.toHaveProperty("collectedAt");
+    expect(data).not.toHaveProperty("collectedById");
+    expect(data).not.toHaveProperty("orderItems");
+  });
+
+  it("returns the record returned by the client", async () => {
+    const row = { id: TEST_IDS.id, status: SpecimenStatus.RECEIVED };
+    const { db } = makeDatabase(row);
+
+    await expect(receiveSpecimen(db, makeReceiveParams())).resolves.toBe(row);
+  });
+
+  it("propagates persistence failures so the caller's transaction can roll back", async () => {
+    const error = new Error("connection reset by peer");
+    const { db, update } = makeDatabase();
+    update.mockRejectedValueOnce(error);
+
+    await expect(receiveSpecimen(db, makeReceiveParams())).rejects.toBe(error);
   });
 });
