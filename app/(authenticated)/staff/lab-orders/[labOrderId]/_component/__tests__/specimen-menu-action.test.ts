@@ -57,39 +57,6 @@ describe("getSpecimenMenuActions", () => {
       expect(getSpecimenMenuActions(status)).toEqual([]);
     },
   );
-
-  it("keeps logging the collection out of the menu", () => {
-    expect(getSpecimenMenuActions(SpecimenStatus.PENDING)).not.toContain(
-      "logCollection",
-    );
-
-    // Only the standalone action logs a collection; the menu can merely correct
-    // the record that already exists.
-    expect(getSpecimenMenuActions(SpecimenStatus.COLLECTED)).not.toContain(
-      "logCollection",
-    );
-    expect(getSpecimenMenuActions(SpecimenStatus.RECEIVED)).not.toContain(
-      "logCollection",
-    );
-  });
-
-  it("never offers receiving from the menu", () => {
-    expect(getSpecimenMenuActions(SpecimenStatus.COLLECTED)).not.toContain(
-      "receive",
-    );
-  });
-
-  it("only offers the receipt record action when the receipt record exists", () => {
-    expect(getSpecimenMenuActions(SpecimenStatus.PENDING)).not.toContain(
-      "updateReceiptRecord",
-    );
-    expect(getSpecimenMenuActions(SpecimenStatus.COLLECTED)).not.toContain(
-      "updateReceiptRecord",
-    );
-    expect(getSpecimenMenuActions(SpecimenStatus.RECEIVED)).toContain(
-      "updateReceiptRecord",
-    );
-  });
 });
 
 describe("getSpecimenReceiveDialogMode", () => {

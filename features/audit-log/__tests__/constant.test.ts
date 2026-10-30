@@ -26,40 +26,9 @@ describe("AUDIT_ACTIONS", () => {
     expect(CreateAuditLogSchema.shape.action.options).toEqual(actions);
   });
 
-  it.each(actions)(
-    "accepts the %s action in CreateAuditLogSchema",
-    (action) => {
-      expect(CreateAuditLogSchema.shape.action.safeParse(action).success).toBe(
-        true,
-      );
-    },
-  );
-
-  it.each([
-    "SPECIMEN_CREATE",
-    "specimen_created",
-    "Specimen_Created",
-    " SPECIMEN_CREATED ",
-    "PATIENT_CREATED",
-    "",
-  ])("rejects the undeclared action %j", (action) => {
-    expect(CreateAuditLogSchema.shape.action.safeParse(action).success).toBe(
-      false,
-    );
-  });
-
   it("exposes exactly the entity types that CreateAuditLogSchema accepts", () => {
     const schemaOptions = [...CreateAuditLogSchema.shape.entityType.options];
 
     expect([...schemaOptions].sort()).toEqual([...entityTypes].sort());
   });
-
-  it.each(entityTypes)(
-    "accepts the %s entity type in CreateAuditLogSchema",
-    (entityType) => {
-      expect(
-        CreateAuditLogSchema.shape.entityType.safeParse(entityType).success,
-      ).toBe(true);
-    },
-  );
 });

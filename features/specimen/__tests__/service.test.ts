@@ -96,42 +96,22 @@ describe("collectSpecimen", () => {
     expect(firstUpdateArgs(update).data.note).toBeNull();
   });
 
-  it("writes the status resolved by the caller", async () => {
+  it("never touches the receipt, cancellation or assignment fields", async () => {
     const { db, update } = makeDatabase();
 
+    // Correcting the collection record of a received specimen keeps its status:
+    // the caller resolves it through `resolveCollectedStatus`.
     await collectSpecimen(db, makeParams({ status: SpecimenStatus.RECEIVED }));
-
-    expect(firstUpdateArgs(update).data.status).toBe(SpecimenStatus.RECEIVED);
-  });
-
-  it("never touches the order item, receipt or cancellation fields", async () => {
-    const { db, update } = makeDatabase();
-
-    await collectSpecimen(db, makeParams());
 
     const { data } = firstUpdateArgs(update);
 
+    expect(data.status).toBe(SpecimenStatus.RECEIVED);
     expect(data).not.toHaveProperty("receivedAt");
     expect(data).not.toHaveProperty("receivedById");
     expect(data).not.toHaveProperty("rejectedAt");
     expect(data).not.toHaveProperty("cancelledAt");
     expect(data).not.toHaveProperty("orderItems");
     expect(data).not.toHaveProperty("specimenType");
-  });
-
-  it("preserves the receipt record and the assignments when the collection record of a received specimen is corrected", async () => {
-    const { db, update } = makeDatabase();
-
-    await collectSpecimen(db, makeParams({ status: SpecimenStatus.RECEIVED }));
-
-    const { data } = firstUpdateArgs(update);
-
-    // The caller passes the current status through `resolveCollectedStatus`, so
-    // correcting a collection record never moves the specimen backwards.
-    expect(data.status).toBe(SpecimenStatus.RECEIVED);
-    expect(data).not.toHaveProperty("receivedAt");
-    expect(data).not.toHaveProperty("receivedById");
-    expect(data).not.toHaveProperty("orderItems");
   });
 
   it("returns the record returned by the client", async () => {
@@ -194,18 +174,7 @@ describe("receiveSpecimen", () => {
     });
   });
 
-  it("writes the status resolved by the caller", async () => {
-    const { db, update } = makeDatabase();
-
-    await receiveSpecimen(
-      db,
-      makeReceiveParams({ status: SpecimenStatus.RECEIVED }),
-    );
-
-    expect(firstUpdateArgs(update).data.status).toBe(SpecimenStatus.RECEIVED);
-  });
-
-  it("leaves the note untouched when it is omitted", async () => {
+  it("writes only the receipt fields, leaving the note untouched when it is omitted", async () => {
     const { db, update } = makeDatabase();
 
     await receiveSpecimen(db, makeReceiveParams());
@@ -230,21 +199,8 @@ describe("receiveSpecimen", () => {
   it("keeps the collection record and the assignment history untouched", async () => {
     const { db, update } = makeDatabase();
 
-    await receiveSpecimen(db, makeReceiveParams());
-
-    const { data } = firstUpdateArgs(update);
-
-    expect(data).not.toHaveProperty("collectedAt");
-    expect(data).not.toHaveProperty("collectedById");
-    expect(data).not.toHaveProperty("rejectedAt");
-    expect(data).not.toHaveProperty("cancelledAt");
-    expect(data).not.toHaveProperty("orderItems");
-    expect(data).not.toHaveProperty("specimenType");
-  });
-
-  it("keeps the status and the collection record when the receipt record of a received specimen is corrected", async () => {
-    const { db, update } = makeDatabase();
-
+    // Correcting the receipt record keeps the status resolved by the caller and
+    // updates only the receipt fields.
     await receiveSpecimen(
       db,
       makeReceiveParams({
@@ -255,13 +211,14 @@ describe("receiveSpecimen", () => {
 
     const { data } = firstUpdateArgs(update);
 
-    // The caller passes the current status through `resolveReceivedStatus`, so
-    // correcting a receipt record never moves the specimen backwards.
     expect(data.status).toBe(SpecimenStatus.RECEIVED);
     expect(data.note).toBe("stored in the cold room");
     expect(data).not.toHaveProperty("collectedAt");
     expect(data).not.toHaveProperty("collectedById");
+    expect(data).not.toHaveProperty("rejectedAt");
+    expect(data).not.toHaveProperty("cancelledAt");
     expect(data).not.toHaveProperty("orderItems");
+    expect(data).not.toHaveProperty("specimenType");
   });
 
   it("returns the record returned by the client", async () => {
