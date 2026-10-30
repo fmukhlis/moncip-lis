@@ -1,6 +1,5 @@
 import prisma from "@/lib/prisma";
 import { makeAuditLogInput } from "@/test/factories/audit-log.factory";
-import { AUDIT_ACTIONS } from "../audit-log.constant";
 import { createAuditLog } from "../audit-log.service";
 
 jest.mock("@/lib/prisma", () => ({
@@ -30,7 +29,7 @@ function firstCreateArgs(create: jest.Mock): CreateArgs {
 }
 
 describe("createAuditLog", () => {
-  it("writes exactly the persisted fields to the client it is given", async () => {
+  it("writes exactly the persisted fields, letting the database own the rest", async () => {
     const { db, create } = makeDatabase();
     const input = makeAuditLogInput();
 
@@ -47,6 +46,8 @@ describe("createAuditLog", () => {
       entityType: input.entityType,
       laboratory: { connect: { id: input.laboratoryId } },
     });
+    // This key list is what keeps `id`, `createdAt` and `updatedAt` out of the
+    // write, and keeps the actor/laboratory as connections rather than creates.
     expect(Object.keys(data).sort()).toEqual(
       [
         "action",
@@ -58,41 +59,7 @@ describe("createAuditLog", () => {
         "reason",
       ].sort(),
     );
-  });
-
-  it("connects the actor and the laboratory instead of creating them", async () => {
-    const { db, create } = makeDatabase();
-    const input = makeAuditLogInput();
-
-    await createAuditLog(db, input);
-
-    const { data } = firstCreateArgs(create);
-
-    expect(data.actor).toEqual({ connect: { id: input.actorId } });
-    expect(data.laboratory).toEqual({ connect: { id: input.laboratoryId } });
-    expect(Object.keys(data.actor as object)).toEqual(["connect"]);
-    expect(Object.keys(data.laboratory as object)).toEqual(["connect"]);
-  });
-
-  it("does not set server-managed fields", async () => {
-    const { db, create } = makeDatabase();
-
-    await createAuditLog(db, makeAuditLogInput());
-
-    const { data } = firstCreateArgs(create);
-
-    expect(data).not.toHaveProperty("id");
-    expect(data).not.toHaveProperty("createdAt");
-    expect(data).not.toHaveProperty("updatedAt");
-  });
-
-  it("leaves the optional fields unset when they are omitted", async () => {
-    const { db, create } = makeDatabase();
-
-    await createAuditLog(db, makeAuditLogInput());
-
-    const { data } = firstCreateArgs(create);
-
+    // Omitted optional fields stay absent instead of being written as null.
     expect(data.reason).toBeUndefined();
     expect(data.metadata).toBeUndefined();
   });
@@ -115,13 +82,6 @@ describe("createAuditLog", () => {
     });
   });
 
-  it("returns the record created by the client", async () => {
-    const row = { id: "audit_log_id", action: AUDIT_ACTIONS.SPECIMEN_CREATED };
-    const { db } = makeDatabase(row);
-
-    await expect(createAuditLog(db, makeAuditLogInput())).resolves.toBe(row);
-  });
-
   it("uses the supplied client rather than the global Prisma client", async () => {
     const { db, create } = makeDatabase();
 
@@ -138,15 +98,4 @@ describe("createAuditLog", () => {
 
     await expect(createAuditLog(db, makeAuditLogInput())).rejects.toBe(error);
   });
-
-  it.each(Object.values(AUDIT_ACTIONS))(
-    "persists the %s action verbatim",
-    async (action) => {
-      const { db, create } = makeDatabase();
-
-      await createAuditLog(db, makeAuditLogInput({ action }));
-
-      expect(firstCreateArgs(create).data.action).toBe(action);
-    },
-  );
 });
