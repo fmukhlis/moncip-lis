@@ -82,6 +82,30 @@ jobs:
     name: Run tests
     runs-on: ubuntu-22.04
     needs: setup
+    # Every suite (unit and integration) runs against a throwaway Postgres that
+    # is created for this job only. Nothing here can reach Neon staging: the
+    # service container and the DATABASE_URL below are the only database the
+    # job knows about, and the runner discards them when the job ends.
+    services:
+      postgres:
+        # Matches the development database image in compose.dev.yaml.
+        image: postgres:17
+        env:
+          POSTGRES_USER: moncip_lis
+          POSTGRES_PASSWORD: moncip_lis
+          POSTGRES_DB: moncip_lis_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U moncip_lis -d moncip_lis_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      # Consumed by `prisma migrate deploy`, by Jest (unit + integration) and by
+      # the Prisma client in lib/prisma.ts. Job-level scope keeps every step on
+      # the local database by default.
+      DATABASE_URL: postgresql://moncip_lis:moncip_lis@localhost:5432/moncip_lis_test?schema=public
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -110,13 +134,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      # The service container is already healthy here (GitHub Actions waits for
+      # the pg_isready health check), so no manual wait script is needed.
       - run: pnpm prisma migrate deploy
-        env:
-          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
 
       - run: pnpm run test --ci --coverage --runInBand
-        env:
-          DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v5
