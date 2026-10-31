@@ -73,7 +73,7 @@ export function AppHeader({
       [`/staff/lab-orders/${labOrderId}`]: [
         {
           url: `/staff/lab-orders`,
-          title: "Lab Orders",
+          title: "All Lab Orders",
         },
         {
           url: null,
