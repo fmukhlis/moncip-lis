@@ -2,7 +2,7 @@
 
 import StatusTabs from "./status-tabs";
 import PageControls from "./page-controls";
-import { columns } from "./columns";
+import { getColumns } from "./columns";
 import { useMemo } from "react";
 import { ClientTable } from "@/components/ui/data-table/client-table";
 import { getCoreRowModel } from "@tanstack/react-table";
@@ -11,9 +11,11 @@ import { getPaginationRowModel } from "@tanstack/react-table";
 import { useGetLabOrdersActionQuery } from "@/features/lab-order/lab-order.api";
 import { getFilteredRowModel, useReactTable } from "@tanstack/react-table";
 
-export default function TableWrapper() {
+export default function TableWrapper({ basePath }: { basePath: string }) {
   // Server state
   const { data: labOrdersData, isFetching } = useGetLabOrdersActionQuery({});
+
+  const columns = useMemo(() => getColumns(basePath), [basePath]);
 
   const { data, orderedCount, inProcessCount, cancelledCount, completedCount } =
     useMemo(() => {

@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { PlaceholderPage } from "@/app/(authenticated)/staff/_component/placeholder-page";
+import { PlaceholderPage } from "@/app/(authenticated)/_component/placeholder-page";
 
 export const metadata: Metadata = {
   title: "Specimen Collection",

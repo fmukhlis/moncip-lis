@@ -862,7 +862,7 @@ describe("authorization", () => {
     ],
     [
       "collectSpecimenAction",
-      Role.LAB_ADMIN,
+      Role.SYS_ADMIN,
       () => collectSpecimenAction(collectParams),
     ],
     [
@@ -872,7 +872,7 @@ describe("authorization", () => {
     ],
     [
       "getSpecimenPersonnelCandidatesAction",
-      Role.LAB_ADMIN,
+      Role.DOCTOR,
       () => getSpecimenPersonnelCandidatesAction(),
     ],
   ];

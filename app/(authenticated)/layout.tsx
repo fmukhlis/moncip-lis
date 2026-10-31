@@ -1,5 +1,5 @@
 import AppSidebar from "@/components/app-sidebar";
-import SignoutAlertDialog from "@/app/(authenticated)/_component/signout-alert-dialog";
+import SignoutAlertDialog from "@/app/_component/signout-alert-dialog";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { AppHeader } from "@/components/app-header";

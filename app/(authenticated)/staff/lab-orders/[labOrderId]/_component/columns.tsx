@@ -1,7 +1,7 @@
 "use client";
 
 import PerformableTypeBadge from "./performable-type-badge";
-import LabOrderPriorityBadge from "../../_component/lab-order-priority-badge";
+import LabOrderPriorityBadge from "@/app/(authenticated)/_component/lab-orders/lab-order-priority-badge";
 import LabOrderItemStatusBadge from "./lab-order-item-status-badge";
 import { Info } from "lucide-react";
 import { Button } from "@/components/ui/button";

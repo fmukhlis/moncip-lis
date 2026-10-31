@@ -148,6 +148,59 @@ export function generateSidebarData(userRole: Role) {
     ] as { label: string | null; data: DataProps[] }[];
   }
 
+  if (userRole === "LAB_ADMIN") {
+    return [
+      {
+        label: null,
+        data: [
+          {
+            url: "/lab-admin/dashboard",
+            icon: <LayoutDashboard />,
+            title: "Dashboard",
+          },
+          {
+            url: null,
+            icon: <ShoppingCart />,
+            title: "Lab Orders",
+            items: [
+              {
+                url: "/lab-admin/lab-orders",
+                title: "All Lab Orders",
+              },
+              {
+                url: "/lab-admin/lab-orders/specimen-assignment",
+                title: "Specimen Assignment",
+              },
+            ],
+          },
+          {
+            url: null,
+            icon: <TestTubes />,
+            title: "Specimens",
+            items: [
+              {
+                url: "/lab-admin/specimens",
+                title: "All Specimens",
+              },
+              {
+                url: "/lab-admin/specimens/collection",
+                title: "Specimen Collection",
+              },
+              {
+                url: "/lab-admin/specimens/receipt",
+                title: "Specimen Receipt",
+              },
+              {
+                url: "/lab-admin/specimens/exception-management",
+                title: "Exception Management",
+              },
+            ],
+          },
+        ],
+      },
+    ] as { label: string | null; data: DataProps[] }[];
+  }
+
   return [];
 }
 

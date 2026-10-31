@@ -1,8 +1,8 @@
 "use client";
 
 import Barcode from "react-barcode";
-import LabOrderStatusBadge from "../../_component/lab-order-status-badge";
-import LabOrderPriorityBadge from "../../_component/lab-order-priority-badge";
+import LabOrderStatusBadge from "@/app/(authenticated)/_component/lab-orders/lab-order-status-badge";
+import LabOrderPriorityBadge from "@/app/(authenticated)/_component/lab-orders/lab-order-priority-badge";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { Skeleton } from "@/components/ui/skeleton";

@@ -210,7 +210,7 @@ describe("authorization", () => {
   const deniedCases: Array<[string, Role, () => Promise<unknown>, string]> = [
     [
       "createSpecimenAction",
-      Role.LAB_ADMIN,
+      Role.SYS_ADMIN,
       () => createSpecimenAction(createParams),
       "create a specimen",
     ],
@@ -232,7 +232,7 @@ describe("authorization", () => {
     ],
     [
       "collectSpecimenAction",
-      Role.LAB_ADMIN,
+      Role.SYS_ADMIN,
       () => collectSpecimenAction(collectParams),
       "collect this specimen",
     ],
@@ -244,7 +244,7 @@ describe("authorization", () => {
     ],
     [
       "getSpecimenPersonnelCandidatesAction",
-      Role.LAB_ADMIN,
+      Role.DOCTOR,
       () => getSpecimenPersonnelCandidatesAction(),
       "view specimen personnel",
     ],
@@ -267,6 +267,20 @@ describe("authorization", () => {
       expect(mockCreateAuditLog).not.toHaveBeenCalled();
     },
   );
+
+  const allowedCases: Array<[string, () => Promise<unknown>]> = [
+    ["createSpecimenAction", () => createSpecimenAction(createParams)],
+    ["collectSpecimenAction", () => collectSpecimenAction(collectParams)],
+  ];
+
+  it.each(allowedCases)("%s lets a lab admin through", async (_action, run) => {
+    authenticatedUser.mockResolvedValue({
+      ...STAFF_USER,
+      role: Role.LAB_ADMIN,
+    });
+
+    await expect(run()).resolves.toBeDefined();
+  });
 
   it("stops an unauthenticated caller before touching any data", async () => {
     authenticatedUser.mockRejectedValue(new UnauthenticatedError());
