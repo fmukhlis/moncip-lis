@@ -4,6 +4,7 @@ import {
   Building,
   Settings,
   Workflow,
+  TestTubes,
   ShoppingCart,
   LayoutDashboard,
 } from "lucide-react";
@@ -116,6 +117,29 @@ export function generateSidebarData(userRole: Role) {
               {
                 url: "/staff/lab-orders/specimen-assignment",
                 title: "Specimen Assignment",
+              },
+            ],
+          },
+          {
+            url: null,
+            icon: <TestTubes />,
+            title: "Specimens",
+            items: [
+              {
+                url: "/staff/specimens",
+                title: "All Specimens",
+              },
+              {
+                url: "/staff/specimens/collection",
+                title: "Specimen Collection",
+              },
+              {
+                url: "/staff/specimens/receipt",
+                title: "Specimen Receipt",
+              },
+              {
+                url: "/staff/specimens/exception-management",
+                title: "Exception Management",
               },
             ],
           },

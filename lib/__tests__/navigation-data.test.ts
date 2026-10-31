@@ -4,7 +4,7 @@ import {
 } from "@/lib/navigation-data";
 
 describe("generateSidebarData", () => {
-  it("renders Lab Orders as a collapsible group for staff", () => {
+  it("renders the staff lab order and specimen groups", () => {
     const [group] = generateSidebarData("STAFF");
 
     expect(group.data).toEqual([
@@ -26,6 +26,28 @@ describe("generateSidebarData", () => {
           }),
         ],
       }),
+      expect.objectContaining({
+        url: null,
+        title: "Specimens",
+        items: [
+          expect.objectContaining({
+            url: "/staff/specimens",
+            title: "All Specimens",
+          }),
+          expect.objectContaining({
+            url: "/staff/specimens/collection",
+            title: "Specimen Collection",
+          }),
+          expect.objectContaining({
+            url: "/staff/specimens/receipt",
+            title: "Specimen Receipt",
+          }),
+          expect.objectContaining({
+            url: "/staff/specimens/exception-management",
+            title: "Exception Management",
+          }),
+        ],
+      }),
     ]);
   });
 });
@@ -42,6 +64,26 @@ describe("generateBreadcrumbData", () => {
     ]);
     expect(breadcrumbData.get("/staff/lab-orders/specimen-assignment")).toEqual(
       [{ url: null, title: "Specimen Assignment" }],
+    );
+  });
+
+  it("maps staff specimen routes to breadcrumbs", () => {
+    const sidebarData = generateSidebarData("STAFF");
+    const breadcrumbData = generateBreadcrumbData(
+      sidebarData.map(({ data }) => data).flat(1),
+    );
+
+    expect(breadcrumbData.get("/staff/specimens")).toEqual([
+      { url: null, title: "All Specimens" },
+    ]);
+    expect(breadcrumbData.get("/staff/specimens/collection")).toEqual([
+      { url: null, title: "Specimen Collection" },
+    ]);
+    expect(breadcrumbData.get("/staff/specimens/receipt")).toEqual([
+      { url: null, title: "Specimen Receipt" },
+    ]);
+    expect(breadcrumbData.get("/staff/specimens/exception-management")).toEqual(
+      [{ url: null, title: "Exception Management" }],
     );
   });
 });
