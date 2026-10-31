@@ -105,9 +105,19 @@ export function generateSidebarData(userRole: Role) {
             title: "Dashboard",
           },
           {
-            url: "/staff/lab-orders",
+            url: null,
             icon: <ShoppingCart />,
-            title: "Lab Order",
+            title: "Lab Orders",
+            items: [
+              {
+                url: "/staff/lab-orders",
+                title: "All Lab Orders",
+              },
+              {
+                url: "/staff/lab-orders/specimen-assignment",
+                title: "Specimen Assignment",
+              },
+            ],
           },
         ],
       },

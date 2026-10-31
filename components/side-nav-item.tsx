@@ -46,15 +46,11 @@ export function SideNavItem({ url, icon, title }: Omit<DataProps, "items">) {
 function SideNavSubItem({
   url,
   title,
-}: NonNullable<DataProps["items"]>[number]) {
-  const pathname = usePathname();
-
+  isActive,
+}: NonNullable<DataProps["items"]>[number] & { isActive: boolean }) {
   return url ? (
     <SidebarMenuSubItem>
-      <SidebarMenuSubButton
-        isActive={pathname === url || pathname.startsWith(`${url}/`)}
-        asChild
-      >
+      <SidebarMenuSubButton isActive={isActive} asChild>
         <Link href={url}>
           <span>{title}</span>
         </Link>
@@ -76,9 +72,16 @@ export function CollapsibleSideNavItem({
 }: Required<DataProps>) {
   const pathname = usePathname();
 
-  const isActive = items.some(
-    ({ url }) => pathname === url || pathname.startsWith(`${url}/`),
-  );
+  const activeUrl =
+    items
+      .filter(
+        ({ url }) =>
+          url !== null && (pathname === url || pathname.startsWith(`${url}/`)),
+      )
+      .sort((a, b) => (b.url?.length ?? 0) - (a.url?.length ?? 0))[0]?.url ??
+    null;
+
+  const isActive = activeUrl !== null;
 
   return (
     <Collapsible asChild defaultOpen={isActive} className="group/collapsible">
@@ -93,7 +96,11 @@ export function CollapsibleSideNavItem({
         <CollapsibleContent>
           <SidebarMenuSub>
             {items.map((props) => (
-              <SideNavSubItem key={props.url} {...props} />
+              <SideNavSubItem
+                key={props.url ?? props.title}
+                {...props}
+                isActive={props.url !== null && props.url === activeUrl}
+              />
             ))}
           </SidebarMenuSub>
         </CollapsibleContent>
