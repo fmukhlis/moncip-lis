@@ -1,7 +1,7 @@
 import organizationReducer from "@/app/(authenticated)/sys-admin/organization/slice";
 import labOrderablesReducer from "@/app/(authenticated)/sys-admin/laboratory-setup/lab-orderables/slice";
 import authenticationReducer from "@/app/(authenticated)/slice";
-import labOrderDetailReducer from "@/app/(authenticated)/staff/lab-orders/[labOrderId]/slice";
+import labOrderDetailReducer from "@/app/(authenticated)/_component/lab-orders/detail/slice";
 import connectionSettingsReducer from "@/app/(authenticated)/sys-admin/integration/connections/slice";
 import integrationConnectionDetailReducer from "@/app/(authenticated)/sys-admin/integration/connections/[connectionId]/(group)/slice";
 import { serverFunctionSlice } from "./features/api/serverFunctionSlice";

@@ -8,9 +8,9 @@ import { Spinner } from "@/components/ui/spinner";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useLabOrderDetailContext } from "../context";
+import { useLabOrderDetailContext } from "./context";
 import { UpdateSpecimenActionSchema } from "@/features/specimen/specimen.schema";
-import { setIsCancelSpecimenDialogOpen } from "../slice";
+import { setIsCancelSpecimenDialogOpen } from "./slice";
 import { useAppDispatch, useAppSelector } from "@/hooks";
 import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
 import {

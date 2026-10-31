@@ -10,7 +10,7 @@ import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAppDispatch } from "@/hooks";
 import { InfoRow, InfoRowSkeleton } from "./info-row";
-import { useLabOrderDetailContext } from "../context";
+import { useLabOrderDetailContext } from "./context";
 import { useGetLabOrderActionQuery } from "@/features/lab-order/lab-order.api";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
@@ -18,7 +18,7 @@ import {
   SpecimenAssignmentEndReason,
 } from "@/generated/prisma";
 import { Plus, TestTubes, CheckCheck } from "lucide-react";
-import { setIsCreateSpecimenDialogOpen } from "../slice";
+import { setIsCreateSpecimenDialogOpen } from "./slice";
 import SpecimenActions from "./specimen-actions";
 import {
   Card,
