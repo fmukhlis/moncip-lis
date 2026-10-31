@@ -10,7 +10,7 @@ import EncounterAndDoctorCard from "./encounter-and-doctor-card";
 import ClinicalInformationCard from "./clinical-information-card";
 import { Button } from "@/components/ui/button";
 import { Portal } from "radix-ui";
-import { LabOrderDetailProvider } from "../context";
+import { LabOrderDetailProvider } from "./context";
 import { ArrowLeft, FlaskConical, NotebookText } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ReassignSpecimenDialog from "./reassign-specimen-dialog";

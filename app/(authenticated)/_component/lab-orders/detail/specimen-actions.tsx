@@ -20,14 +20,14 @@ import {
   Trash2,
 } from "lucide-react";
 import { useAppDispatch } from "@/hooks";
-import { useLabOrderDetailContext } from "../context";
+import { useLabOrderDetailContext } from "./context";
 import {
   setSelectedSpecimenId,
   setIsCancelSpecimenDialogOpen,
   setIsCollectSpecimenDialogOpen,
   setIsReassignSpecimenDialogOpen,
   setIsReceiveSpecimenDialogOpen,
-} from "../slice";
+} from "./slice";
 import {
   SpecimenMenuAction,
   SpecimenStandaloneAction,

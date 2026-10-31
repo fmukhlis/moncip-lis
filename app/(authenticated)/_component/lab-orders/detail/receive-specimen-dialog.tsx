@@ -13,8 +13,8 @@ import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { FieldGroup } from "@/components/ui/field";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useLabOrderDetailContext } from "../context";
-import { setIsReceiveSpecimenDialogOpen } from "../slice";
+import { useLabOrderDetailContext } from "./context";
+import { setIsReceiveSpecimenDialogOpen } from "./slice";
 import { useAppDispatch, useAppSelector } from "@/hooks";
 import { SpecimenReceiptActionSchema } from "@/features/specimen/specimen.schema";
 import {

@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import LabOrderDetailView from "@/app/(authenticated)/staff/lab-orders/[labOrderId]/_component/lab-order-detail-view";
+import LabOrderDetailView from "@/app/(authenticated)/_component/lab-orders/detail/lab-order-detail-view";
 
 export const metadata: Metadata = {
   title: "Lab Order Detail",

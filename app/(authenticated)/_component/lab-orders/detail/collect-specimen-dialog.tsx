@@ -14,8 +14,8 @@ import { Spinner } from "@/components/ui/spinner";
 import { FieldGroup } from "@/components/ui/field";
 import { Skeleton } from "@/components/ui/skeleton";
 import { SpecimenStatus } from "@/generated/prisma";
-import { useLabOrderDetailContext } from "../context";
-import { setIsCollectSpecimenDialogOpen } from "../slice";
+import { useLabOrderDetailContext } from "./context";
+import { setIsCollectSpecimenDialogOpen } from "./slice";
 import { useAppDispatch, useAppSelector } from "@/hooks";
 import { CollectSpecimenActionSchema } from "@/features/specimen/specimen.schema";
 import {
