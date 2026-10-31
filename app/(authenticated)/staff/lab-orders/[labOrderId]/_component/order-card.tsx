@@ -6,7 +6,10 @@ import { Separator } from "@/components/ui/separator";
 import { ClipboardList } from "lucide-react";
 import { InfoRow, InfoRowSkeleton } from "./info-row";
 import { useGetLabOrderActionQuery } from "@/features/lab-order/lab-order.api";
-import { PRIORITY_LABEL, STATUS_LABEL } from "../../_component/labels";
+import {
+  PRIORITY_LABEL,
+  STATUS_LABEL,
+} from "@/app/(authenticated)/_component/lab-orders/labels";
 import { Card, CardTitle, CardHeader, CardContent } from "@/components/ui/card";
 
 export default function OrderCard({ labOrderId }: { labOrderId: string }) {

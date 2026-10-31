@@ -18,6 +18,9 @@ describe("authorize", () => {
     [Role.STAFF, PERMISSIONS.SPECIMEN_CREATE],
     [Role.STAFF, PERMISSIONS.SPECIMEN_UPDATE],
     [Role.STAFF, PERMISSIONS.LAB_ORDER_UPDATE],
+    [Role.LAB_ADMIN, PERMISSIONS.SPECIMEN_CREATE],
+    [Role.LAB_ADMIN, PERMISSIONS.SPECIMEN_UPDATE],
+    [Role.LAB_ADMIN, PERMISSIONS.LAB_ORDER_UPDATE],
     [Role.LAB_ADMIN, PERMISSIONS.SPECIMEN_READ],
     [Role.LAB_ADMIN, PERMISSIONS.INBOUND_INTEGRATION_EVENT_READ],
     [Role.DOCTOR, PERMISSIONS.LAB_ORDER_CREATE],
@@ -32,15 +35,25 @@ describe("authorize", () => {
     [Role.STAFF, PERMISSIONS.LAB_ORDER_CREATE],
     [Role.STAFF, PERMISSIONS.USER_CREATE],
     [Role.STAFF, PERMISSIONS.INTEGRATION_TOKEN_CREATE],
-    [Role.LAB_ADMIN, PERMISSIONS.SPECIMEN_CREATE],
-    [Role.LAB_ADMIN, PERMISSIONS.SPECIMEN_UPDATE],
-    [Role.LAB_ADMIN, PERMISSIONS.LAB_ORDER_UPDATE],
     [Role.DOCTOR, PERMISSIONS.SPECIMEN_CREATE],
     [Role.DOCTOR, PERMISSIONS.SPECIMEN_UPDATE],
     [Role.SYS_ADMIN, PERMISSIONS.SPECIMEN_CREATE],
     [Role.SYS_ADMIN, PERMISSIONS.SPECIMEN_UPDATE],
   ])("stops %s from %s", (role, permission) => {
     expect(authorize(userWithRole(role), permission)).toBe(false);
+  });
+
+  it("grants lab admins the same specimen capabilities as staff", () => {
+    const staffSpecimenPermissions = ROLE_PERMISSIONS.STAFF.filter(
+      (permission) => permission.startsWith("SPECIMEN:"),
+    );
+
+    expect(staffSpecimenPermissions.length).toBeGreaterThan(0);
+    expect(
+      staffSpecimenPermissions.filter(
+        (permission) => !ROLE_PERMISSIONS.LAB_ADMIN.includes(permission),
+      ),
+    ).toEqual([]);
   });
 
   it("throws for a role that has no permission entry instead of denying", () => {

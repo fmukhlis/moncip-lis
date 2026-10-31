@@ -1,7 +1,7 @@
 "use client";
 
-import { Button } from "../../../components/ui/button";
-import { Spinner } from "../../../components/ui/spinner";
+import { Button } from "../../components/ui/button";
+import { Spinner } from "../../components/ui/spinner";
 import { resetApp } from "@/root-reducer";
 import { useRouter } from "next/navigation";
 import { signOutAction } from "@/features/authentication/authentication.action";
@@ -16,7 +16,7 @@ import {
   AlertDialogHeader,
   AlertDialogContent,
   AlertDialogDescription,
-} from "../../../components/ui/alert-dialog";
+} from "../../components/ui/alert-dialog";
 
 export default function SignoutAlertDialog() {
   const showSignoutDialog = useAppSelector(

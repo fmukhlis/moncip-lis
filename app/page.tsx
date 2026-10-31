@@ -3,7 +3,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { Button } from "@/components/ui/button";
 import { HeaderLandingPage } from "@/app/_component/header-landing-page";
-import SignoutAlertDialog from "@/app/(authenticated)/_component/signout-alert-dialog";
+import SignoutAlertDialog from "@/app/_component/signout-alert-dialog";
 import LogOutButton from "@/app/_component/log-out-button";
 
 export default async function Web() {
