@@ -22,7 +22,11 @@ import SpecimenAssignmentControls from "./specimen-assignment-controls";
 import SpecimenAssignmentHeading from "./specimen-assignment-heading";
 import SpecimenAssignmentOrderCard from "./specimen-assignment-order-card";
 
-export default function SpecimenAssignmentView() {
+export default function SpecimenAssignmentView({
+  basePath,
+}: {
+  basePath: string;
+}) {
   const [activeOrder, setActiveOrder] =
     useState<SpecimenAssignmentOrder | null>(null);
   const [dialogTriggerElement, setDialogTriggerElement] =
@@ -31,12 +35,13 @@ export default function SpecimenAssignmentView() {
   const columns = useMemo(
     () =>
       getColumns({
+        basePath,
         onAssignSpecimen: (order, triggerElement) => {
           setDialogTriggerElement(triggerElement);
           setActiveOrder(order);
         },
       }),
-    [],
+    [basePath],
   );
 
   const table = useReactTable({
