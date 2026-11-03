@@ -20,6 +20,41 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Running the tests
+
+Unit suites mock Prisma, but three suites create and delete real rows:
+
+- `features/audit-log/__tests__/integration.test.ts`
+- `features/lab-order/__tests__/service.test.ts`
+- `app/api/integration/his/lab-order/__tests__/route.test.ts`
+
+They run **only** against the dedicated `moncip_lis_test` database, and they fail — never skip — when that database is missing, unreachable or misdirected. A red `pnpm test` without that database is the intended behaviour: the alternative is a green run that silently proves nothing.
+
+One-time setup, from the repository root — a database of its own on the development Postgres server:
+
+```bash
+docker compose -f compose.dev.yaml exec moncip-lis-db createdb -U moncip_lis moncip_lis_test
+pnpm db:test:migrate        # applies prisma/migrations to moncip_lis_test
+```
+
+`compose.dev.yaml` also defines a `moncip-lis-db-test` service that is a completely separate server (Postgres on `:5433`, database already created). Start it instead if you would rather not keep a test database next to the development one, and point `.env.test.local` at `moncip-lis-db-test:5432` (`localhost:5433` from the host).
+
+Both scripts read `.env.test.local`, so it needs to exist (it is git-ignored):
+
+```bash
+DATABASE_URL="postgresql://moncip_lis:moncip_lis@moncip-lis-db:5432/moncip_lis_test?schema=public"
+```
+
+Then run everything against that database:
+
+```bash
+pnpm test:db
+```
+
+`env -u DATABASE_URL` in those scripts is not decoration. The dev container exports `DATABASE_URL` through compose's `env_file`, and a variable that is already set wins over `--env-file` **and** over every `.env*` file `@next/env` loads — which is also why plain `pnpm test` refuses to run the database suites there instead of quietly using the development database.
+
+The check itself lives in `test/support/test-database.ts`. `jest.config.ts` loads env through `nextJest`/`@next/env`, which skips `.env.local` when `NODE_ENV=test` and never overrides an exported variable, so the only trustworthy input is the `DATABASE_URL` the run actually resolved. Each database suite calls `assertTestDatabaseUrl()` at load time and `assertTestDatabaseReady()` in `beforeAll`.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

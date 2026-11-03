@@ -12,6 +12,16 @@ import {
 import { AUDIT_ACTIONS } from "../audit-log.constant";
 import { CreateAuditLogSchema } from "../audit-log.schema";
 import { createAuditLog } from "../audit-log.service";
+import {
+  assertTestDatabaseReady,
+  assertTestDatabaseUrl,
+} from "@/test/support/test-database";
+
+// Writes to Postgres, so the suite refuses to load against anything but the
+// dedicated test database; reachability and schema are checked before the first
+// test. See test/support/test-database.ts.
+assertTestDatabaseUrl();
+beforeAll(assertTestDatabaseReady);
 
 const createdLaboratoryIds: string[] = [];
 const createdUserIds: string[] = [];

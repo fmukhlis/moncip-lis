@@ -10,11 +10,21 @@ import {
 } from "@/test/factories/his-lab-order-payload.factory";
 import { makeIntegrationTokenRecord } from "@/test/factories/integration-token.factory";
 import { POST } from "../route";
+import {
+  assertTestDatabaseReady,
+  assertTestDatabaseUrl,
+} from "@/test/support/test-database";
 
 // Every case builds a laboratory, a connection, a token and an orderable, then
 // drives one or two full ingestions. Against the remote database this suite is
 // an order of magnitude slower than the unit suites, so it gets its own budget.
 jest.setTimeout(120_000);
+
+// Writes to Postgres, so the suite refuses to load against anything but the
+// dedicated test database; reachability and schema are checked before the first
+// test. See test/support/test-database.ts.
+assertTestDatabaseUrl();
+beforeAll(assertTestDatabaseReady);
 
 const createdLaboratoryIds: string[] = [];
 

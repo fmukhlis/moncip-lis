@@ -11,6 +11,16 @@ import {
   updateLabOrder,
 } from "../lab-order.service";
 import { GetLabOrdersSchema } from "../lab-order.schema";
+import {
+  assertTestDatabaseReady,
+  assertTestDatabaseUrl,
+} from "@/test/support/test-database";
+
+// Writes to Postgres, so the suite refuses to load against anything but the
+// dedicated test database; reachability and schema are checked before the first
+// test. See test/support/test-database.ts.
+assertTestDatabaseUrl();
+beforeAll(assertTestDatabaseReady);
 
 const createdLaboratoryIds: string[] = [];
 
