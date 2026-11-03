@@ -39,7 +39,15 @@ export async function getLabOrdersAction(
   // Serialize dates here so the client doesn't have to do it manually.
   return {
     data: labOrders.map(
-      ({ patient, createdAt, orderedAt, updatedAt, receivedAt, ...rest }) => ({
+      ({
+        items,
+        patient,
+        createdAt,
+        orderedAt,
+        updatedAt,
+        receivedAt,
+        ...rest
+      }) => ({
         ...rest,
         patient: {
           ...patient,
@@ -49,6 +57,13 @@ export async function getLabOrdersAction(
         orderedAt: orderedAt.toISOString(),
         updatedAt: updatedAt.toISOString(),
         receivedAt: receivedAt.toISOString(),
+        items: items.map(({ specimens, ...item }) => ({
+          ...item,
+          specimens: specimens.map(({ endedAt, specimen }) => ({
+            endedAt: endedAt?.toISOString() ?? null,
+            specimen,
+          })),
+        })),
       }),
     ),
     paginationMeta,

@@ -13,6 +13,19 @@ export const labOrderListSelect = {
       performable: {
         select: { id: true, type: true, displayName: true },
       },
+      specimens: {
+        select: {
+          endedAt: true,
+          specimen: {
+            select: {
+              id: true,
+              no: true,
+              status: true,
+              specimenType: { select: { id: true, displayName: true } },
+            },
+          },
+        },
+      },
     },
   },
   patient: { select: patientBaseSelect },

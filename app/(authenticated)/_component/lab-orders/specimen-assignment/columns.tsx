@@ -12,7 +12,7 @@ import {
   OrderItemsCollapsible,
   PatientCollapsible,
 } from "./order-card-sections";
-import type { SpecimenAssignmentOrder } from "./data";
+import type { SpecimenAssignmentOrder } from "./helpers";
 
 const columnHelper = createColumnHelper<SpecimenAssignmentOrder>();
 

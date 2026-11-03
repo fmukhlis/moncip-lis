@@ -28,7 +28,7 @@ import {
   getEligibleItems,
   getActiveSpecimenAssignment,
   type SpecimenAssignmentOrder,
-} from "./data";
+} from "./helpers";
 
 export function PatientCollapsible({
   order,
@@ -66,7 +66,10 @@ export function PatientCollapsible({
               />
             }
           />
-          <InfoRow label="Sex" value={PATIENT_SEX_LABEL[patient.sex]} />
+          <InfoRow
+            label="Sex"
+            value={patient.sex ? PATIENT_SEX_LABEL[patient.sex] : "—"}
+          />
         </div>
       </CollapsibleContent>
     </Collapsible>

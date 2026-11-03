@@ -5,8 +5,12 @@ const IMMUTABLE_LAB_ORDER_STATUSES: LabOrderStatus[] = [
   "COMPLETED",
 ];
 
+export function isLabOrderEditable(labOrder: { status: LabOrderStatus }) {
+  return !IMMUTABLE_LAB_ORDER_STATUSES.includes(labOrder.status);
+}
+
 export function ensureLabOrderIsEditable(labOrder: { status: LabOrderStatus }) {
-  if (IMMUTABLE_LAB_ORDER_STATUSES.includes(labOrder.status)) {
+  if (!isLabOrderEditable(labOrder)) {
     throw new Error("Lab order is not editable");
   }
 }
