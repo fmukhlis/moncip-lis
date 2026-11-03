@@ -1,22 +1,21 @@
 "use client";
 
-// UI-only preview. This mirrors
-// app/(authenticated)/_component/lab-orders/detail/create-specimen-dialog.tsx so
-// the worklist can show the same dialog without the order-detail context.
-// Replace it with the shared component once specimen assignment is wired to the
-// backend.
-
+import ComboboxField from "@/components/ui/combobox-field";
+import CheckboxGroupField from "@/components/ui/checkbox-group-field";
 import { z } from "zod";
 import { Dot } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Spinner } from "@/components/ui/spinner";
 import { FieldGroup } from "@/components/ui/field";
-import ComboboxField from "@/components/ui/combobox-field";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useComboboxAnchor } from "@/components/ui/combobox";
-import CheckboxGroupField from "@/components/ui/checkbox-group-field";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { useGetLabOrderActionQuery } from "@/features/lab-order/lab-order.api";
+import { CreateSpecimenActionSchema } from "@/features/specimen/specimen.schema";
+import { useEffect, useMemo, useState } from "react";
+import { useCreateSpecimenActionMutation } from "@/features/specimen/specimen.api";
+import { FormProvider, SubmitHandler, useForm } from "react-hook-form";
 import {
   Item,
   ItemTitle,
@@ -30,28 +29,37 @@ import {
   DialogHeader,
   DialogContent,
 } from "@/components/ui/dialog";
-import { CreateSpecimenActionSchema } from "@/features/specimen/specimen.schema";
-import { getEligibleItems, type SpecimenAssignmentOrder } from "./data";
 
-export type SpecimenAssignmentDialogValues = z.infer<
-  typeof CreateSpecimenActionSchema
->;
+type FormValues = z.infer<typeof CreateSpecimenActionSchema>;
 
-type FormValues = SpecimenAssignmentDialogValues;
-
-export default function SpecimenAssignmentDialog({
+/**
+ * Creates a specimen and assigns it to the selected order items.
+ *
+ * Shared by the lab order detail page and the specimen assignment worklist, so
+ * the dialog is driven entirely by props: the caller owns the open state and the
+ * element that opened it (for focus restoration), and the order itself is read
+ * from the existing lab order query.
+ */
+export default function CreateSpecimenDialog({
+  labOrderId,
   isOpen,
-  order,
   triggerElement,
   onOpenChange,
-  onSubmit,
 }: {
+  /** Order the specimen is created for; omitted when no order is selected. */
+  labOrderId?: string;
   isOpen: boolean;
-  order: SpecimenAssignmentOrder | null;
-  triggerElement: HTMLButtonElement | null;
+  /** Element that opened the dialog, so focus returns to it on close. */
+  triggerElement?: HTMLButtonElement | null;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (values: FormValues) => void | Promise<void>;
 }) {
+  // Server state
+  const { data: orderData } = useGetLabOrderActionQuery(
+    labOrderId ? { id: labOrderId } : skipToken,
+  );
+  const [createSpecimenAction] = useCreateSpecimenActionMutation();
+
+  // Form state
   const methods = useForm({
     resolver: zodResolver(CreateSpecimenActionSchema),
   });
@@ -67,91 +75,119 @@ export default function SpecimenAssignmentDialog({
     useState(false);
 
   const specimenTypeOptions = useMemo(() => {
-    if (!order) {
-      return [];
-    }
-
-    const specimenUsedBy = new Map<
-      string,
-      {
-        name: string;
-        items: { id: string; performableName: string }[];
-      }
-    >();
-    const specimenDefaultIn = new Map<string, string[]>();
-
-    for (const { id, performable, specimens } of getEligibleItems(order)) {
-      // Skip if there is an active specimen for this order item.
-      if (specimens.find(({ endedAt }) => !endedAt)) continue;
-
-      for (const { isDefault, specimenType } of performable.specimenTypes) {
-        if (!specimenUsedBy.has(specimenType.id)) {
-          specimenUsedBy.set(specimenType.id, {
-            name: specimenType.displayName,
-            items: [],
-          });
+    if (orderData?.data) {
+      const specimenUsedBy = new Map<
+        string,
+        {
+          name: string;
+          items: { id: string; performableName: string }[];
         }
-        specimenUsedBy.get(specimenType.id)!.items.push({
-          id,
-          performableName: performable.displayName,
-        });
+      >();
+      const specimenDefaultIn = new Map<string, string[]>();
 
-        if (isDefault) {
-          if (!specimenDefaultIn.has(specimenType.id)) {
-            specimenDefaultIn.set(specimenType.id, []);
+      for (const { id, performable, specimens } of orderData?.data.items) {
+        // Skip if there is an active specimen for this order item.
+        if (specimens.find(({ endedAt }) => !endedAt)) continue;
+
+        for (const { isDefault, specimenType } of performable.specimenTypes) {
+          if (!specimenUsedBy.has(specimenType.id)) {
+            specimenUsedBy.set(specimenType.id, {
+              name: specimenType.displayName,
+              items: [],
+            });
           }
-          specimenDefaultIn.get(specimenType.id)!.push(performable.displayName);
+          specimenUsedBy.get(specimenType.id)!.items.push({
+            id,
+            performableName: performable.displayName,
+          });
+
+          if (isDefault) {
+            if (!specimenDefaultIn.has(specimenType.id)) {
+              specimenDefaultIn.set(specimenType.id, []);
+            }
+            specimenDefaultIn
+              .get(specimenType.id)!
+              .push(performable.displayName);
+          }
         }
       }
+
+      return Array.from(specimenUsedBy)
+        .sort(
+          (
+            [aId, { name: aName, items: aItems }],
+            [bId, { name: bName, items: bItems }],
+          ) => {
+            const aUsedByCount = aItems.length ?? 0;
+            const bUsedByCount = bItems.length ?? 0;
+            const aDefaultInCount = specimenDefaultIn.get(aId)?.length ?? 0;
+            const bDefaultInCount = specimenDefaultIn.get(bId)?.length ?? 0;
+
+            // Current logic: Prioritize UsedByCount as the primary sorting factor
+            const [primary, secondary] = [
+              bUsedByCount - aUsedByCount,
+              bDefaultInCount - aDefaultInCount,
+            ];
+            // Alternative: Uncomment below if DefaultInCount should take higher priority instead.
+            // const [primary, secondary] = [
+            //   bDefaultInCount - aDefaultInCount,
+            //   bUsedByCount - aUsedByCount,
+            // ];
+
+            return primary !== 0
+              ? primary
+              : secondary !== 0
+                ? secondary
+                : aName.localeCompare(bName);
+          },
+        )
+        .map(([id, { name, items }]) => {
+          return {
+            value: id,
+            label: name,
+            specimenUsedBy: items,
+            specimenDefaultIn: specimenDefaultIn.get(id) ?? [],
+          };
+        });
     }
 
-    return Array.from(specimenUsedBy)
-      .sort(
-        (
-          [aId, { name: aName, items: aItems }],
-          [bId, { name: bName, items: bItems }],
-        ) => {
-          const aUsedByCount = aItems.length ?? 0;
-          const bUsedByCount = bItems.length ?? 0;
-          const aDefaultInCount = specimenDefaultIn.get(aId)?.length ?? 0;
-          const bDefaultInCount = specimenDefaultIn.get(bId)?.length ?? 0;
+    return [];
+  }, [orderData?.data]);
 
-          const [primary, secondary] = [
-            bUsedByCount - aUsedByCount,
-            bDefaultInCount - aDefaultInCount,
-          ];
-
-          return primary !== 0
-            ? primary
-            : secondary !== 0
-              ? secondary
-              : aName.localeCompare(bName);
-        },
-      )
-      .map(([id, { name, items }]) => {
-        return {
-          value: id,
-          label: name,
-          specimenUsedBy: items,
-          specimenDefaultIn: specimenDefaultIn.get(id) ?? [],
-        };
-      });
-  }, [order]);
+  const onSubmit: SubmitHandler<FormValues> = async (data) => {
+    try {
+      const res = await createSpecimenAction(data).unwrap();
+      onOpenChange(false);
+      setTimeout(() => {
+        reset();
+      }, 200);
+      toast.success(
+        `Specimen "${res?.data?.specimenType.displayName}" created and assigned to:${res.data.orderItems.map(
+          ({
+            labOrderItem: {
+              performable: { displayName },
+            },
+          }) => ` ${displayName}`,
+        )}`,
+      );
+    } catch (error) {
+      toast.error(
+        error instanceof Error ? error.message : `Failed to create specimen`,
+      );
+    }
+  };
 
   useEffect(() => {
-    if (isOpen && order) {
+    if (isOpen && orderData?.data) {
       reset({
-        patientId: order.patient.id,
-        labOrderId: order.id,
+        patientId: orderData?.data.patient.id,
+        labOrderId: orderData?.data.id,
         orderItemIds: [],
         specimenTypeId: undefined,
       });
       setAssociableTests([]);
     }
-  }, [isOpen, order, reset]);
-
-  const handleFormSubmit: SubmitHandler<FormValues> = (values) =>
-    onSubmit(values);
+  }, [isOpen, reset, orderData?.data]);
 
   return (
     <Dialog
@@ -165,8 +201,8 @@ export default function SpecimenAssignmentDialog({
     >
       <FormProvider {...methods}>
         <form
-          id="assign-specimen"
-          onSubmit={handleSubmit(handleFormSubmit, console.log)}
+          id="create-specimen"
+          onSubmit={handleSubmit(onSubmit, console.log)}
         >
           <DialogContent
             onCloseAutoFocus={(e) => {
@@ -193,8 +229,8 @@ export default function SpecimenAssignmentDialog({
                   (typeof specimenTypeOptions)[number]
                 >
                   name="specimenTypeId"
-                  formId="assign-specimen"
-                  disabled={!order}
+                  formId="create-specimen"
+                  disabled={!orderData?.data}
                   extractValueToFieldValue={(value) => value?.value}
                   comboboxProps={{
                     open: isSpecimenTypeComboboxOpen,
@@ -245,7 +281,7 @@ export default function SpecimenAssignmentDialog({
                 />
                 <CheckboxGroupField<FormValues>
                   name="orderItemIds"
-                  formId="assign-specimen"
+                  formId="create-specimen"
                   className="w-fit"
                   options={associableTests}
                   renderLabelContent={() => "Associated Tests"}
@@ -267,7 +303,7 @@ export default function SpecimenAssignmentDialog({
               </Button>
               <Button
                 type="submit"
-                form="assign-specimen"
+                form="create-specimen"
                 disabled={formState.isSubmitting}
               >
                 {formState.isSubmitting ? (
