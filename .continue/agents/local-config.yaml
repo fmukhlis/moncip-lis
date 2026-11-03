@@ -1,3 +1,8 @@
+###################################### WARNING ######################################
+
+######################## DO NOT STORE ANY SENSITIVE DATA HERE #######################
+
+# Config Template.
 name: Local Assistant
 version: 1.0.0
 schema: v1
@@ -5,7 +10,7 @@ models:
   - name: DeepSeek Flash
     provider: deepseek
     model: deepseek-flash
-    apiKey: sk-2ef440390c85484587797be3ce36f945
+    apiKey: <API_KEY>
     apiBase: https://api.deepseek.com
     roles:
       - chat
@@ -20,7 +25,7 @@ models:
   - name: DeepSeek Chat
     provider: deepseek
     model: deepseek-chat
-    apiKey: sk-2ef440390c85484587797be3ce36f945
+    apiKey: <API_KEY>
     apiBase: https://api.deepseek.com
     roles:
       - chat
