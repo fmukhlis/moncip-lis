@@ -9,6 +9,8 @@
     "lint": "eslint",
     "test": "jest",
     "test:watch": "jest --watch",
+    "test:db": "env -u DATABASE_URL node --env-file=.env.test.local node_modules/jest/bin/jest.js",
+    "db:test:migrate": "env -u DATABASE_URL node --env-file=.env.test.local node_modules/prisma/build/index.js migrate deploy",
     "prepare": "husky",
     "postinstall": "prisma generate"
   },

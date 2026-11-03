@@ -24,6 +24,22 @@ services:
     networks:
       - lis-his-network
 
+  # Optional: a completely separate server for the suites that write to
+  # Postgres, for anyone who would rather not keep a test database next to the
+  # development one. `test/support/test-database.ts` accepts either layout, as
+  # long as DATABASE_URL names the `moncip_lis_test` database.
+  moncip-lis-db-test:
+    image: postgres:17
+    shm_size: 128mb
+    environment:
+      POSTGRES_USER: moncip_lis
+      POSTGRES_PASSWORD: moncip_lis
+      POSTGRES_DB: moncip_lis_test
+    ports:
+      - 5433:5432
+    networks:
+      - lis-his-network
+
   moncip-lis-adminer:
     image: adminer
     ports:
