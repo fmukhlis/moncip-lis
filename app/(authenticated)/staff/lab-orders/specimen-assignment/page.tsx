@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { PlaceholderPage } from "@/app/(authenticated)/_component/placeholder-page";
+import SpecimenAssignmentView from "@/app/(authenticated)/_component/lab-orders/specimen-assignment/specimen-assignment-view";
 
 export const metadata: Metadata = {
   title: "Specimen Assignment",
@@ -8,10 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default async function StaffSpecimenAssignment() {
-  return (
-    <PlaceholderPage
-      title="Specimen Assignment"
-      description="Assign specimens to laboratory order items and monitor their assignment status."
-    />
-  );
+  return <SpecimenAssignmentView />;
 }
