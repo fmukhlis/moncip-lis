@@ -8,5 +8,5 @@ export const metadata: Metadata = {
 };
 
 export default async function StaffSpecimenAssignment() {
-  return <SpecimenAssignmentView />;
+  return <SpecimenAssignmentView basePath="/staff/lab-orders" />;
 }

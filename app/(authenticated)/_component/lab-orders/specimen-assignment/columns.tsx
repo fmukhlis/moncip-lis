@@ -2,6 +2,7 @@
 
 import { ColumnDef, createColumnHelper } from "@tanstack/react-table";
 import { CalendarClock } from "lucide-react";
+import Link from "next/link";
 import { CardTitle } from "@/components/ui/card";
 import ClientDateTimeText from "@/components/ui/client-date-time-text";
 import LabOrderPriorityBadge from "@/app/(authenticated)/_component/lab-orders/lab-order-priority-badge";
@@ -21,8 +22,10 @@ const columnHelper = createColumnHelper<SpecimenAssignmentOrder>();
  * columns only describe how a card renders its sections.
  */
 export function getColumns({
+  basePath,
   onAssignSpecimen,
 }: {
+  basePath: string;
   onAssignSpecimen: (
     order: SpecimenAssignmentOrder,
     trigger: HTMLButtonElement,
@@ -36,7 +39,12 @@ export function getColumns({
         <div className="space-y-1.5">
           <div className="flex flex-wrap items-center gap-2">
             <CardTitle className="text-base font-semibold tracking-tight">
-              {getValue()}
+              <Link
+                href={`${basePath}/${row.original.id}`}
+                className="underline-offset-4 hover:underline"
+              >
+                {getValue()}
+              </Link>
             </CardTitle>
             <LabOrderPriorityBadge priority={row.original.priority} />
           </div>
