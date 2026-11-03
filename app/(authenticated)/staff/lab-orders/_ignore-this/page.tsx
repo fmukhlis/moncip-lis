@@ -1,6 +1,5 @@
 import { Metadata } from "next";
 import { SpecimenAssignmentPage } from "./specimen-assignment-page";
-import { PlaceholderPage } from "@/app/(authenticated)/_component/placeholder-page";
 
 export const metadata: Metadata = {
   title: "Specimen Assignment",
