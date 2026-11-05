@@ -3,14 +3,23 @@
 import prisma from "@/lib/prisma";
 import { z } from "zod";
 import { authorize } from "../authentication/authentication.policy";
-import { getLabOrder } from "../lab-order/lab-order.service";
+import {
+  getLabOrder,
+  updateLabOrderStatus,
+} from "../lab-order/lab-order.service";
 import { AUDIT_ACTIONS } from "../audit-log/audit-log.constant";
 import { createAuditLog } from "../audit-log/audit-log.service";
-import { GetLabOrderSchema } from "../lab-order/lab-order.schema";
+import {
+  GetLabOrderSchema,
+  UpdateLabOrderStatusSchema,
+} from "../lab-order/lab-order.schema";
 import { UnauthorizedError } from "../authentication/authentication.error";
 import { CreateAuditLogSchema } from "../audit-log/audit-log.schema";
 import { ensureUserAuthenticated } from "@/lib/ensure-user-authenticated";
-import { ensureLabOrderIsEditable } from "../lab-order/lab-order.policy";
+import {
+  ensureLabOrderIsEditable,
+  resolveInProcessStatus,
+} from "../lab-order/lab-order.policy";
 import {
   ensureSpecimenIsEditable,
   ensureSpecimenCanBeCollected,
@@ -468,10 +477,34 @@ export async function collectSpecimenAction(
       throw new Error("Collector is not found");
     }
 
+    // Logging the collection of a pending specimen starts the parent order,
+    // while the same dialog afterwards only corrects the collection record of a
+    // collected or received specimen, which must leave the order alone.
+    const isLoggingCollection =
+      existingSpecimen.status === SpecimenStatus.PENDING;
+
     const updatedSpecimen = await collectSpecimen(tx, {
       ...parsedCollectSpecimenParams,
       status: resolveCollectedStatus(existingSpecimen.status),
     });
+
+    // The order tracks its own lifecycle, so the first collection moves it out
+    // of the intake status. Resolving the target status instead of writing it
+    // unconditionally keeps an order that already started in process untouched.
+    if (isLoggingCollection) {
+      const nextLabOrderStatus = resolveInProcessStatus(labOrder.status);
+
+      if (nextLabOrderStatus !== labOrder.status) {
+        await updateLabOrderStatus(
+          tx,
+          UpdateLabOrderStatusSchema.parse({
+            id: labOrder.id,
+            status: nextLabOrderStatus,
+            laboratoryId,
+          }),
+        );
+      }
+    }
 
     // Create a new audit log entry for the collection action.
     const parsedCreateAuditLogParams = CreateAuditLogSchema.parse({
