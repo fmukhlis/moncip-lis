@@ -1,6 +1,7 @@
 /**
  * @jest-environment node
  */
+import { LabOrderStatus } from "@/generated/prisma";
 import prisma from "@/lib/prisma";
 import { buildLabOrderNo, buildLabOrderPeriod } from "@/lib/generate-item-no";
 import {
@@ -9,6 +10,7 @@ import {
   getLabOrders,
   reserveLabOrderNo,
   updateLabOrder,
+  updateLabOrderStatus,
 } from "../lab-order.service";
 import { GetLabOrdersSchema } from "../lab-order.schema";
 import {
@@ -318,6 +320,54 @@ describe("updateLabOrder", () => {
     expect(updated.items.map((item) => item.id)).not.toContain(
       created.items[0].id,
     );
+  });
+});
+
+describe("updateLabOrderStatus", () => {
+  it("moves an ordered order of the laboratory to in process", async () => {
+    const fixture = await createFixture();
+    const created = await createLabOrder(prisma, orderInput(fixture));
+
+    const updated = await updateLabOrderStatus(prisma, {
+      id: created.id,
+      status: LabOrderStatus.IN_PROCESS,
+      laboratoryId: fixture.laboratoryId,
+    });
+
+    expect(updated).toEqual({
+      id: created.id,
+      status: LabOrderStatus.IN_PROCESS,
+    });
+
+    // Only the status is written: the header and the items stay as they are.
+    const stored = await prisma.labOrder.findUniqueOrThrow({
+      where: { id: created.id },
+      include: { items: true },
+    });
+
+    expect(stored.no).toBe(created.no);
+    expect(stored.items).toHaveLength(1);
+  });
+
+  it("refuses an order that belongs to another laboratory", async () => {
+    const fixture = await createFixture();
+    const created = await createLabOrder(prisma, orderInput(fixture));
+    const otherFixture = await createFixture();
+
+    // Prisma reports the laboratory of the where clause as a missing record.
+    await expect(
+      updateLabOrderStatus(prisma, {
+        id: created.id,
+        status: LabOrderStatus.IN_PROCESS,
+        laboratoryId: otherFixture.laboratoryId,
+      }),
+    ).rejects.toMatchObject({ code: "P2025" });
+
+    const stored = await prisma.labOrder.findUniqueOrThrow({
+      where: { id: created.id },
+    });
+
+    expect(stored.status).toBe(LabOrderStatus.ORDERED);
   });
 });
 

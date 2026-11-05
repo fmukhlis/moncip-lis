@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { LabOrderStatus } from "@/generated/prisma";
 import { requiredCuid2 } from "@/lib/custom-zod-types";
 import { PaginationSchema } from "@/lib/pagination";
 import { RawOrderSnapshotSchema } from "../inbound-integration-event/inbound-integration-event.schema";
@@ -107,4 +108,15 @@ export const UpdateLabOrderSchema = RawOrderSnapshotSchema.omit({
   externalPatientId: z.string().trim().min(1),
   externalEncounterId: z.string().trim().min(1),
   externalOrderingProviderId: z.string().trim().min(1),
+});
+
+/**
+ * A status write only needs the order, its next status and the laboratory it
+ * belongs to; the order itself is loaded before the write so the transition can
+ * be decided by the policy.
+ */
+export const UpdateLabOrderStatusSchema = z.object({
+  id: requiredCuid2("Lab Order"),
+  status: z.enum(LabOrderStatus),
+  laboratoryId: requiredCuid2("Laboratory"),
 });

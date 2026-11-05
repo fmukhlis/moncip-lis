@@ -1,5 +1,8 @@
 import { LabOrderStatus } from "@/generated/prisma";
-import { ensureLabOrderIsEditable } from "../lab-order.policy";
+import {
+  ensureLabOrderIsEditable,
+  resolveInProcessStatus,
+} from "../lab-order.policy";
 
 const IMMUTABLE_STATUSES = [
   LabOrderStatus.CANCELLED,
@@ -21,5 +24,24 @@ describe("ensureLabOrderIsEditable", () => {
     expect(() => ensureLabOrderIsEditable({ status })).toThrow(
       "Lab order is not editable",
     );
+  });
+});
+
+describe("resolveInProcessStatus", () => {
+  it("starts an ordered order when its first specimen is collected", () => {
+    expect(resolveInProcessStatus(LabOrderStatus.ORDERED)).toBe(
+      LabOrderStatus.IN_PROCESS,
+    );
+  });
+
+  it.each(EDITABLE_STATUSES.filter((s) => s !== LabOrderStatus.ORDERED))(
+    "leaves a %s order as it is",
+    (status) => {
+      expect(resolveInProcessStatus(status)).toBe(status);
+    },
+  );
+
+  it.each(IMMUTABLE_STATUSES)("never revives a %s order", (status) => {
+    expect(resolveInProcessStatus(status)).toBe(status);
   });
 });

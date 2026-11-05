@@ -44,6 +44,7 @@ jest.mock("@/features/audit-log/audit-log.service", () => ({
 jest.mock("@/features/lab-order/lab-order.service", () => ({
   __esModule: true,
   getLabOrder: jest.fn(),
+  updateLabOrderStatus: jest.fn(),
 }));
 jest.mock("@/features/user/user.service", () => ({
   __esModule: true,

@@ -100,9 +100,12 @@ const apiSlice = serverFunctionSlice.injectEndpoints({
           };
         }
       },
-      invalidatesTags: (result, err, { id }) => [
+      invalidatesTags: (result, err, { id, labOrderId }) => [
         { type: "Specimen", id },
         { type: "Specimen", id: "LIST" },
+        // Collecting a specimen starts its order, so the detail header and the
+        // status tabs must re-read the order.
+        { type: "LabOrder", id: labOrderId },
         ...(result?.data.orderItems ?? []).flatMap(
           ({ labOrderItem: { id } }) => [{ type: "LabOrderItem" as const, id }],
         ),

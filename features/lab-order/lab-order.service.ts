@@ -17,6 +17,7 @@ import {
   CreateLabOrderSchema,
   UpdateLabOrderSchema,
   ReserveLabOrderNoSchema,
+  UpdateLabOrderStatusSchema,
 } from "./lab-order.schema";
 
 type DatabaseClient = typeof prisma;
@@ -229,5 +230,21 @@ export async function updateLabOrder(
       externalOrderingProviderId,
     },
     select: labOrderDetailSelect,
+  });
+}
+
+/**
+ * Writes the status of an order scoped to its laboratory. The order is loaded
+ * before it is written, so this is only used to move it forward: the transition
+ * itself is decided by the caller through the lab order policy.
+ */
+export async function updateLabOrderStatus(
+  db: Pick<DatabaseClient, "labOrder">,
+  { id, status, laboratoryId }: z.infer<typeof UpdateLabOrderStatusSchema>,
+) {
+  return db.labOrder.update({
+    where: { id, laboratoryId },
+    data: { status },
+    select: { id: true, status: true },
   });
 }

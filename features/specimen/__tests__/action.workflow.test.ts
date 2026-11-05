@@ -10,7 +10,10 @@ import {
 import prisma from "@/lib/prisma";
 import { ensureUserAuthenticated } from "@/lib/ensure-user-authenticated";
 import { createAuditLog } from "@/features/audit-log/audit-log.service";
-import { getLabOrder } from "@/features/lab-order/lab-order.service";
+import {
+  getLabOrder,
+  updateLabOrderStatus,
+} from "@/features/lab-order/lab-order.service";
 import {
   getSpecimenPersonnelCandidate,
   getSpecimenPersonnelCandidates,
@@ -58,6 +61,7 @@ jest.mock("@/features/audit-log/audit-log.service", () => ({
 jest.mock("@/features/lab-order/lab-order.service", () => ({
   __esModule: true,
   getLabOrder: jest.fn(),
+  updateLabOrderStatus: jest.fn(),
 }));
 jest.mock("@/features/user/user.service", () => ({
   __esModule: true,
@@ -96,6 +100,7 @@ const transaction = (prisma as unknown as { $transaction: jest.Mock })
 const authenticatedUser = ensureUserAuthenticated as jest.Mock;
 const mockCreateAuditLog = createAuditLog as jest.Mock;
 const mockGetLabOrder = getLabOrder as jest.Mock;
+const mockUpdateLabOrderStatus = updateLabOrderStatus as jest.Mock;
 const mockGetPersonnelCandidate = getSpecimenPersonnelCandidate as jest.Mock;
 const mockGetPersonnelCandidates = getSpecimenPersonnelCandidates as jest.Mock;
 const mockUpdateMany = updateManyLabOrderItemSpecimen as jest.Mock;
@@ -209,6 +214,10 @@ beforeEach(() => {
     (status: SpecimenStatus) => status,
   );
   mockGetLabOrder.mockResolvedValue(makeLabOrder());
+  mockUpdateLabOrderStatus.mockResolvedValue({
+    id: TEST_IDS.labOrderId,
+    status: LabOrderStatus.IN_PROCESS,
+  });
   mockGetSpecimen.mockResolvedValue(makeSpecimenRow());
   mockGetPersonnelCandidate.mockResolvedValue({
     id: TEST_IDS.collectorId,
@@ -548,6 +557,48 @@ describe("collectSpecimenAction", () => {
     expect(data.collectedAt).toBe(collectedAt.toISOString());
   });
 
+  it("starts the parent order when the first specimen is collected", async () => {
+    mockResolveCollectedStatus.mockReturnValue(SpecimenStatus.COLLECTED);
+
+    await collectSpecimenAction(collectParams);
+
+    // The order leaves the intake status, so worklists and status tabs pick the
+    // order up as soon as its first sample exists.
+    expect(mockUpdateLabOrderStatus).toHaveBeenCalledWith(expect.anything(), {
+      id: TEST_IDS.labOrderId,
+      status: LabOrderStatus.IN_PROCESS,
+      laboratoryId: TEST_IDS.laboratoryId,
+    });
+  });
+
+  it("leaves an order that already started in process untouched", async () => {
+    mockGetLabOrder.mockResolvedValue(
+      makeLabOrder({ status: LabOrderStatus.IN_PROCESS }),
+    );
+    mockResolveCollectedStatus.mockReturnValue(SpecimenStatus.COLLECTED);
+
+    await collectSpecimenAction(collectParams);
+
+    expect(mockCollectSpecimen).toHaveBeenCalledTimes(1);
+    expect(mockUpdateLabOrderStatus).not.toHaveBeenCalled();
+  });
+
+  it("leaves the order alone when only the collection record of a collected specimen is corrected", async () => {
+    mockGetSpecimen.mockResolvedValue(
+      makeSpecimenRow({ status: SpecimenStatus.COLLECTED, collectedAt }),
+    );
+
+    await collectSpecimenAction(collectParams);
+
+    expect(mockCollectSpecimen).toHaveBeenCalledWith(expect.anything(), {
+      ...collectParams,
+      laboratoryId: TEST_IDS.laboratoryId,
+      status: SpecimenStatus.COLLECTED,
+    });
+    // The specimen was already collected, so the order must not move again.
+    expect(mockUpdateLabOrderStatus).not.toHaveBeenCalled();
+  });
+
   it("keeps the status when correcting a received specimen and falls back to the username", async () => {
     mockGetSpecimen.mockResolvedValue(
       makeSpecimenRow({
@@ -626,6 +677,7 @@ describe("collectSpecimenAction", () => {
       "Collector is not found",
     );
     expect(mockCollectSpecimen).not.toHaveBeenCalled();
+    expect(mockUpdateLabOrderStatus).not.toHaveBeenCalled();
     expect(mockCreateAuditLog).not.toHaveBeenCalled();
   });
 
