@@ -11,7 +11,7 @@ import {
 import { DataTableEmpty1 } from "@/components/ui/data-table/data-table-empty";
 import { DataTablePagination } from "@/components/ui/data-table/data-table-pagination";
 import { getColumns } from "./columns";
-import { isAssignableOrder } from "./helpers";
+import { compareWorklistOrders, isWorklistOrder } from "./helpers";
 import { useGetLabOrdersActionQuery } from "@/features/lab-order/lab-order.api";
 import CreateSpecimenDialog from "../create-specimen-dialog";
 import SpecimenAssignmentControls from "./specimen-assignment-controls";
@@ -35,8 +35,12 @@ export default function SpecimenAssignmentView({
   const [dialogTriggerElement, setDialogTriggerElement] =
     useState<HTMLButtonElement | null>(null);
 
+  // The worklist carries the orders that are still pending an assignment or
+  // waiting for their labels, most urgent first and, within a priority, the
+  // order that has been waiting the longest.
   const orders = useMemo(
-    () => (data?.data ?? []).filter(isAssignableOrder),
+    () =>
+      (data?.data ?? []).filter(isWorklistOrder).sort(compareWorklistOrders),
     [data?.data],
   );
 

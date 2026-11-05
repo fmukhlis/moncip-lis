@@ -17,6 +17,7 @@ import {
   SpecimenStatus,
   SpecimenAssignmentEndReason,
 } from "@/generated/prisma";
+import { isLabOrderFullyAssigned } from "@/features/lab-order-item/lab-order-item.policy";
 import { Plus, TestTubes, CheckCheck } from "lucide-react";
 import { setIsCreateSpecimenDialogOpen } from "./slice";
 import SpecimenActions from "./specimen-actions";
@@ -49,6 +50,13 @@ export default function SpecimensCard({ labOrderId }: { labOrderId: string }) {
         status !== SpecimenStatus.REJECTED),
   );
 
+  // Every eligible order item is assigned: the order is ready to be collected,
+  // so no further specimen can be created and its labels were already printed.
+  // A collection is rejected until then (see
+  // `ensureLabOrderItemsAreAssignedToSpecimens`), so the actions follow the same
+  // rule as the backend.
+  const isFullyAssigned = order ? isLabOrderFullyAssigned(order.items) : false;
+
   return (
     <Card>
       <CardHeader className="gap-0">
@@ -73,10 +81,9 @@ export default function SpecimensCard({ labOrderId }: { labOrderId: string }) {
                 dispatch(setIsCreateSpecimenDialogOpen(true));
                 setCreateSpecimenDialogTrigger(e.currentTarget);
               }}
-              // Specimen creation is no longer allowed if all order items already have an active specimen.
-              disabled={order?.items.every(({ specimens }) =>
-                specimens.some(({ endedAt }) => !endedAt),
-              )}
+              // Specimen creation is no longer allowed once every eligible order
+              // item already has an active specimen.
+              disabled={isFullyAssigned}
               className="size-5"
             >
               <Plus />
@@ -86,6 +93,14 @@ export default function SpecimensCard({ labOrderId }: { labOrderId: string }) {
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
+        {/* Collecting a specimen needs the whole order assigned, so the hint
+            explains why the collection actions are disabled. */}
+        {order && !isFullyAssigned ? (
+          <p className="text-muted-foreground text-xs">
+            Collection is available once every order item is assigned to a
+            specimen.
+          </p>
+        ) : null}
         {isFetching || !specimens ? (
           <div className="rounded-md border bg-muted/30 p-3">
             <div className="mb-2 flex items-center justify-between gap-2">
@@ -136,7 +151,10 @@ export default function SpecimensCard({ labOrderId }: { labOrderId: string }) {
                   <SpecimenStatusBadge status={specimen.status} />
                   {specimen.status !== SpecimenStatus.CANCELLED &&
                   specimen.status !== SpecimenStatus.REJECTED ? (
-                    <SpecimenActions specimen={specimen} />
+                    <SpecimenActions
+                      specimen={specimen}
+                      canLogCollection={isFullyAssigned}
+                    />
                   ) : null}
                 </div>
               </div>

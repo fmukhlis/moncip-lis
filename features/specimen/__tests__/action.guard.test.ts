@@ -1,6 +1,7 @@
 import {
   AuditLogEntityType,
   LabOrderStatus,
+  LabOrderItemStatus,
   Role,
   SpecimenAssignmentEndReason,
   SpecimenStatus,
@@ -271,7 +272,26 @@ describe("authorization", () => {
 
   const allowedCases: Array<[string, () => Promise<unknown>]> = [
     ["createSpecimenAction", () => createSpecimenAction(createParams)],
-    ["collectSpecimenAction", () => collectSpecimenAction(collectParams)],
+    [
+      "collectSpecimenAction",
+      () => {
+        // A collection needs the whole order assigned, while the shared default
+        // order describes an order whose items still have to be assigned.
+        mockGetLabOrder.mockResolvedValue(
+          makeLabOrder({
+            items: [
+              {
+                id: TEST_IDS.orderItemId,
+                status: LabOrderItemStatus.ORDERED,
+                specimens: [{ endedAt: null }],
+              },
+            ],
+          }),
+        );
+
+        return collectSpecimenAction(collectParams);
+      },
+    ],
   ];
 
   it.each(allowedCases)("%s lets a lab admin through", async (_action, run) => {

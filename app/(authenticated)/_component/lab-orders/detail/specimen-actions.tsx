@@ -61,12 +61,19 @@ const standaloneActionIcons = {
 
 export default function SpecimenActions({
   specimen,
+  canLogCollection = true,
 }: {
   specimen: {
     id: string;
     status: SpecimenStatus;
     specimenType: { displayName: string };
   };
+  /**
+   * Whether a new collection may be logged. A collection needs the whole order
+   * assigned (the backend enforces it), so the card passes down what it knows
+   * about the order. Defaults to allowed for callers that have no order context.
+   */
+  canLogCollection?: boolean;
 }) {
   // Global state
   const dispatch = useAppDispatch();
@@ -149,6 +156,12 @@ export default function SpecimenActions({
     ? standaloneActionIcons[standaloneAction]
     : null;
 
+  // Only logging a new collection is gated: the same dialog also corrects the
+  // collection record of a collected or received specimen, which must stay
+  // available while the rest of the order is still being assigned.
+  const isCollectionBlocked =
+    standaloneAction === "logCollection" && !canLogCollection;
+
   return (
     <div className="ml-auto flex items-center gap-1">
       {standaloneAction && StandaloneIcon && (
@@ -156,6 +169,7 @@ export default function SpecimenActions({
           size={"sm"}
           variant={"outline"}
           className="h-6 gap-1 px-2 text-xs"
+          disabled={isCollectionBlocked}
           onClick={(e) => {
             openStandaloneActionDialog(standaloneAction, e.currentTarget);
           }}

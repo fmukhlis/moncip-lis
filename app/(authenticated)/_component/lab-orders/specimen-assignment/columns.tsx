@@ -12,7 +12,8 @@ import {
   OrderItemsCollapsible,
   PatientCollapsible,
 } from "./order-card-sections";
-import type { SpecimenAssignmentOrder } from "./helpers";
+import PrintLabelButton from "./print-label-button";
+import { getWorklistAction, type SpecimenAssignmentOrder } from "./helpers";
 
 const columnHelper = createColumnHelper<SpecimenAssignmentOrder>();
 
@@ -93,12 +94,19 @@ export function getColumns({
       id: "actions",
       header: "Actions",
       enableGlobalFilter: false,
-      cell: ({ row }) => (
-        <AssignSpecimenButton
-          order={row.original}
-          onAssignSpecimen={onAssignSpecimen}
-        />
-      ),
+      cell: ({ row }) => {
+        // A fully assigned order takes no further assignment: the only thing
+        // left before the sample is collected is printing its labels. Orders
+        // with anything still unassigned keep the assignment dialog.
+        return getWorklistAction(row.original) === "PRINT_LABEL" ? (
+          <PrintLabelButton labOrderId={row.original.id} />
+        ) : (
+          <AssignSpecimenButton
+            order={row.original}
+            onAssignSpecimen={onAssignSpecimen}
+          />
+        );
+      },
     }),
   ] as ColumnDef<SpecimenAssignmentOrder>[];
 }
