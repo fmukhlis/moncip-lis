@@ -92,10 +92,8 @@ enum LabOrderStatus {
 }
 
 enum LabOrderItemStatus {
-  OPEN
-  PRINTED
-  COLLECTED
-  RECEIVED
+  ORDERED
+  IN_PROCESS
   PRELIMINARY
   VERIFIED
   REJECTED
@@ -577,7 +575,7 @@ model LabOrderItem {
   externalOrderableId String
 
   note                        String?
-  status                      LabOrderItemStatus @default(OPEN)
+  status                      LabOrderItemStatus @default(ORDERED)
   priority                    LabOrderPriority?
   sortOrder                   Int                @default(0)
   performableSnapshot         Json?
