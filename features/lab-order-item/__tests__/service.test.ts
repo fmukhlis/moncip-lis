@@ -203,13 +203,13 @@ describe("getLabOrderItems", () => {
 
     await getLabOrderItems(db, {
       laboratoryId: TEST_IDS.laboratoryId,
-      status: ["OPEN", "COLLECTED"],
+      status: ["ORDERED", "IN_PROCESS"],
       priority: ["STAT"],
     });
 
     const [{ where }] = methods.findMany.mock.calls[0];
 
-    expect(where.status).toEqual({ in: ["OPEN", "COLLECTED"] });
+    expect(where.status).toEqual({ in: ["ORDERED", "IN_PROCESS"] });
     expect(where.priority).toEqual({ in: ["STAT"] });
   });
 

@@ -10,20 +10,14 @@ export default function LabOrderItemStatusBadge({
   let className = "";
 
   switch (status) {
-    case "OPEN":
+    case "ORDERED":
       className = "fill-info/70 text-info";
       break;
-    case "PRINTED":
-      className = "fill-teal-600/70 text-teal-600";
-      break;
-    case "COLLECTED":
-      className = "fill-indigo-600/70 text-indigo-600";
-      break;
-    case "RECEIVED":
-      className = "fill-purple-600/70 text-purple-600";
+    case "IN_PROCESS":
+      className = "fill-warning/70 text-warning";
       break;
     case "PRELIMINARY":
-      className = "fill-warning/70 text-warning";
+      className = "fill-teal-600/70 text-teal-600";
       break;
     case "VERIFIED":
       className = "fill-success/70 text-success";

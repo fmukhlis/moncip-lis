@@ -10,10 +10,8 @@ export const PERFORMABLE_TYPE_LABEL = {
 } as Record<keyof typeof LisPerformableType, string>;
 
 export const LAB_ORDER_ITEM_STATUS = {
-  OPEN: "Open",
-  PRINTED: "Printed",
-  COLLECTED: "Collected",
-  RECEIVED: "Received",
+  ORDERED: "Ordered",
+  IN_PROCESS: "In process",
   PRELIMINARY: "Preliminary",
   VERIFIED: "Verified",
   REJECTED: "Rejected",
