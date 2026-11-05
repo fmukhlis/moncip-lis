@@ -76,6 +76,15 @@ export const GetLabOrderSchema = GetLabOrderActionSchema.safeExtend({
   laboratoryId: requiredCuid2("Laboratory"),
 });
 
+/**
+ * The specimens of an order are loaded through its items, so all that is needed
+ * is the order and the laboratory that scopes it.
+ */
+export const GetLabOrderSpecimensSchema = z.object({
+  id: requiredCuid2("Lab Order"),
+  laboratoryId: requiredCuid2("Laboratory"),
+});
+
 export const EnsureLabOrderItemsHaveNoSpecimenActionSchema = z.object({
   id: requiredCuid2("Lab Order"),
   orderItemIds: z.array(requiredCuid2("Order Item")).min(1),

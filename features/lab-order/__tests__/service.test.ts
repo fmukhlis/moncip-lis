@@ -8,10 +8,12 @@ import {
   createLabOrder,
   getLabOrder,
   getLabOrders,
+  getLabOrderSpecimens,
   reserveLabOrderNo,
   updateLabOrder,
   updateLabOrderStatus,
 } from "../lab-order.service";
+import { LabOrderItemsHaveSpecimensError } from "../lab-order.error";
 import { GetLabOrdersSchema } from "../lab-order.schema";
 import {
   assertTestDatabaseReady,
@@ -25,12 +27,14 @@ assertTestDatabaseUrl();
 beforeAll(assertTestDatabaseReady);
 
 const createdLaboratoryIds: string[] = [];
+const createdSpecimenTypeIds: string[] = [];
 
 type Fixture = {
   laboratoryId: string;
   patientId: string;
   orderableId: string;
   performableId: string;
+  specimenTypeId: string;
 };
 
 /**
@@ -81,12 +85,56 @@ async function createFixture(): Promise<Fixture> {
     },
   });
 
+  // The type is shared across laboratories, so its code carries the laboratory
+  // to keep the fixtures of parallel suites apart.
+  const specimenType = await prisma.specimenType.create({
+    data: {
+      code: `WB-${laboratory.id}`,
+      displayName: "Whole blood",
+    },
+  });
+  createdSpecimenTypeIds.push(specimenType.id);
+
   return {
     laboratoryId: laboratory.id,
     patientId: patient.id,
     orderableId: orderable.id,
     performableId: performable.id,
+    specimenTypeId: specimenType.id,
   };
+}
+
+/**
+ * Creates a specimen of the fixture and assigns it to one item of an order. An
+ * assignment is the only way an order reaches a specimen, so every specimen a
+ * test expects to find through the order has to be assigned like that.
+ */
+async function createAssignedSpecimen(
+  fixture: Fixture,
+  labOrderItemId: string,
+  overrides: Record<string, unknown> = {},
+) {
+  const specimen = await prisma.specimen.create({
+    data: {
+      no: "SPC-260105-0001",
+      period: "20260105",
+      sequence: 1,
+      patientId: fixture.patientId,
+      laboratoryId: fixture.laboratoryId,
+      specimenTypeId: fixture.specimenTypeId,
+      ...overrides,
+    },
+  });
+
+  await prisma.labOrderItemSpecimen.create({
+    data: {
+      specimenId: specimen.id,
+      labOrderItemId,
+      laboratoryId: fixture.laboratoryId,
+    },
+  });
+
+  return specimen;
 }
 
 function orderInput(fixture: Fixture, overrides: Record<string, unknown> = {}) {
@@ -124,6 +172,14 @@ function orderInput(fixture: Fixture, overrides: Record<string, unknown> = {}) {
 afterEach(async () => {
   const laboratoryIds = [...createdLaboratoryIds];
 
+  // The assignments cascade with their specimen and their item, but they are
+  // deleted first so the order the rows disappear in never matters.
+  await prisma.labOrderItemSpecimen.deleteMany({
+    where: { laboratoryId: { in: laboratoryIds } },
+  });
+  await prisma.specimen.deleteMany({
+    where: { laboratoryId: { in: laboratoryIds } },
+  });
   await prisma.labOrderItem.deleteMany({
     where: { laboratoryId: { in: laboratoryIds } },
   });
@@ -142,9 +198,13 @@ afterEach(async () => {
   await prisma.integrationConnection.deleteMany({
     where: { laboratoryId: { in: laboratoryIds } },
   });
+  await prisma.specimenType.deleteMany({
+    where: { id: { in: createdSpecimenTypeIds } },
+  });
   await prisma.laboratory.deleteMany({ where: { id: { in: laboratoryIds } } });
 
   createdLaboratoryIds.length = 0;
+  createdSpecimenTypeIds.length = 0;
 });
 
 describe("reserveLabOrderNo", () => {
@@ -321,6 +381,61 @@ describe("updateLabOrder", () => {
       created.items[0].id,
     );
   });
+
+  it("refuses to re-sync while a specimen is assigned to the order", async () => {
+    const fixture = await createFixture();
+    const created = await createLabOrder(prisma, orderInput(fixture));
+    const specimen = await createAssignedSpecimen(fixture, created.items[0].id);
+
+    // Replacing the items would cascade the assignment away and leave the
+    // specimen without an order, so the sync is refused instead.
+    await expect(
+      updateLabOrder(
+        prisma,
+        orderInput(fixture, {
+          items: [
+            {
+              sortOrder: 0,
+              performableId: fixture.performableId,
+              externalLabOrderableId: fixture.orderableId,
+              externalOrderItemId: "ITEM-6001",
+            },
+          ],
+        }),
+      ),
+    ).rejects.toThrow(LabOrderItemsHaveSpecimensError);
+
+    const stored = await prisma.labOrder.findUniqueOrThrow({
+      where: { id: created.id },
+      include: { items: { include: { specimens: true } } },
+    });
+
+    // Nothing was written: the item and the assignment are as they were.
+    expect(stored.items).toHaveLength(1);
+    expect(stored.items[0].id).toBe(created.items[0].id);
+    expect(stored.items[0].specimens).toHaveLength(1);
+    expect(stored.items[0].specimens[0].specimenId).toBe(specimen.id);
+  });
+
+  it("does not let the specimen guard of another source system block the sync", async () => {
+    const fixture = await createFixture();
+    const created = await createLabOrder(prisma, orderInput(fixture));
+    await createAssignedSpecimen(fixture, created.items[0].id);
+
+    // The guard is scoped by the external identity of the order being synced, so
+    // a sync of another order is not blocked by it and runs into the missing
+    // order instead.
+    await expect(
+      updateLabOrder(
+        prisma,
+        orderInput(fixture, {
+          externalId: "ORDER-4002",
+          no: "ORD-20260105-0002",
+          sequence: 2,
+        }),
+      ),
+    ).rejects.toMatchObject({ code: "P2025" });
+  });
 });
 
 describe("updateLabOrderStatus", () => {
@@ -396,6 +511,121 @@ describe("getLabOrder", () => {
     });
 
     expect(found).toBeNull();
+  });
+});
+
+describe("getLabOrderSpecimens", () => {
+  const item = (
+    fixture: Fixture,
+    externalOrderItemId: string,
+    sortOrder: number,
+  ) => ({
+    sortOrder,
+    performableId: fixture.performableId,
+    externalLabOrderableId: fixture.orderableId,
+    externalOrderItemId,
+  });
+
+  it("resolves the specimens of the order through its items, oldest first", async () => {
+    const fixture = await createFixture();
+    const order = await createLabOrder(
+      prisma,
+      orderInput(fixture, {
+        items: [item(fixture, "ITEM-5001", 0), item(fixture, "ITEM-5002", 1)],
+      }),
+    );
+
+    const [firstItem, secondItem] = [...order.items].sort(
+      (left, right) => left.sortOrder - right.sortOrder,
+    );
+
+    const later = await createAssignedSpecimen(fixture, firstItem.id, {
+      no: "SPC-260105-0002",
+      sequence: 2,
+      createdAt: new Date("2026-01-05T09:00:00.000Z"),
+    });
+    const earlier = await createAssignedSpecimen(fixture, secondItem.id, {
+      no: "SPC-260105-0001",
+      sequence: 1,
+      createdAt: new Date("2026-01-05T08:30:00.000Z"),
+    });
+
+    const specimens = await getLabOrderSpecimens(prisma, {
+      id: order.id,
+      laboratoryId: fixture.laboratoryId,
+    });
+
+    // The order lists its specimens oldest first, whichever item they hang off.
+    expect(specimens.map(({ id }) => id)).toEqual([earlier.id, later.id]);
+    // The specimen exposes the item it is assigned to, which is the whole path
+    // from the order to the specimen.
+    expect(specimens[0].orderItems).toHaveLength(1);
+    expect(
+      specimens[0].orderItems[0].labOrderItem.performable?.displayName,
+    ).toBe("Complete Blood Count");
+  });
+
+  it("keeps a specimen whose assignment ended", async () => {
+    const fixture = await createFixture();
+    const order = await createLabOrder(prisma, orderInput(fixture));
+    const specimen = await createAssignedSpecimen(fixture, order.items[0].id);
+
+    // Ending an assignment is how a specimen leaves an item; it never removes
+    // the specimen from the order it was created for.
+    await prisma.labOrderItemSpecimen.updateMany({
+      where: { specimenId: specimen.id },
+      data: {
+        endedAt: new Date("2026-01-05T10:00:00.000Z"),
+        endReason: "REASSIGNED",
+      },
+    });
+
+    const specimens = await getLabOrderSpecimens(prisma, {
+      id: order.id,
+      laboratoryId: fixture.laboratoryId,
+    });
+
+    expect(specimens.map(({ id }) => id)).toEqual([specimen.id]);
+    expect(specimens[0].orderItems[0].endedAt).not.toBeNull();
+  });
+
+  it("keeps the specimens of another order out", async () => {
+    const fixture = await createFixture();
+    const order = await createLabOrder(prisma, orderInput(fixture));
+    const otherOrder = await createLabOrder(
+      prisma,
+      orderInput(fixture, {
+        no: "ORD-20260105-0002",
+        sequence: 2,
+        externalId: "ORDER-4002",
+      }),
+    );
+    await createAssignedSpecimen(fixture, order.items[0].id);
+    const otherSpecimen = await createAssignedSpecimen(
+      fixture,
+      otherOrder.items[0].id,
+      { no: "SPC-260105-0002", sequence: 2 },
+    );
+
+    const specimens = await getLabOrderSpecimens(prisma, {
+      id: order.id,
+      laboratoryId: fixture.laboratoryId,
+    });
+
+    expect(specimens.map(({ id }) => id)).not.toContain(otherSpecimen.id);
+    expect(specimens).toHaveLength(1);
+  });
+
+  it("returns nothing for an order without a specimen", async () => {
+    const fixture = await createFixture();
+    const order = await createLabOrder(prisma, orderInput(fixture));
+
+    await expect(
+      getLabOrderSpecimens(prisma, {
+        id: order.id,
+        laboratoryId: fixture.laboratoryId,
+      }),
+    ).resolves.toEqual([]);
   });
 });
 

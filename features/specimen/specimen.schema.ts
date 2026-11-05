@@ -12,12 +12,18 @@ export const ReserveSpecimenNoSchema = z.object({
 
 export const CreateSpecimenActionSchema = z.object({
   patientId: requiredCuid2("Patient"),
+  /**
+   * The order the specimen is created for. It is only a lookup key: a specimen
+   * is attached to its order through its order items, never directly.
+   */
   labOrderId: requiredCuid2("Lab Order"),
   orderItemIds: z.array(requiredCuid2("Order Item")).min(1),
   specimenTypeId: requiredCuid2("Specimen Type"),
 });
 
-export const CreateSpecimenSchema = CreateSpecimenActionSchema.extend({
+export const CreateSpecimenSchema = CreateSpecimenActionSchema.omit({
+  labOrderId: true,
+}).extend({
   no: z.string().trim().min(1),
   period: z.string().trim().min(1),
   sequence: z.int().positive(),

@@ -36,6 +36,55 @@ export const labOrderListSelect = {
   sourceSystem: true,
 } satisfies Prisma.LabOrderSelect;
 
+/**
+ * A specimen of a lab order, loaded through the order items the specimen is
+ * assigned to. This is the only path from an order to its specimens: the order
+ * carries no specimen relation of its own.
+ */
+export const labOrderSpecimenSelect = {
+  ...specimenBaseSelect,
+  orderItems: {
+    select: {
+      endedAt: true,
+      endReason: true,
+      assignedAt: true,
+      labOrderItem: {
+        select: {
+          performable: {
+            select: {
+              id: true,
+              displayName: true,
+            },
+          },
+        },
+      },
+    },
+  },
+  receivedAt: true,
+  receivedBy: {
+    select: {
+      id: true,
+      name: true,
+      username: true,
+    },
+  },
+  collectedAt: true,
+  collectedBy: {
+    select: {
+      id: true,
+      name: true,
+      username: true,
+    },
+  },
+  specimenType: {
+    select: {
+      id: true,
+      code: true,
+      displayName: true,
+    },
+  },
+} satisfies Prisma.SpecimenSelect;
+
 export const labOrderDetailSelect = {
   ...labOrderBaseSelect,
   items: {
@@ -75,51 +124,6 @@ export const labOrderDetailSelect = {
   patient: { select: { ...patientBaseSelect, lastSyncedAt: true } },
   createdAt: true,
   orderedAt: true,
-  specimens: {
-    select: {
-      ...specimenBaseSelect,
-      orderItems: {
-        select: {
-          endedAt: true,
-          endReason: true,
-          assignedAt: true,
-          labOrderItem: {
-            select: {
-              performable: {
-                select: {
-                  id: true,
-                  displayName: true,
-                },
-              },
-            },
-          },
-        },
-      },
-      receivedAt: true,
-      receivedBy: {
-        select: {
-          id: true,
-          name: true,
-          username: true,
-        },
-      },
-      collectedAt: true,
-      collectedBy: {
-        select: {
-          id: true,
-          name: true,
-          username: true,
-        },
-      },
-      specimenType: {
-        select: {
-          id: true,
-          code: true,
-          displayName: true,
-        },
-      },
-    },
-  },
   updatedAt: true,
   receivedAt: true,
   sourceSystem: true,

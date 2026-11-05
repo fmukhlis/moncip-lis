@@ -23,6 +23,24 @@ export function hasActiveSpecimenAssignment(labOrderItem: {
   return labOrderItem.specimens.some(({ endedAt }) => !endedAt);
 }
 
+/**
+ * Whether the specimen is attached to at least one item of the order, which is
+ * what makes it part of that order: an order reaches its specimens only through
+ * its items.
+ *
+ * Ended assignments still count. They are the history of the specimen, and the
+ * specimen of the order stays reachable through them, which is what keeps a
+ * cancelled or rejected specimen editable after its assignments ended.
+ */
+export function isSpecimenAssignedToLabOrder(
+  items: { specimens: { specimen: { id: string } }[] }[],
+  specimenId: string,
+) {
+  return items.some((item) =>
+    item.specimens.some(({ specimen }) => specimen.id === specimenId),
+  );
+}
+
 /** An order item together with the specimen assignments loaded for it. */
 type LabOrderItemWithSpecimenAssignments = {
   status: LabOrderItemStatus;

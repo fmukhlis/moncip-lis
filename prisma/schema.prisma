@@ -541,7 +541,6 @@ model LabOrder {
   // Relationships
   items          LabOrderItem[]
   patient        Patient?                   @relation(fields: [patientId], references: [id])
-  specimens      Specimen[]
   laboratory     Laboratory                 @relation(fields: [laboratoryId], references: [id])
   inboundEvents  InboundIntegrationEvent[]
   outboundEvents OutboundIntegrationEvent[]
@@ -722,7 +721,6 @@ model LisPerformableSpecimenType {
 model Specimen {
   id             String  @id @default(cuid(2))
   patientId      String
-  labOrderId     String
   laboratoryId   String
   specimenTypeId String
   collectedById  String?
@@ -738,7 +736,6 @@ model Specimen {
 
   // Relationships
   patient      Patient                @relation(fields: [patientId], references: [id])
-  labOrder     LabOrder               @relation(fields: [labOrderId], references: [id])
   laboratory   Laboratory             @relation(fields: [laboratoryId], references: [id])
   collectedBy  User?                  @relation("SpecimenCollector", fields: [collectedById], references: [id])
   receivedBy   User?                  @relation("SpecimenReceiver", fields: [receivedById], references: [id])
@@ -755,7 +752,6 @@ model Specimen {
 
   @@index([laboratoryId, status])
   @@index([laboratoryId, patientId])
-  @@index([laboratoryId, labOrderId])
   @@index([laboratoryId, specimenTypeId])
   @@index([laboratoryId, collectedById])
   @@index([laboratoryId, receivedById])

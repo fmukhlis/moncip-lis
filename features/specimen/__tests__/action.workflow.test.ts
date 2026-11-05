@@ -154,12 +154,13 @@ function makeLabOrder(overrides: Record<string, unknown> = {}) {
     status: LabOrderStatus.ORDERED,
     // A collection requires the whole order to be assigned, so the default
     // order is fully assigned. Individual tests override `items` to describe a
-    // partially assigned order.
+    // partially assigned order. The assignments carry the specimen, which is how
+    // an order reaches its specimens.
     items: [
       {
         id: TEST_IDS.orderItemId,
         status: LabOrderItemStatus.ORDERED,
-        specimens: [{ endedAt: null }],
+        specimens: [{ endedAt: null, specimen: { id: TEST_IDS.specimenId } }],
       },
     ],
     ...overrides,
@@ -176,7 +177,6 @@ function makeSpecimenRow(overrides: Record<string, unknown> = {}) {
     status: SpecimenStatus.PENDING,
     rejectionReason: null,
     cancellationReason: null,
-    labOrderId: TEST_IDS.labOrderId,
     collectedAt: null,
     collectedById: null,
     collectedBy: null,
@@ -395,6 +395,38 @@ describe("updateSpecimenAction — order item assignment", () => {
   const assignedAt = new Date("2026-01-02T08:00:00.000Z");
 
   it("only creates the assignments the caller added and ends the dropped ones", async () => {
+    // Every item of the reassignment belongs to the same order, which is what
+    // lets the specimen move between them.
+    mockGetLabOrder.mockResolvedValue(
+      makeLabOrder({
+        items: [
+          {
+            id: TEST_IDS.itemKeepActive,
+            status: LabOrderItemStatus.ORDERED,
+            specimens: [
+              { endedAt: null, specimen: { id: TEST_IDS.specimenId } },
+            ],
+          },
+          {
+            id: TEST_IDS.itemKeepEnded,
+            status: LabOrderItemStatus.ORDERED,
+            specimens: [{ endedAt, specimen: { id: TEST_IDS.specimenId } }],
+          },
+          {
+            id: TEST_IDS.itemDropped,
+            status: LabOrderItemStatus.ORDERED,
+            specimens: [
+              { endedAt: null, specimen: { id: TEST_IDS.specimenId } },
+            ],
+          },
+          {
+            id: TEST_IDS.itemNew,
+            status: LabOrderItemStatus.ORDERED,
+            specimens: [],
+          },
+        ],
+      }),
+    );
     mockGetSpecimen.mockResolvedValue(
       makeSpecimenRow({
         status: SpecimenStatus.COLLECTED,
@@ -653,8 +685,20 @@ describe("collectSpecimenAction", () => {
   });
 
   it("refuses a specimen that belongs to another order", async () => {
-    mockGetSpecimen.mockResolvedValue(
-      makeSpecimenRow({ labOrderId: TEST_IDS.otherSpecimenId }),
+    // The order reaches its specimens through its items, so an order whose items
+    // carry another specimen does not own this one.
+    mockGetLabOrder.mockResolvedValue(
+      makeLabOrder({
+        items: [
+          {
+            id: TEST_IDS.orderItemId,
+            status: LabOrderItemStatus.ORDERED,
+            specimens: [
+              { endedAt: null, specimen: { id: TEST_IDS.otherSpecimenId } },
+            ],
+          },
+        ],
+      }),
     );
 
     await expect(collectSpecimenAction(collectParams)).rejects.toThrow(
@@ -670,7 +714,9 @@ describe("collectSpecimenAction", () => {
           {
             id: TEST_IDS.orderItemId,
             status: LabOrderItemStatus.ORDERED,
-            specimens: [{ endedAt: null }],
+            specimens: [
+              { endedAt: null, specimen: { id: TEST_IDS.specimenId } },
+            ],
           },
           {
             id: "citemunassigned00000000001",
@@ -697,7 +743,9 @@ describe("collectSpecimenAction", () => {
           {
             id: TEST_IDS.orderItemId,
             status: LabOrderItemStatus.ORDERED,
-            specimens: [{ endedAt: null }],
+            specimens: [
+              { endedAt: null, specimen: { id: TEST_IDS.specimenId } },
+            ],
           },
           {
             id: "citemcancelled000000000001",
@@ -714,7 +762,9 @@ describe("collectSpecimenAction", () => {
 
   it("corrects the collection record of a collected specimen without a fully assigned order", async () => {
     // The specimen already passed the rule when it was collected, so correcting
-    // its record must not be blocked by items that changed afterwards.
+    // its record must not be blocked by items that changed afterwards. Its
+    // assignment ended, which keeps it part of the order but leaves the item
+    // unassigned.
     mockGetSpecimen.mockResolvedValue(
       makeSpecimenRow({ status: SpecimenStatus.COLLECTED, collectedAt }),
     );
@@ -724,7 +774,12 @@ describe("collectSpecimenAction", () => {
           {
             id: TEST_IDS.orderItemId,
             status: LabOrderItemStatus.ORDERED,
-            specimens: [],
+            specimens: [
+              {
+                endedAt: new Date("2026-01-04T08:00:00.000Z"),
+                specimen: { id: TEST_IDS.specimenId },
+              },
+            ],
           },
         ],
       }),
@@ -910,11 +965,21 @@ describe("receiveSpecimenAction", () => {
   });
 
   it("refuses a specimen that belongs to another order", async () => {
-    mockGetSpecimen.mockResolvedValue(
-      makeSpecimenRow({
-        status: SpecimenStatus.COLLECTED,
-        labOrderId: TEST_IDS.otherSpecimenId,
+    mockGetLabOrder.mockResolvedValue(
+      makeLabOrder({
+        items: [
+          {
+            id: TEST_IDS.orderItemId,
+            status: LabOrderItemStatus.ORDERED,
+            specimens: [
+              { endedAt: null, specimen: { id: TEST_IDS.otherSpecimenId } },
+            ],
+          },
+        ],
       }),
+    );
+    mockGetSpecimen.mockResolvedValue(
+      makeSpecimenRow({ status: SpecimenStatus.COLLECTED, collectedAt }),
     );
 
     await expect(receiveSpecimenAction(receiveParams)).rejects.toThrow(

@@ -132,7 +132,6 @@ function makeSpecimenRow(overrides: Record<string, unknown> = {}) {
     status: SpecimenStatus.PENDING,
     rejectionReason: null,
     cancellationReason: null,
-    labOrderId: TEST_IDS.labOrderId,
     collectedAt: null,
     collectedById: null,
     collectedBy: null,
@@ -275,15 +274,17 @@ describe("authorization", () => {
     [
       "collectSpecimenAction",
       () => {
-        // A collection needs the whole order assigned, while the shared default
-        // order describes an order whose items still have to be assigned.
+        // A collection needs the whole order assigned, so the item that carries
+        // the specimen is described explicitly.
         mockGetLabOrder.mockResolvedValue(
           makeLabOrder({
             items: [
               {
                 id: TEST_IDS.orderItemId,
                 status: LabOrderItemStatus.ORDERED,
-                specimens: [{ endedAt: null }],
+                specimens: [
+                  { endedAt: null, specimen: { id: TEST_IDS.specimenId } },
+                ],
               },
             ],
           }),
@@ -339,7 +340,15 @@ describe("authorization", () => {
       mockGetLabOrder.mockResolvedValue(
         makeLabOrder({
           items: [
-            { id: TEST_IDS.orderItemId, specimens: [{ endedAt: null }] },
+            {
+              id: TEST_IDS.orderItemId,
+              specimens: [
+                {
+                  endedAt: null,
+                  specimen: { id: "canotheractivespecimen001" },
+                },
+              ],
+            },
             { id: TEST_IDS.otherOrderItemId, specimens: [] },
           ],
         }),
@@ -356,7 +365,15 @@ describe("authorization", () => {
         makeLabOrder({
           items: [
             { id: TEST_IDS.orderItemId, specimens: [] },
-            { id: TEST_IDS.otherOrderItemId, specimens: [{ endedAt: null }] },
+            {
+              id: TEST_IDS.otherOrderItemId,
+              specimens: [
+                {
+                  endedAt: null,
+                  specimen: { id: "canotheractivespecimen001" },
+                },
+              ],
+            },
           ],
         }),
       );
@@ -372,7 +389,11 @@ describe("authorization", () => {
         date: expect.any(Date),
       });
       expect(mockCreateSpecimen).toHaveBeenCalledWith(expect.anything(), {
-        ...createParams,
+        // `labOrderId` is only the key the action looks the order up with, so the
+        // service receives no order reference of its own.
+        patientId: TEST_IDS.patientId,
+        orderItemIds: [TEST_IDS.orderItemId],
+        specimenTypeId: TEST_IDS.specimenTypeId,
         laboratoryId: TEST_IDS.laboratoryId,
         no: "2601050001",
         period: "260105",
@@ -458,6 +479,38 @@ describe("authorization", () => {
   });
 
   describe("updateSpecimenAction", () => {
+    // The order carries the items the specimen is assigned to, which is what
+    // makes the specimen part of the order and what a reassignment may use.
+    const makeAssignedLabOrder = (overrides: Record<string, unknown> = {}) =>
+      makeLabOrder({
+        items: [
+          {
+            id: TEST_IDS.orderItemId,
+            status: LabOrderItemStatus.ORDERED,
+            specimens: [
+              { endedAt: null, specimen: { id: TEST_IDS.specimenId } },
+            ],
+          },
+          {
+            id: TEST_IDS.otherOrderItemId,
+            status: LabOrderItemStatus.ORDERED,
+            specimens: [
+              { endedAt: null, specimen: { id: TEST_IDS.specimenId } },
+            ],
+          },
+          {
+            id: TEST_IDS.newOrderItemId,
+            status: LabOrderItemStatus.ORDERED,
+            specimens: [],
+          },
+        ],
+        ...overrides,
+      });
+
+    beforeEach(() => {
+      mockGetLabOrder.mockResolvedValue(makeAssignedLabOrder());
+    });
+
     const assignment = (
       id: string,
       labOrderItemId: string,
@@ -517,6 +570,59 @@ describe("authorization", () => {
         }),
       ).rejects.toThrow("Specimen is not editable");
       expect(mockUpdateSpecimen).not.toHaveBeenCalled();
+    });
+
+    it("refuses a specimen that belongs to another order", async () => {
+      // The order reaches its specimen through the assignment of its items, so
+      // an order whose items carry another specimen does not own this one.
+      mockGetLabOrder.mockResolvedValue(
+        makeAssignedLabOrder({
+          items: [
+            {
+              id: TEST_IDS.orderItemId,
+              status: LabOrderItemStatus.ORDERED,
+              specimens: [
+                {
+                  endedAt: null,
+                  specimen: { id: "canotherspecimen000000001" },
+                },
+              ],
+            },
+          ],
+        }),
+      );
+
+      await expect(
+        updateSpecimenAction({
+          id: TEST_IDS.specimenId,
+          labOrderId: TEST_IDS.labOrderId,
+          note: "lipemic",
+        }),
+      ).rejects.toThrow("Specimen is not part of this order");
+      expect(mockUpdateSpecimen).not.toHaveBeenCalled();
+      expect(mockUpdateMany).not.toHaveBeenCalled();
+    });
+
+    it("refuses a reassignment to an item of another order", async () => {
+      // Moving a specimen to an item of another order would mix two orders, so
+      // the reassignment is refused before any write.
+      mockGetSpecimen.mockResolvedValue(
+        makeSpecimenRow({
+          status: SpecimenStatus.COLLECTED,
+          collectedAt,
+          orderItems: [assignment("assignment_keep", TEST_IDS.orderItemId)],
+        }),
+      );
+
+      await expect(
+        updateSpecimenAction({
+          ...reassignmentParams,
+          orderItemIds: [TEST_IDS.orderItemId, "citemofanotheroder000001"],
+        }),
+      ).rejects.toThrow("Lab order item is not part of this order");
+      expect(mockUpdateMany).not.toHaveBeenCalled();
+      expect(mockUpdateSpecimen).not.toHaveBeenCalled();
+      expect(mockCreateAuditLog).not.toHaveBeenCalled();
     });
 
     it("updates a plain field without touching assignments or the audit log", async () => {
