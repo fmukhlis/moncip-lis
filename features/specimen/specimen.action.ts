@@ -37,7 +37,10 @@ import {
 } from "../user/user.schema";
 import { updateManyLabOrderItemSpecimen } from "../lab-order-item-specimen/lab-order-item-specimen.service";
 import { UpdateManyLabOrderItemSpecimenSchema } from "../lab-order-item-specimen/lab-order-item-specimen.schema";
-import { ensureLabOrderItemHasNoActiveSpecimen } from "../lab-order-item/lab-order-item.policy";
+import {
+  ensureLabOrderItemHasNoActiveSpecimen,
+  ensureLabOrderItemsAreAssignedToSpecimens,
+} from "../lab-order-item/lab-order-item.policy";
 import {
   SpecimenStatus,
   AuditLogEntityType,
@@ -444,6 +447,12 @@ export async function collectSpecimenAction(
     ensureSpecimenIsEditable(existingSpecimen);
     ensureSpecimenCanBeCollected(existingSpecimen);
 
+    // Logging the collection of a pending specimen starts the specimen's
+    // journey, while the same dialog afterwards only corrects the collection
+    // record of a collected or received specimen, which must stay possible.
+    const isLoggingCollection =
+      existingSpecimen.status === SpecimenStatus.PENDING;
+
     const parsedCollectSpecimenParams = CollectSpecimenSchema.parse({
       ...params,
       laboratoryId,
@@ -452,6 +461,15 @@ export async function collectSpecimenAction(
     // The specimen must belong to the order supplied by the caller.
     if (existingSpecimen.labOrderId !== parsedGetLabOrderParams.id) {
       throw new Error("Specimen is not part of this order");
+    }
+
+    // A collection needs labels, and labels need assignments: every eligible
+    // item of the whole order — not only the items this specimen is attached to
+    // — must carry an active specimen before the first collection. Correcting an
+    // existing collection record is exempt, because that specimen was already
+    // collected under the rule that applied back then.
+    if (isLoggingCollection) {
+      ensureLabOrderItemsAreAssignedToSpecimens(labOrder.items);
     }
 
     // A specimen cannot be collected after it was received.
@@ -476,12 +494,6 @@ export async function collectSpecimenAction(
     if (!collector) {
       throw new Error("Collector is not found");
     }
-
-    // Logging the collection of a pending specimen starts the parent order,
-    // while the same dialog afterwards only corrects the collection record of a
-    // collected or received specimen, which must leave the order alone.
-    const isLoggingCollection =
-      existingSpecimen.status === SpecimenStatus.PENDING;
 
     const updatedSpecimen = await collectSpecimen(tx, {
       ...parsedCollectSpecimenParams,

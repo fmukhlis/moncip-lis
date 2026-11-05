@@ -1,6 +1,7 @@
 import {
   AuditLogEntityType,
   LabOrderStatus,
+  LabOrderItemStatus,
   Role,
   SpecimenAssignmentEndReason,
   SpecimenCancellationReason,
@@ -151,7 +152,16 @@ function makeLabOrder(overrides: Record<string, unknown> = {}) {
   return {
     id: TEST_IDS.labOrderId,
     status: LabOrderStatus.ORDERED,
-    items: [{ id: TEST_IDS.orderItemId, specimens: [] }],
+    // A collection requires the whole order to be assigned, so the default
+    // order is fully assigned. Individual tests override `items` to describe a
+    // partially assigned order.
+    items: [
+      {
+        id: TEST_IDS.orderItemId,
+        status: LabOrderItemStatus.ORDERED,
+        specimens: [{ endedAt: null }],
+      },
+    ],
     ...overrides,
   };
 }
@@ -651,6 +661,77 @@ describe("collectSpecimenAction", () => {
       "Specimen is not part of this order",
     );
     expect(mockCollectSpecimen).not.toHaveBeenCalled();
+  });
+
+  it("refuses to collect while another item of the order still needs a specimen", async () => {
+    mockGetLabOrder.mockResolvedValue(
+      makeLabOrder({
+        items: [
+          {
+            id: TEST_IDS.orderItemId,
+            status: LabOrderItemStatus.ORDERED,
+            specimens: [{ endedAt: null }],
+          },
+          {
+            id: "citemunassigned00000000001",
+            status: LabOrderItemStatus.ORDERED,
+            specimens: [],
+          },
+        ],
+      }),
+    );
+
+    await expect(collectSpecimenAction(collectParams)).rejects.toThrow(
+      "Every lab order item must be assigned to an active specimen before collection",
+    );
+    // The rule runs before any write, so a partial order leaves no trace.
+    expect(mockCollectSpecimen).not.toHaveBeenCalled();
+    expect(mockUpdateLabOrderStatus).not.toHaveBeenCalled();
+    expect(mockCreateAuditLog).not.toHaveBeenCalled();
+  });
+
+  it("ignores a cancelled item when checking that the order is assigned", async () => {
+    mockGetLabOrder.mockResolvedValue(
+      makeLabOrder({
+        items: [
+          {
+            id: TEST_IDS.orderItemId,
+            status: LabOrderItemStatus.ORDERED,
+            specimens: [{ endedAt: null }],
+          },
+          {
+            id: "citemcancelled000000000001",
+            status: LabOrderItemStatus.CANCELLED,
+            specimens: [],
+          },
+        ],
+      }),
+    );
+
+    await expect(collectSpecimenAction(collectParams)).resolves.toBeDefined();
+    expect(mockCollectSpecimen).toHaveBeenCalledTimes(1);
+  });
+
+  it("corrects the collection record of a collected specimen without a fully assigned order", async () => {
+    // The specimen already passed the rule when it was collected, so correcting
+    // its record must not be blocked by items that changed afterwards.
+    mockGetSpecimen.mockResolvedValue(
+      makeSpecimenRow({ status: SpecimenStatus.COLLECTED, collectedAt }),
+    );
+    mockGetLabOrder.mockResolvedValue(
+      makeLabOrder({
+        items: [
+          {
+            id: TEST_IDS.orderItemId,
+            status: LabOrderItemStatus.ORDERED,
+            specimens: [],
+          },
+        ],
+      }),
+    );
+
+    await expect(collectSpecimenAction(collectParams)).resolves.toBeDefined();
+    expect(mockCollectSpecimen).toHaveBeenCalledTimes(1);
   });
 
   it("refuses a collection time after the specimen was received", async () => {
