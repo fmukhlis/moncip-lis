@@ -46,7 +46,6 @@ export const specimenDetailSelect = {
   rejectedAt: true,
   cancelledAt: true,
   collectedAt: true,
-  labOrderId: true,
   collectedById: true,
   collectedBy: {
     select: {

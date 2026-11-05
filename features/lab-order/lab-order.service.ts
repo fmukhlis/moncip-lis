@@ -4,7 +4,12 @@ import prisma from "@/lib/prisma";
 import { z } from "zod";
 import { Prisma } from "@/generated/prisma";
 import { buildLabOrderNo, buildLabOrderPeriod } from "@/lib/generate-item-no";
-import { labOrderDetailSelect, labOrderListSelect } from "./lab-order.select";
+import {
+  labOrderDetailSelect,
+  labOrderListSelect,
+  labOrderSpecimenSelect,
+} from "./lab-order.select";
+import { LabOrderItemsHaveSpecimensError } from "./lab-order.error";
 import {
   isPaginated,
   buildPrismaPage,
@@ -16,6 +21,7 @@ import {
   GetLabOrdersSchema,
   CreateLabOrderSchema,
   UpdateLabOrderSchema,
+  GetLabOrderSpecimensSchema,
   ReserveLabOrderNoSchema,
   UpdateLabOrderStatusSchema,
 } from "./lab-order.schema";
@@ -170,8 +176,28 @@ export async function getLabOrder(
   });
 }
 
+/**
+ * The specimens of an order, resolved through the order items they are assigned
+ * to: the order carries no specimen relation of its own, so an item assignment
+ * is what makes a specimen part of an order. Assignments are never deleted, only
+ * ended, so a specimen stays part of the order it was created for.
+ */
+export async function getLabOrderSpecimens(
+  db: Pick<DatabaseClient, "specimen">,
+  { id, laboratoryId }: z.infer<typeof GetLabOrderSpecimensSchema>,
+) {
+  return db.specimen.findMany({
+    where: {
+      laboratoryId,
+      orderItems: { some: { labOrderItem: { labOrderId: id } } },
+    },
+    select: labOrderSpecimenSelect,
+    orderBy: { createdAt: "asc" },
+  });
+}
+
 export async function updateLabOrder(
-  db: Pick<DatabaseClient, "labOrder">,
+  db: Pick<DatabaseClient, "labOrder" | "labOrderItemSpecimen">,
   {
     items,
     status,
@@ -187,6 +213,23 @@ export async function updateLabOrder(
     externalOrderingProviderId,
   }: z.infer<typeof UpdateLabOrderSchema>,
 ) {
+  // An order sync replaces the items of the order wholesale and the assignments
+  // hang off those items, so replacing them would take the specimens of the
+  // order with it. The sync is refused while a specimen is assigned.
+  const existingAssignment = await db.labOrderItemSpecimen.findFirst({
+    where: {
+      laboratoryId,
+      labOrderItem: {
+        labOrder: { laboratoryId, sourceSystem, externalId },
+      },
+    },
+    select: { id: true },
+  });
+
+  if (existingAssignment) {
+    throw new LabOrderItemsHaveSpecimensError(externalId);
+  }
+
   return db.labOrder.update({
     where: {
       laboratoryId_sourceSystem_externalId: {

@@ -5,6 +5,7 @@ import {
   getUnassignedLabOrderItems,
   hasActiveSpecimenAssignment,
   isLabOrderFullyAssigned,
+  isSpecimenAssignedToLabOrder,
 } from "../lab-order-item.policy";
 
 const assignedAt = new Date("2026-10-27T09:00:00.000Z");
@@ -76,6 +77,52 @@ describe("hasActiveSpecimenAssignment", () => {
         specimens: [{ endedAt: "2026-10-27T10:00:00.000Z" }],
       }),
     ).toBe(false);
+  });
+});
+
+describe("isSpecimenAssignedToLabOrder", () => {
+  const specimen = (id: string, endedAt: Date | null = null) => ({
+    endedAt,
+    specimen: { id },
+  });
+
+  it("finds the specimen through an active assignment of an order item", () => {
+    expect(
+      isSpecimenAssignedToLabOrder(
+        [
+          { specimens: [specimen("specimen_1")] },
+          { specimens: [specimen("specimen_2")] },
+        ],
+        "specimen_2",
+      ),
+    ).toBe(true);
+  });
+
+  it("finds the specimen through an ended assignment as well", () => {
+    // The ended assignment is the history of the specimen, and it is what keeps
+    // a cancelled or rejected specimen part of the order.
+    expect(
+      isSpecimenAssignedToLabOrder(
+        [{ specimens: [specimen("specimen_1", endedAt)] }],
+        "specimen_1",
+      ),
+    ).toBe(true);
+  });
+
+  it("is false when the order items carry another specimen", () => {
+    expect(
+      isSpecimenAssignedToLabOrder(
+        [{ specimens: [specimen("specimen_1")] }],
+        "specimen_2",
+      ),
+    ).toBe(false);
+  });
+
+  it("is false for an order without any assignment", () => {
+    expect(
+      isSpecimenAssignedToLabOrder([{ specimens: [] }], "specimen_1"),
+    ).toBe(false);
+    expect(isSpecimenAssignedToLabOrder([], "specimen_1")).toBe(false);
   });
 });
 

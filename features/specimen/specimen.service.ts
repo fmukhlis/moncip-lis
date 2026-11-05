@@ -45,7 +45,6 @@ export async function createSpecimen(
     period,
     sequence,
     patientId,
-    labOrderId,
     orderItemIds,
     laboratoryId,
     specimenTypeId,
@@ -57,9 +56,9 @@ export async function createSpecimen(
       period,
       status: "PENDING",
       patient: { connect: { id: patientId } },
-      labOrder: { connect: { id: labOrderId } },
       sequence,
       laboratory: { connect: { id: laboratoryId } },
+      // The order items are what attaches the specimen to its order.
       orderItems: {
         create: orderItemIds.map((id) => ({
           laboratory: { connect: { id: laboratoryId } },

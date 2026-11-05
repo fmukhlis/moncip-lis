@@ -306,7 +306,6 @@ const createParams: Parameters<typeof createSpecimen>[1] = {
   period: "260105",
   sequence: 1,
   patientId: TEST_IDS.id,
-  labOrderId: TEST_IDS.labOrderId,
   orderItemIds: ["cz1x2c3v4b5n6m7q8w9e0r1t", "cv4b5n6m7q8w9e0r1t2y3u4i"],
   laboratoryId: TEST_IDS.laboratoryId,
   specimenTypeId: "ca1s2d3f4g5h6j7k8l9z0x1c2",
@@ -331,7 +330,6 @@ describe("createSpecimen", () => {
       sequence: 1,
       status: SpecimenStatus.PENDING,
       patient: { connect: { id: TEST_IDS.id } },
-      labOrder: { connect: { id: TEST_IDS.labOrderId } },
       laboratory: { connect: { id: TEST_IDS.laboratoryId } },
       orderItems: {
         create: createParams.orderItemIds.map((id) => ({

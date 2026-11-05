@@ -40,6 +40,7 @@ import { UpdateManyLabOrderItemSpecimenSchema } from "../lab-order-item-specimen
 import {
   ensureLabOrderItemHasNoActiveSpecimen,
   ensureLabOrderItemsAreAssignedToSpecimens,
+  isSpecimenAssignedToLabOrder,
 } from "../lab-order-item/lab-order-item.policy";
 import {
   SpecimenStatus,
@@ -120,6 +121,16 @@ export async function createSpecimenAction(
     }
 
     ensureLabOrderIsEditable(labOrder);
+
+    // The specimen is attached to its order through its items, so every item it
+    // is created with has to belong to the order supplied by the caller.
+    const labOrderItemIds = new Set(labOrder.items.map(({ id }) => id));
+
+    for (const orderItemId of params.orderItemIds) {
+      if (!labOrderItemIds.has(orderItemId)) {
+        throw new Error("Lab order item is not part of this order");
+      }
+    }
 
     for (const labOrderItem of labOrder.items) {
       if (params.orderItemIds.includes(labOrderItem.id)) {
@@ -232,6 +243,12 @@ export async function updateSpecimenAction(
 
     ensureSpecimenIsEditable(specimen);
 
+    // The specimen is part of the order supplied by the caller when one of the
+    // order's items carries it.
+    if (!isSpecimenAssignedToLabOrder(labOrder.items, specimen.id)) {
+      throw new Error("Specimen is not part of this order");
+    }
+
     const parsedUpdateSpecimenParams = UpdateSpecimenSchema.parse({
       ...params,
       laboratoryId,
@@ -239,6 +256,15 @@ export async function updateSpecimenAction(
 
     // Reassignment flow.
     if (parsedUpdateSpecimenParams.orderItemIds) {
+      // A reassignment only ever moves a specimen inside its own order.
+      const labOrderItemIds = new Set(labOrder.items.map(({ id }) => id));
+
+      for (const orderItemId of parsedUpdateSpecimenParams.orderItemIds) {
+        if (!labOrderItemIds.has(orderItemId)) {
+          throw new Error("Lab order item is not part of this order");
+        }
+      }
+
       const labOrderItemIdsToCreate = new Set(
         parsedUpdateSpecimenParams.orderItemIds,
       );
@@ -459,7 +485,7 @@ export async function collectSpecimenAction(
     });
 
     // The specimen must belong to the order supplied by the caller.
-    if (existingSpecimen.labOrderId !== parsedGetLabOrderParams.id) {
+    if (!isSpecimenAssignedToLabOrder(labOrder.items, existingSpecimen.id)) {
       throw new Error("Specimen is not part of this order");
     }
 
@@ -592,7 +618,7 @@ export async function receiveSpecimenAction(
     });
 
     // The specimen must belong to the order supplied by the caller.
-    if (existingSpecimen.labOrderId !== parsedGetLabOrderParams.id) {
+    if (!isSpecimenAssignedToLabOrder(labOrder.items, existingSpecimen.id)) {
       throw new Error("Specimen is not part of this order");
     }
 
