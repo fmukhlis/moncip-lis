@@ -1,6 +1,8 @@
 import {
   CollectSpecimenActionSchema,
   CollectSpecimenSchema,
+  ReuseSpecimenActionSchema,
+  ReuseSpecimenSchema,
   SpecimenReceiptActionSchema,
   SpecimenReceiptSchema,
 } from "../specimen.schema";
@@ -17,6 +19,8 @@ const TEST_IDS = {
   collectedById: "clx1a2b3c4d5e6f7g8h9i0jk",
   receivedById: "cm9z8y7x6w5v4u3t2s1r0qpo",
   laboratoryId: "c9wq3x1v70000qzrm5t2h8k4d",
+  orderItemId: "c1b2n3m4k5j6h7g8f9d0s1a2",
+  otherOrderItemId: "cb2n3m4k5j6h7g8f9d0s1a2q",
 } as const;
 
 type IssuedError = { code: string; path: PropertyKey[]; message: string };
@@ -403,5 +407,88 @@ describe("SpecimenReceiptSchema", () => {
     expect(SpecimenReceiptSchema.safeParse(makeReceiptInput()).success).toBe(
       false,
     );
+  });
+});
+
+describe("ReuseSpecimenActionSchema", () => {
+  it("accepts a specimen, the order and the tests to assign it to", () => {
+    const result = ReuseSpecimenActionSchema.safeParse({
+      id: TEST_IDS.id,
+      labOrderId: TEST_IDS.labOrderId,
+      orderItemIds: [TEST_IDS.orderItemId],
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.labOrderId).toBe(TEST_IDS.labOrderId);
+      expect(result.data.orderItemIds).toEqual([TEST_IDS.orderItemId]);
+    }
+  });
+
+  // The tests are the tests of one order, so the order is part of the payload:
+  // an item of another order of the same patient is refused by the action.
+  it("requires the lab order the assignment is made in", () => {
+    expect(
+      ReuseSpecimenActionSchema.safeParse({
+        id: TEST_IDS.id,
+        orderItemIds: [TEST_IDS.orderItemId],
+      }).success,
+    ).toBe(false);
+  });
+
+  it("requires a valid lab order id", () => {
+    expect(
+      ReuseSpecimenActionSchema.safeParse({
+        id: TEST_IDS.id,
+        labOrderId: "not a cuid2",
+        orderItemIds: [TEST_IDS.orderItemId],
+      }).success,
+    ).toBe(false);
+  });
+
+  it("requires at least one order item", () => {
+    expect(
+      ReuseSpecimenActionSchema.safeParse({
+        id: TEST_IDS.id,
+        labOrderId: TEST_IDS.labOrderId,
+        orderItemIds: [],
+      }).success,
+    ).toBe(false);
+  });
+
+  it("requires a valid order item id", () => {
+    expect(
+      ReuseSpecimenActionSchema.safeParse({
+        id: TEST_IDS.id,
+        labOrderId: TEST_IDS.labOrderId,
+        orderItemIds: ["not a cuid2"],
+      }).success,
+    ).toBe(false);
+  });
+});
+
+describe("ReuseSpecimenSchema", () => {
+  it("adds the laboratory scope resolved from the session", () => {
+    const result = ReuseSpecimenSchema.safeParse({
+      id: TEST_IDS.id,
+      labOrderId: TEST_IDS.labOrderId,
+      orderItemIds: [TEST_IDS.orderItemId],
+      laboratoryId: TEST_IDS.laboratoryId,
+    });
+
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.laboratoryId).toBe(TEST_IDS.laboratoryId);
+    }
+  });
+
+  it("requires the laboratory scope", () => {
+    expect(
+      ReuseSpecimenSchema.safeParse({
+        id: TEST_IDS.id,
+        labOrderId: TEST_IDS.labOrderId,
+        orderItemIds: [TEST_IDS.orderItemId],
+      }).success,
+    ).toBe(false);
   });
 });

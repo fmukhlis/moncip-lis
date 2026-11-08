@@ -123,3 +123,21 @@ export const SpecimenReceiptActionSchema = z.object({
 export const SpecimenReceiptSchema = SpecimenReceiptActionSchema.safeExtend({
   laboratoryId: requiredCuid2("Laboratory"),
 });
+
+/**
+ * Assigns an existing specimen to the order items of one lab order.
+ *
+ * The specimen may come from any order of its patient, because the sample it
+ * carries belongs to the patient and not to the order that asked for it. The
+ * items do not: they are the tests of the order the assignment is made in, so
+ * the payload names that order and the action refuses every item outside it.
+ */
+export const ReuseSpecimenActionSchema = z.object({
+  id: requiredCuid2("Specimen"),
+  labOrderId: requiredCuid2("Lab Order"),
+  orderItemIds: z.array(requiredCuid2("Order Item")).min(1),
+});
+
+export const ReuseSpecimenSchema = ReuseSpecimenActionSchema.safeExtend({
+  laboratoryId: requiredCuid2("Laboratory"),
+});

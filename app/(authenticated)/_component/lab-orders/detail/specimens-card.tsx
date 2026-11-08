@@ -18,8 +18,11 @@ import {
   SpecimenAssignmentEndReason,
 } from "@/generated/prisma";
 import { isLabOrderFullyAssigned } from "@/features/lab-order-item/lab-order-item.policy";
-import { Plus, TestTubes, CheckCheck } from "lucide-react";
-import { setIsCreateSpecimenDialogOpen } from "./slice";
+import { Plus, Recycle, TestTubes, CheckCheck } from "lucide-react";
+import {
+  setIsCreateSpecimenDialogOpen,
+  setIsReuseSpecimenDialogOpen,
+} from "./slice";
 import SpecimenActions from "./specimen-actions";
 import {
   Card,
@@ -38,7 +41,8 @@ export default function SpecimensCard({ labOrderId }: { labOrderId: string }) {
   // Global state
   const dispatch = useAppDispatch();
 
-  const { setCreateSpecimenDialogTrigger } = useLabOrderDetailContext();
+  const { setCreateSpecimenDialogTrigger, setReuseSpecimenDialogTrigger } =
+    useLabOrderDetailContext();
 
   const [isShowingAll, setIsShowingAll] = useState(false);
 
@@ -65,7 +69,7 @@ export default function SpecimensCard({ labOrderId }: { labOrderId: string }) {
             <TestTubes className="size-4" />
             Specimens
           </CardTitle>
-          <CardAction>
+          <CardAction className="flex items-center gap-1">
             <Toggle
               size="xs"
               pressed={isShowingAll}
@@ -75,6 +79,22 @@ export default function SpecimensCard({ labOrderId }: { labOrderId: string }) {
             >
               <CheckCheck className="size-3.5" />
             </Toggle>
+            <Button
+              size={"icon-sm"}
+              variant={"outline"}
+              onClick={(e) => {
+                dispatch(setIsReuseSpecimenDialogOpen(true));
+                setReuseSpecimenDialogTrigger(e.currentTarget);
+              }}
+              // Assigning an existing specimen covers the same items as creating
+              // one, so it is blocked by the same rule: an order whose items all
+              // have a specimen has nothing left to assign.
+              disabled={isFullyAssigned}
+              className="size-5"
+            >
+              <Recycle />
+              <span className="sr-only">Assign existing specimen</span>
+            </Button>
             <Button
               size={"icon-sm"}
               onClick={(e) => {
@@ -110,10 +130,10 @@ export default function SpecimensCard({ labOrderId }: { labOrderId: string }) {
               <Skeleton className="w-28 h-4" />
             </div>
             <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-              <InfoRowSkeleton label="Collection Time" />
-              <InfoRowSkeleton label="Received Time" />
+              <InfoRowSkeleton label="Collected" />
+              <InfoRowSkeleton label="Received" />
               <div className="col-span-2">
-                <InfoRowSkeleton label="Assigned to:" />
+                <InfoRowSkeleton label="Assigned to" />
               </div>
             </div>
           </div>
@@ -160,7 +180,7 @@ export default function SpecimensCard({ labOrderId }: { labOrderId: string }) {
               </div>
               <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
                 <InfoRow
-                  label="Collection Time"
+                  label="Collected"
                   value={
                     <div className="flex flex-col">
                       <ClientDateTimeText
@@ -179,7 +199,7 @@ export default function SpecimensCard({ labOrderId }: { labOrderId: string }) {
                   }
                 />
                 <InfoRow
-                  label="Received Time"
+                  label="Received"
                   value={
                     <div className="flex flex-col">
                       <ClientDateTimeText
@@ -199,7 +219,7 @@ export default function SpecimensCard({ labOrderId }: { labOrderId: string }) {
                 />
                 <div className="col-span-2">
                   <InfoRow
-                    label="Assigned to:"
+                    label="Assigned to"
                     value={
                       <div className="flex flex-wrap gap-1 pt-0.5">
                         {specimen.orderItems.length
@@ -236,7 +256,7 @@ export default function SpecimensCard({ labOrderId }: { labOrderId: string }) {
               {specimen.note && (
                 <Alert className="mt-3 px-2.5 pt-1.5 pb-2">
                   <AlertTitle className="text-muted-foreground">
-                    Note :
+                    Note:
                   </AlertTitle>
                   <AlertDescription>{specimen.note}</AlertDescription>
                 </Alert>
@@ -244,14 +264,14 @@ export default function SpecimensCard({ labOrderId }: { labOrderId: string }) {
               {specimen.cancellationReason && (
                 <Alert className="mt-3 px-2.5 pt-1.5 pb-2 border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950">
                   <AlertTitle className="text-muted-foreground">
-                    Cancellation Reason : {specimen.cancellationReason}
+                    Cancellation Reason: {specimen.cancellationReason}
                   </AlertTitle>
                 </Alert>
               )}
               {specimen.rejectionReason && (
                 <Alert className="mt-3 px-2.5 pt-1.5 pb-2 border-amber-200 bg-amber-50 dark:border-amber-900 dark:bg-amber-950">
                   <AlertTitle className="text-muted-foreground">
-                    Rejection Reason : {specimen.rejectionReason}
+                    Rejection Reason: {specimen.rejectionReason}
                   </AlertTitle>
                 </Alert>
               )}

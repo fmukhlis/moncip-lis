@@ -22,6 +22,11 @@ export type SpecimenReceiveDialogMode = "receive" | "update";
  * update the existing collection record, and once it is received the same
  * receive dialog is used to update the existing receipt record, which is why
  * only the updates live in the menu.
+ *
+ * Assigning an existing specimen is not a per-specimen action: it starts from the
+ * specimen the sample comes from, which is picked inside the assign existing
+ * specimen dialog, so the action lives next to creating a specimen instead of
+ * inside this menu.
  */
 export function getSpecimenMenuActions(
   status: SpecimenStatus,

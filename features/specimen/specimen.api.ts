@@ -6,6 +6,7 @@ import {
   updateSpecimenAction,
   collectSpecimenAction,
   receiveSpecimenAction,
+  reuseSpecimenAction,
   getSpecimenPersonnelCandidatesAction,
 } from "./specimen.action";
 import {
@@ -14,6 +15,7 @@ import {
   UpdateSpecimenActionSchema,
   CollectSpecimenActionSchema,
   SpecimenReceiptActionSchema,
+  ReuseSpecimenActionSchema,
 } from "./specimen.schema";
 
 const apiSlice = serverFunctionSlice.injectEndpoints({
@@ -134,6 +136,33 @@ const apiSlice = serverFunctionSlice.injectEndpoints({
         ),
       ],
     }),
+    reuseSpecimenAction: builder.mutation<
+      Awaited<ReturnType<typeof reuseSpecimenAction>>,
+      z.infer<typeof ReuseSpecimenActionSchema>
+    >({
+      queryFn: async (arg) => {
+        try {
+          const res = await reuseSpecimenAction(arg);
+          return { data: res };
+        } catch (error) {
+          return {
+            status: "CUSTOM_ERROR",
+            error: error instanceof Error ? error.message : "Unknown error",
+          };
+        }
+      },
+      invalidatesTags: (result, err, { id }) => [
+        { type: "Specimen", id },
+        { type: "Specimen", id: "LIST" },
+        // Reusing a specimen assigns items, which may belong to several orders,
+        // so every affected order has to re-read its assignments. The order
+        // detail and the order list both provide the `LabOrderItem` tags below,
+        // which is what refreshes them.
+        ...(result?.data.orderItems ?? []).flatMap(
+          ({ labOrderItem: { id } }) => [{ type: "LabOrderItem" as const, id }],
+        ),
+      ],
+    }),
     getSpecimenPersonnelCandidatesAction: builder.query<
       Awaited<ReturnType<typeof getSpecimenPersonnelCandidatesAction>>,
       void
@@ -159,5 +188,6 @@ export const {
   useUpdateSpecimenActionMutation,
   useCollectSpecimenActionMutation,
   useReceiveSpecimenActionMutation,
+  useReuseSpecimenActionMutation,
   useGetSpecimenPersonnelCandidatesActionQuery,
 } = apiSlice;

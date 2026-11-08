@@ -14,6 +14,7 @@ import { LabOrderDetailProvider } from "./context";
 import { ArrowLeft, FlaskConical, NotebookText } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import ReassignSpecimenDialog from "./reassign-specimen-dialog";
+import ReuseSpecimenDialog from "./reuse-specimen-dialog";
 import CancelSpecimenDialog from "./cancel-specimen-dialog";
 import CollectSpecimenDialog from "./collect-specimen-dialog";
 import ReceiveSpecimenDialog from "./receive-specimen-dialog";
@@ -80,10 +81,10 @@ export default function LabOrderDetailView({
                 <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-12 text-center">
                   <FlaskConical className="mb-3 h-9 w-9 text-muted-foreground" />
                   <p className="text-sm font-medium text-muted-foreground">
-                    Fitur hasil pemeriksaan belum tersedia
+                    Test results are not available yet
                   </p>
                   <p className="mt-1 text-xs text-muted-foreground/60">
-                    Akan tersedia pada pembaruan berikutnya
+                    This section will be added in a future update
                   </p>
                 </div>
               </CardContent>
@@ -96,6 +97,7 @@ export default function LabOrderDetailView({
 
         <Portal.Root>
           <ReassignSpecimenDialog labOrderId={labOrderId} />
+          <ReuseSpecimenDialog labOrderId={labOrderId} />
           <CreateSpecimenDialog labOrderId={labOrderId} />
           <CancelSpecimenDialog labOrderId={labOrderId} />
           <CollectSpecimenDialog labOrderId={labOrderId} />

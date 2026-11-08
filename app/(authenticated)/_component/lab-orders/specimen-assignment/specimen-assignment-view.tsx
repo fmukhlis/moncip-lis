@@ -14,6 +14,7 @@ import { getColumns } from "./columns";
 import { compareWorklistOrders, isWorklistOrder } from "./helpers";
 import { useGetLabOrdersActionQuery } from "@/features/lab-order/lab-order.api";
 import CreateSpecimenDialog from "../create-specimen-dialog";
+import ReuseSpecimenDialog from "../reuse-specimen-dialog";
 import SpecimenAssignmentControls from "./specimen-assignment-controls";
 import SpecimenAssignmentOrderCard, {
   SpecimenAssignmentOrderCardSkeleton,
@@ -34,6 +35,15 @@ export default function SpecimenAssignmentView({
   const [activeOrderId, setActiveOrderId] = useState<string | null>(null);
   const [dialogTriggerElement, setDialogTriggerElement] =
     useState<HTMLButtonElement | null>(null);
+  // Assigning an existing specimen is a second dialog with its own order and
+  // trigger, because it points a specimen that already exists at tests of the
+  // order instead of creating one.
+  const [activeAssignExistingOrderId, setActiveAssignExistingOrderId] =
+    useState<string | null>(null);
+  const [
+    assignExistingDialogTriggerElement,
+    setAssignExistingDialogTriggerElement,
+  ] = useState<HTMLButtonElement | null>(null);
 
   // The worklist carries the orders that are still pending an assignment or
   // waiting for their labels, most urgent first and, within a priority, the
@@ -51,6 +61,10 @@ export default function SpecimenAssignmentView({
         onAssignSpecimen: (order, triggerElement) => {
           setDialogTriggerElement(triggerElement);
           setActiveOrderId(order.id);
+        },
+        onAssignExistingSpecimen: (order, triggerElement) => {
+          setAssignExistingDialogTriggerElement(triggerElement);
+          setActiveAssignExistingOrderId(order.id);
         },
       }),
     [basePath],
@@ -106,6 +120,21 @@ export default function SpecimenAssignmentView({
           onOpenChange={(open) => {
             if (!open) {
               setActiveOrderId(null);
+            }
+          }}
+        />
+      </Portal.Root>
+      {/* Assigning an existing specimen is the mirror image of creating one: the
+          specimen already exists and the dialog only adds the tests of this order
+          it should cover. */}
+      <Portal.Root>
+        <ReuseSpecimenDialog
+          labOrderId={activeAssignExistingOrderId ?? undefined}
+          isOpen={activeAssignExistingOrderId !== null}
+          triggerElement={assignExistingDialogTriggerElement}
+          onOpenChange={(open) => {
+            if (!open) {
+              setActiveAssignExistingOrderId(null);
             }
           }}
         />

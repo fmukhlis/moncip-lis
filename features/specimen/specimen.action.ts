@@ -28,6 +28,10 @@ import {
   resolveReceivedStatus,
 } from "./specimen.policy";
 import {
+  ensureSpecimenReuseTargetOrderIsEligible,
+  ensureSpecimenReuseTargetItemsAreEligible,
+} from "./specimen-reuse.policy";
+import {
   getSpecimenPersonnelCandidate,
   getSpecimenPersonnelCandidates,
 } from "../user/user.service";
@@ -53,6 +57,7 @@ import {
   updateSpecimen,
   collectSpecimen,
   receiveSpecimen,
+  reuseSpecimen,
   reserveSpecimenNo,
 } from "./specimen.service";
 import {
@@ -67,6 +72,8 @@ import {
   CollectSpecimenActionSchema,
   SpecimenReceiptActionSchema,
   SpecimenReceiptSchema,
+  ReuseSpecimenActionSchema,
+  ReuseSpecimenSchema,
 } from "./specimen.schema";
 
 /**
@@ -117,7 +124,7 @@ export async function createSpecimenAction(
     const labOrder = await getLabOrder(tx, parsedGetLabOrderParams);
 
     if (!labOrder) {
-      throw new Error("Order is not found");
+      throw new Error("Lab order not found");
     }
 
     ensureLabOrderIsEditable(labOrder);
@@ -224,7 +231,7 @@ export async function updateSpecimenAction(
     const labOrder = await getLabOrder(tx, parsedGetLabOrderParams);
 
     if (!labOrder) {
-      throw new Error("Order is not found");
+      throw new Error("Lab order not found");
     }
 
     ensureLabOrderIsEditable(labOrder);
@@ -238,7 +245,7 @@ export async function updateSpecimenAction(
     const specimen = await getSpecimen(tx, parsedGetSpecimenParams);
 
     if (!specimen) {
-      throw new Error("Specimen is not found");
+      throw new Error("Specimen not found");
     }
 
     ensureSpecimenIsEditable(specimen);
@@ -287,6 +294,17 @@ export async function updateSpecimenAction(
       }
 
       parsedUpdateSpecimenParams.orderItemIds = [...labOrderItemIdsToCreate];
+
+      // A reassignment only ever adds assignments, so every item it adds has to
+      // be free: the items this specimen still covers were excluded above, which
+      // means an active assignment found here belongs to another specimen.
+      // Without this check the item would end up with two active specimens and
+      // nothing would say which sample its result belongs to.
+      for (const labOrderItem of labOrder.items) {
+        if (labOrderItemIdsToCreate.has(labOrderItem.id)) {
+          ensureLabOrderItemHasNoActiveSpecimen(labOrderItem);
+        }
+      }
 
       // End all active relations that are no longer used.
       const reassignmentTimestamp = new Date();
@@ -454,7 +472,7 @@ export async function collectSpecimenAction(
     const labOrder = await getLabOrder(tx, parsedGetLabOrderParams);
 
     if (!labOrder) {
-      throw new Error("Order is not found");
+      throw new Error("Lab order not found");
     }
 
     ensureLabOrderIsEditable(labOrder);
@@ -467,7 +485,7 @@ export async function collectSpecimenAction(
     const existingSpecimen = await getSpecimen(tx, parsedGetSpecimenParams);
 
     if (!existingSpecimen) {
-      throw new Error("Specimen is not found");
+      throw new Error("Specimen not found");
     }
 
     ensureSpecimenIsEditable(existingSpecimen);
@@ -518,7 +536,7 @@ export async function collectSpecimenAction(
     );
 
     if (!collector) {
-      throw new Error("Collector is not found");
+      throw new Error("Collector not found");
     }
 
     const updatedSpecimen = await collectSpecimen(tx, {
@@ -593,7 +611,7 @@ export async function receiveSpecimenAction(
     const labOrder = await getLabOrder(tx, parsedGetLabOrderParams);
 
     if (!labOrder) {
-      throw new Error("Order is not found");
+      throw new Error("Lab order not found");
     }
 
     ensureLabOrderIsEditable(labOrder);
@@ -606,7 +624,7 @@ export async function receiveSpecimenAction(
     const existingSpecimen = await getSpecimen(tx, parsedGetSpecimenParams);
 
     if (!existingSpecimen) {
-      throw new Error("Specimen is not found");
+      throw new Error("Specimen not found");
     }
 
     ensureSpecimenIsEditable(existingSpecimen);
@@ -642,7 +660,7 @@ export async function receiveSpecimenAction(
     );
 
     if (!receiver) {
-      throw new Error("Receiver is not found");
+      throw new Error("Receiver not found");
     }
 
     const updatedSpecimen = await receiveSpecimen(tx, {
@@ -667,6 +685,117 @@ export async function receiveSpecimenAction(
         receivedByName: receiver.name ?? receiver.username,
         previousNote: existingSpecimen.note,
         note: updatedSpecimen.note,
+      },
+      entityType: AuditLogEntityType.SPECIMEN,
+      laboratoryId,
+    });
+
+    await createAuditLog(tx, parsedCreateAuditLogParams);
+
+    return updatedSpecimen;
+  });
+
+  return { data: serializeSpecimen(specimen) };
+}
+
+/**
+ * Assigns an existing specimen to the tests of one lab order.
+ *
+ * This is the "existing specimen" arm of specimen assignment: the caller names
+ * the order it is working in and the tests of that order the sample should
+ * cover, and the action only ever creates the missing assignments. The specimen
+ * keeps its status, its collection and receipt records and its previous
+ * assignments, so assigning a collected specimen points the sample that already
+ * exists at more tests instead of promising a new one.
+ *
+ * The specimen may come from any order of its patient: the sample belongs to the
+ * patient, not to the order that first asked for it. The target tests do not —
+ * they are the tests of the order the assignment is made in, and an item of
+ * another order is refused.
+ */
+export async function reuseSpecimenAction(
+  params: z.infer<typeof ReuseSpecimenActionSchema>,
+) {
+  const user = await ensureUserAuthenticated();
+
+  if (!authorize(user, "SPECIMEN:UPDATE")) {
+    throw new UnauthorizedError(
+      "You don't have permission to reuse a specimen.",
+    );
+  }
+
+  const { id: actorId, laboratoryId } = user;
+
+  const specimen = await prisma.$transaction(async (tx) => {
+    const existingSpecimen = await getSpecimen(
+      tx,
+      GetSpecimenSchema.parse({ id: params.id, laboratoryId }),
+    );
+
+    if (!existingSpecimen) {
+      throw new Error("Specimen not found");
+    }
+
+    // A cancelled or rejected specimen carries no sample any more, so it has
+    // nothing left to reuse.
+    ensureSpecimenIsEditable(existingSpecimen);
+
+    const labOrder = await getLabOrder(
+      tx,
+      GetLabOrderSchema.parse({ id: params.labOrderId, laboratoryId }),
+    );
+
+    if (!labOrder) {
+      throw new Error("Lab order not found");
+    }
+
+    // The assignment happens in one order, so that order decides everything
+    // else: it has to accept changes and it has to be the order of the patient
+    // whose sample the specimen carries.
+    ensureSpecimenReuseTargetOrderIsEligible(labOrder, existingSpecimen);
+
+    const parsedReuseSpecimenParams = ReuseSpecimenSchema.parse({
+      ...params,
+      laboratoryId,
+    });
+
+    const orderItemIds = [...new Set(parsedReuseSpecimenParams.orderItemIds)];
+
+    if (orderItemIds.length !== parsedReuseSpecimenParams.orderItemIds.length) {
+      throw new Error("A lab order item can only be selected once");
+    }
+
+    // Every test has to belong to the order and still be able to take the
+    // specimen: ordered, unassigned and of a compatible specimen type.
+    ensureSpecimenReuseTargetItemsAreEligible(
+      labOrder,
+      existingSpecimen,
+      orderItemIds,
+    );
+
+    const updatedSpecimen = await reuseSpecimen(tx, {
+      // The parsed payload is the one place where the specimen and the
+      // laboratory are known to be set.
+      id: parsedReuseSpecimenParams.id,
+      laboratoryId: parsedReuseSpecimenParams.laboratoryId,
+      orderItemIds,
+    });
+
+    // Create a new audit log entry for the assignment. The order is recorded as
+    // a one-entry list, which keeps the metadata of every reuse ever logged in
+    // the same shape.
+    const parsedCreateAuditLogParams = CreateAuditLogSchema.parse({
+      action: AUDIT_ACTIONS.SPECIMEN_REUSED,
+      actorId,
+      entityId: updatedSpecimen.id,
+      metadata: {
+        reusedLabOrders: [
+          { id: labOrder.id, no: labOrder.no, itemIds: orderItemIds },
+        ],
+        reusedLabOrderItemIds: orderItemIds,
+        reusedPerformableNames: labOrder.items
+          .filter(({ id }) => orderItemIds.includes(id))
+          .map(({ performable }) => performable.displayName),
       },
       entityType: AuditLogEntityType.SPECIMEN,
       laboratoryId,

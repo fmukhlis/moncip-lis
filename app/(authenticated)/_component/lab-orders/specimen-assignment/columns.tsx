@@ -7,6 +7,7 @@ import { CardTitle } from "@/components/ui/card";
 import ClientDateTimeText from "@/components/ui/client-date-time-text";
 import LabOrderPriorityBadge from "@/app/(authenticated)/_component/lab-orders/lab-order-priority-badge";
 import {
+  AssignExistingSpecimenButton,
   AssignSpecimenButton,
   AssignmentProgress,
   OrderItemsCollapsible,
@@ -25,9 +26,14 @@ const columnHelper = createColumnHelper<SpecimenAssignmentOrder>();
 export function getColumns({
   basePath,
   onAssignSpecimen,
+  onAssignExistingSpecimen,
 }: {
   basePath: string;
   onAssignSpecimen: (
+    order: SpecimenAssignmentOrder,
+    trigger: HTMLButtonElement,
+  ) => void;
+  onAssignExistingSpecimen: (
     order: SpecimenAssignmentOrder,
     trigger: HTMLButtonElement,
   ) => void;
@@ -96,15 +102,27 @@ export function getColumns({
       enableGlobalFilter: false,
       cell: ({ row }) => {
         // A fully assigned order takes no further assignment: the only thing
-        // left before the sample is collected is printing its labels. Orders
-        // with anything still unassigned keep the assignment dialog.
-        return getWorklistAction(row.original) === "PRINT_LABEL" ? (
-          <PrintLabelButton labOrderId={row.original.id} />
-        ) : (
-          <AssignSpecimenButton
-            order={row.original}
-            onAssignSpecimen={onAssignSpecimen}
-          />
+        // left before the sample is collected is printing its labels, so the
+        // print action replaces both assignment dialogs. While anything is still
+        // unassigned the row offers its two ways of assigning it: assigning a
+        // specimen that already exists or creating one.
+        return (
+          <div className="flex flex-wrap items-center gap-1.5 flex-1 justify-end">
+            {getWorklistAction(row.original) === "PRINT_LABEL" ? (
+              <PrintLabelButton labOrderId={row.original.id} />
+            ) : (
+              <>
+                <AssignExistingSpecimenButton
+                  order={row.original}
+                  onAssignExistingSpecimen={onAssignExistingSpecimen}
+                />
+                <AssignSpecimenButton
+                  order={row.original}
+                  onAssignSpecimen={onAssignSpecimen}
+                />
+              </>
+            )}
+          </div>
         );
       },
     }),

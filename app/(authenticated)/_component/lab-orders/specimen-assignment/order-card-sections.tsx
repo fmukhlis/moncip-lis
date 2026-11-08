@@ -9,6 +9,7 @@ import {
   ChevronDown,
   ClipboardList,
   CircleDashed,
+  Recycle,
   TestTube,
   TestTubes,
   User,
@@ -202,7 +203,39 @@ export function AssignSpecimenButton({
       onClick={(e) => onAssignSpecimen(order, e.currentTarget)}
     >
       <TestTube />
-      Assign Specimen
+      Create Specimen
+    </Button>
+  );
+}
+
+/**
+ * Opens the assign-existing-specimen dialog for an order.
+ *
+ * The dialog points a specimen that already exists at tests of this order: the
+ * specimen is picked inside the dialog and usually comes from another order of
+ * the same patient. That is why the button sits next to creating a specimen
+ * instead of on a specimen, and why it follows the same rule as creating one:
+ * an order whose items all have a specimen has nothing left to assign.
+ */
+export function AssignExistingSpecimenButton({
+  order,
+  onAssignExistingSpecimen,
+}: {
+  order: SpecimenAssignmentOrder;
+  onAssignExistingSpecimen: (
+    order: SpecimenAssignmentOrder,
+    trigger: HTMLButtonElement,
+  ) => void;
+}) {
+  return (
+    <Button
+      size="sm"
+      variant="outline"
+      className="w-full sm:w-auto"
+      onClick={(e) => onAssignExistingSpecimen(order, e.currentTarget)}
+    >
+      <Recycle />
+      Assign Existing Specimen
     </Button>
   );
 }

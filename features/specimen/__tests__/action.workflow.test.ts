@@ -542,7 +542,7 @@ describe("updateSpecimenAction — order item assignment", () => {
         labOrderId: TEST_IDS.labOrderId,
         note: "Slightly lipemic.",
       }),
-    ).rejects.toThrow("Order is not found");
+    ).rejects.toThrow("Lab order not found");
     expect(mockGetSpecimen).not.toHaveBeenCalled();
   });
 
@@ -555,7 +555,7 @@ describe("updateSpecimenAction — order item assignment", () => {
         labOrderId: TEST_IDS.labOrderId,
         note: "Slightly lipemic.",
       }),
-    ).rejects.toThrow("Specimen is not found");
+    ).rejects.toThrow("Specimen not found");
     expect(mockUpdateSpecimen).not.toHaveBeenCalled();
   });
 });
@@ -810,7 +810,7 @@ describe("collectSpecimenAction", () => {
     mockGetPersonnelCandidate.mockResolvedValue(null);
 
     await expect(collectSpecimenAction(collectParams)).rejects.toThrow(
-      "Collector is not found",
+      "Collector not found",
     );
     expect(mockCollectSpecimen).not.toHaveBeenCalled();
     expect(mockUpdateLabOrderStatus).not.toHaveBeenCalled();
@@ -838,7 +838,7 @@ describe("collectSpecimenAction", () => {
     mockGetLabOrder.mockResolvedValue(null);
 
     await expect(collectSpecimenAction(collectParams)).rejects.toThrow(
-      "Order is not found",
+      "Lab order not found",
     );
     expect(mockGetSpecimen).not.toHaveBeenCalled();
   });
@@ -847,7 +847,7 @@ describe("collectSpecimenAction", () => {
     mockGetSpecimen.mockResolvedValue(null);
 
     await expect(collectSpecimenAction(collectParams)).rejects.toThrow(
-      "Specimen is not found",
+      "Specimen not found",
     );
     expect(mockCollectSpecimen).not.toHaveBeenCalled();
   });
@@ -950,7 +950,7 @@ describe("receiveSpecimenAction", () => {
     mockGetLabOrder.mockResolvedValue(null);
 
     await expect(receiveSpecimenAction(receiveParams)).rejects.toThrow(
-      "Order is not found",
+      "Lab order not found",
     );
     expect(mockGetSpecimen).not.toHaveBeenCalled();
   });
@@ -959,7 +959,7 @@ describe("receiveSpecimenAction", () => {
     mockGetSpecimen.mockResolvedValue(null);
 
     await expect(receiveSpecimenAction(receiveParams)).rejects.toThrow(
-      "Specimen is not found",
+      "Specimen not found",
     );
     expect(mockReceiveSpecimen).not.toHaveBeenCalled();
   });
@@ -1011,7 +1011,7 @@ describe("receiveSpecimenAction", () => {
     mockGetPersonnelCandidate.mockResolvedValue(null);
 
     await expect(receiveSpecimenAction(receiveParams)).rejects.toThrow(
-      "Receiver is not found",
+      "Receiver not found",
     );
     expect(mockReceiveSpecimen).not.toHaveBeenCalled();
     expect(mockCreateAuditLog).not.toHaveBeenCalled();

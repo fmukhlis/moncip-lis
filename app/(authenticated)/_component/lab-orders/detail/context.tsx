@@ -6,12 +6,14 @@ interface LabOrderDetailContext {
   createSpecimenDialogTrigger: HTMLButtonElement | null;
   cancelSpecimenDialogTrigger: HTMLButtonElement | null;
   reassignSpecimenDialogTrigger: HTMLButtonElement | null;
+  reuseSpecimenDialogTrigger: HTMLButtonElement | null;
   collectSpecimenDialogTrigger: HTMLButtonElement | null;
   receiveSpecimenDialogTrigger: HTMLButtonElement | null;
 
   setCreateSpecimenDialogTrigger: (value: HTMLButtonElement) => void;
   setCancelSpecimenDialogTrigger: (value: HTMLButtonElement) => void;
   setReassignSpecimenDialogTrigger: (value: HTMLButtonElement) => void;
+  setReuseSpecimenDialogTrigger: (value: HTMLButtonElement) => void;
   setCollectSpecimenDialogTrigger: (value: HTMLButtonElement) => void;
   setReceiveSpecimenDialogTrigger: (value: HTMLButtonElement) => void;
 }
@@ -41,6 +43,11 @@ export function LabOrderDetailProvider({
   ] = useState<HTMLButtonElement | null>(null);
 
   const [
+    reuseSpecimenDialogActiveTrigger,
+    setReuseSpecimenDialogActiveTrigger,
+  ] = useState<HTMLButtonElement | null>(null);
+
+  const [
     collectSpecimenDialogActiveTrigger,
     setCollectSpecimenDialogActiveTrigger,
   ] = useState<HTMLButtonElement | null>(null);
@@ -56,6 +63,7 @@ export function LabOrderDetailProvider({
         createSpecimenDialogTrigger: createSpecimenDialogActiveTrigger,
         cancelSpecimenDialogTrigger: cancelSpecimenDialogActiveTrigger,
         reassignSpecimenDialogTrigger: reassignSpecimenDialogActiveTrigger,
+        reuseSpecimenDialogTrigger: reuseSpecimenDialogActiveTrigger,
         collectSpecimenDialogTrigger: collectSpecimenDialogActiveTrigger,
         receiveSpecimenDialogTrigger: receiveSpecimenDialogActiveTrigger,
 
@@ -63,6 +71,7 @@ export function LabOrderDetailProvider({
         setCancelSpecimenDialogTrigger: setCancelSpecimenDialogActiveTrigger,
         setReassignSpecimenDialogTrigger:
           setReassignSpecimenDialogActiveTrigger,
+        setReuseSpecimenDialogTrigger: setReuseSpecimenDialogActiveTrigger,
         setCollectSpecimenDialogTrigger: setCollectSpecimenDialogActiveTrigger,
         setReceiveSpecimenDialogTrigger: setReceiveSpecimenDialogActiveTrigger,
       }}
