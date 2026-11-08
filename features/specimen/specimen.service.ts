@@ -12,6 +12,7 @@ import {
   GetSpecimenSchema,
   CollectSpecimenSchema,
   SpecimenReceiptSchema,
+  ReuseSpecimenSchema,
 } from "./specimen.schema";
 
 type DatabaseClient = typeof prisma;
@@ -159,6 +160,43 @@ export async function collectSpecimen(
       collectedAt,
       collectedById,
       note: resolveSpecimenNote(note),
+    },
+    select: specimenDetailSelect,
+  });
+}
+
+/**
+ * The reuse payload: the specimen and laboratory identify the specimen, while
+ * the order items are the ones it is attached to. The schema names the items
+ * after the action payload, so the service takes them under their own name.
+ */
+type ReuseSpecimenParams = Pick<
+  z.infer<typeof ReuseSpecimenSchema>,
+  "id" | "laboratoryId"
+> & { orderItemIds: string[] };
+
+/**
+ * Reuses a specimen by attaching it to more order items.
+ *
+ * The write is append-only: it creates the missing assignments and writes
+ * nothing else, so the status, the collection and receipt records and every
+ * previous assignment stay exactly as they are. That is also what keeps the
+ * target order resyncable from its source system, which is blocked as soon as
+ * one of its items carries a specimen.
+ */
+export async function reuseSpecimen(
+  db: Pick<DatabaseClient, "specimen">,
+  { id, laboratoryId, orderItemIds }: ReuseSpecimenParams,
+) {
+  return db.specimen.update({
+    where: { id, laboratoryId },
+    data: {
+      orderItems: {
+        create: orderItemIds.map((labOrderItemId) => ({
+          laboratory: { connect: { id: laboratoryId } },
+          labOrderItem: { connect: { id: labOrderItemId } },
+        })),
+      },
     },
     select: specimenDetailSelect,
   });

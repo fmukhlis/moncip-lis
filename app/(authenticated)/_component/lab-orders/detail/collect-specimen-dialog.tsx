@@ -30,6 +30,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogContent,
+  DialogDescription,
 } from "@/components/ui/dialog";
 
 type FormInput = z.input<typeof CollectSpecimenActionSchema>;
@@ -185,29 +186,34 @@ export default function CollectSpecimenDialog({
                 {isFetching ? (
                   <>
                     <Skeleton className="h-[18px] w-52" />
-                    <span className="sr-only">Collect Specimen</span>
+                    <span className="sr-only">Log Collection</span>
                   </>
                 ) : (
                   <span>
                     {isLoggingCollection
-                      ? `Log collection of "${specimen?.specimenType.displayName}"`
-                      : `Update collection record of "${specimen?.specimenType.displayName}"`}
+                      ? "Log Collection"
+                      : "Update Collection Record"}
                   </span>
                 )}
               </DialogTitle>
+              {specimen ? (
+                <DialogDescription>
+                  {`${specimen.specimenType.displayName} · ${specimen.no}`}
+                </DialogDescription>
+              ) : null}
             </DialogHeader>
             <div className="px-4 pb-1 -mx-4 max-h-[50vh] overflow-y-auto">
               <FieldGroup className="gap-4">
                 <DateTimeField<FormInput>
                   name="collectedAt"
                   formId="collect-specimen"
-                  labelText="Collection Time"
+                  labelText="Date"
                   disabled={isFetching}
                 />
                 <SelectField<FormInput>
                   name="collectedById"
                   formId="collect-specimen"
-                  labelText="Collected By"
+                  labelText="Collector name"
                   options={collectorOptions}
                   placeholder={
                     isFetchingCandidates
@@ -219,8 +225,7 @@ export default function CollectSpecimenDialog({
                 <TextareaField<FormInput>
                   name="note"
                   formId="collect-specimen"
-                  labelText="Note"
-                  placeholder="Optional"
+                  labelText="Note (optional)"
                   maxLength={500}
                   disabled={isFetching}
                 />

@@ -21,6 +21,10 @@ type Option = {
   label: string;
   value: string;
   required?: boolean | undefined;
+  /** A disabled option is still shown, so its reason stays visible. */
+  disabled?: boolean | undefined;
+  /** The reason an option is disabled, rendered under its label. */
+  description?: string | undefined;
 };
 
 export default function CheckboxGroupField<
@@ -30,12 +34,15 @@ export default function CheckboxGroupField<
   formId,
   options,
   className,
+  emptyMessage,
   renderLabelContent,
   ...useControllerProps
 }: UseControllerProps<TFieldValues> & {
   formId: string;
   options: Options;
   className?: string | undefined;
+  /** Shown instead of the options while there are none to offer. */
+  emptyMessage?: ReactNode;
   renderLabelContent: () => ReactNode;
 }) {
   const { field, fieldState } = useController(useControllerProps);
@@ -56,9 +63,10 @@ export default function CheckboxGroupField<
                 data-invalid={fieldState.invalid}
               >
                 <Checkbox
-                  id={`${formId}-${field.name}-${option.label}`}
+                  id={`${formId}-${field.name}-${option.value}`}
                   checked={field.value.includes(option.value)}
                   required={option.required}
+                  disabled={option.disabled}
                   aria-invalid={fieldState.invalid}
                   onCheckedChange={(checked) => {
                     if (checked) {
@@ -73,17 +81,26 @@ export default function CheckboxGroupField<
                   }}
                 />
                 <FieldLabel
-                  htmlFor={`${formId}-${field.name}-${option.label}`}
-                  className="font-normal"
+                  htmlFor={`${formId}-${field.name}-${option.value}`}
+                  className={cn(
+                    "font-normal",
+                    option.disabled && "text-muted-foreground",
+                  )}
                 >
                   {option.label}
+                  {option.description ? (
+                    <span className="block text-xs font-normal text-muted-foreground">
+                      {option.description}
+                    </span>
+                  ) : null}
                 </FieldLabel>
               </Field>
             ))}
           </>
         ) : (
           <FieldDescription>
-            No tests available. Please select a specimen type first.
+            {emptyMessage ??
+              "No tests available. Please select a specimen type first."}
           </FieldDescription>
         )}
       </FieldGroup>

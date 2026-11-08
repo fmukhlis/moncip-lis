@@ -27,6 +27,7 @@ import {
   getSpecimenAction,
   getSpecimenPersonnelCandidatesAction,
   receiveSpecimenAction,
+  reuseSpecimenAction,
   updateSpecimenAction,
 } from "../specimen.action";
 
@@ -66,6 +67,7 @@ jest.mock("../specimen.service", () => ({
   updateSpecimen: jest.fn(),
   collectSpecimen: jest.fn(),
   receiveSpecimen: jest.fn(),
+  reuseSpecimen: jest.fn(),
   reserveSpecimenNo: jest.fn(),
 }));
 
@@ -169,6 +171,13 @@ const receiveParams = {
   receivedById: TEST_IDS.receiverId,
 };
 
+/** The reuse payload names the order the assignment is made in and its tests. */
+const reuseParams = {
+  id: TEST_IDS.specimenId,
+  labOrderId: TEST_IDS.labOrderId,
+  orderItemIds: [TEST_IDS.orderItemId],
+};
+
 beforeEach(() => {
   transaction.mockImplementation(async (callback: (tx: unknown) => unknown) =>
     callback({}),
@@ -249,6 +258,12 @@ describe("authorization", () => {
       () => getSpecimenPersonnelCandidatesAction(),
       "view specimen personnel",
     ],
+    [
+      "reuseSpecimenAction",
+      Role.DOCTOR,
+      () => reuseSpecimenAction(reuseParams),
+      "reuse a specimen",
+    ],
   ];
 
   it.each(deniedCases)(
@@ -319,7 +334,7 @@ describe("authorization", () => {
       mockGetLabOrder.mockResolvedValue(null);
 
       await expect(createSpecimenAction(createParams)).rejects.toThrow(
-        "Order is not found",
+        "Lab order not found",
       );
       expect(mockReserveSpecimenNo).not.toHaveBeenCalled();
       expect(mockCreateSpecimen).not.toHaveBeenCalled();
@@ -554,7 +569,7 @@ describe("authorization", () => {
           labOrderId: TEST_IDS.labOrderId,
           note: "lipemic",
         }),
-      ).rejects.toThrow("Specimen is not found");
+      ).rejects.toThrow("Specimen not found");
     });
 
     it("refuses a cancelled specimen", async () => {

@@ -5,6 +5,7 @@ type LabOrderDetailState = {
   isCreateSpecimenDialogOpen: boolean;
   isCancelSpecimenDialogOpen: boolean;
   isReassignSpecimenDialogOpen: boolean;
+  isReuseSpecimenDialogOpen: boolean;
   isCollectSpecimenDialogOpen: boolean;
   isReceiveSpecimenDialogOpen: boolean;
 };
@@ -14,6 +15,7 @@ const initialState: LabOrderDetailState = {
   isCreateSpecimenDialogOpen: false,
   isCancelSpecimenDialogOpen: false,
   isReassignSpecimenDialogOpen: false,
+  isReuseSpecimenDialogOpen: false,
   isCollectSpecimenDialogOpen: false,
   isReceiveSpecimenDialogOpen: false,
 };
@@ -40,6 +42,9 @@ const labOrderDetailSlice = createSlice({
     setIsCollectSpecimenDialogOpen: (state, action: PayloadAction<boolean>) => {
       state.isCollectSpecimenDialogOpen = action.payload;
     },
+    setIsReuseSpecimenDialogOpen: (state, action: PayloadAction<boolean>) => {
+      state.isReuseSpecimenDialogOpen = action.payload;
+    },
     setIsReceiveSpecimenDialogOpen: (state, action: PayloadAction<boolean>) => {
       state.isReceiveSpecimenDialogOpen = action.payload;
     },
@@ -51,6 +56,7 @@ export const {
   setIsCreateSpecimenDialogOpen,
   setIsCancelSpecimenDialogOpen,
   setIsReassignSpecimenDialogOpen,
+  setIsReuseSpecimenDialogOpen,
   setIsCollectSpecimenDialogOpen,
   setIsReceiveSpecimenDialogOpen,
 } = labOrderDetailSlice.actions;

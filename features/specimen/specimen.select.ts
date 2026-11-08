@@ -40,6 +40,9 @@ export const specimenListSelect = {
 
 export const specimenDetailSelect = {
   ...specimenBaseSelect,
+  // The patient the specimen belongs to. A specimen can only be reused inside
+  // its own patient, so the detail projection has to carry it.
+  patientId: true,
   createdAt: true,
   updatedAt: true,
   receivedAt: true,

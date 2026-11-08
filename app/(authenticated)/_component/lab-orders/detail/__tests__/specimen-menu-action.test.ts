@@ -57,6 +57,18 @@ describe("getSpecimenMenuActions", () => {
       expect(getSpecimenMenuActions(status)).toEqual([]);
     },
   );
+
+  // Reusing is not a per-specimen action: the reuse dialog starts from the
+  // specimen to reuse, so no status offers it from the menu.
+  it.each([
+    SpecimenStatus.PENDING,
+    SpecimenStatus.COLLECTED,
+    SpecimenStatus.RECEIVED,
+    SpecimenStatus.CANCELLED,
+    SpecimenStatus.REJECTED,
+  ])("offers no reuse for a %s specimen", (status) => {
+    expect(getSpecimenMenuActions(status)).not.toContain("reuse");
+  });
 });
 
 describe("getSpecimenReceiveDialogMode", () => {

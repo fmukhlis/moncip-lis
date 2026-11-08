@@ -28,6 +28,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogContent,
+  DialogDescription,
 } from "@/components/ui/dialog";
 
 type FormValues = z.infer<typeof CreateSpecimenActionSchema>;
@@ -157,18 +158,21 @@ export default function CreateSpecimenDialog({
   const onSubmit: SubmitHandler<FormValues> = async (data) => {
     try {
       const res = await createSpecimenAction(data).unwrap();
+      // The names are read from the response, because the refreshed order loses
+      // no test but the dialog may already be closing when it resolves.
+      const assignedTestNames =
+        res?.data?.orderItems.map(
+          ({ labOrderItem: { performable } }) => performable.displayName,
+        ) ?? [];
+
       onOpenChange(false);
       setTimeout(() => {
         reset();
       }, 200);
       toast.success(
-        `Specimen "${res?.data?.specimenType.displayName}" created and assigned to:${res.data.orderItems.map(
-          ({
-            labOrderItem: {
-              performable: { displayName },
-            },
-          }) => ` ${displayName}`,
-        )}`,
+        `Specimen "${res?.data?.no}" created and assigned to ${
+          assignedTestNames.length
+        } ${assignedTestNames.length === 1 ? "test" : "tests"}: ${assignedTestNames.join(", ")}`,
       );
     } catch (error) {
       toast.error(
@@ -217,6 +221,13 @@ export default function CreateSpecimenDialog({
           >
             <DialogHeader>
               <DialogTitle>Create Specimen</DialogTitle>
+              <DialogDescription>
+                {orderData?.data?.patient.name
+                  ? `${orderData.data.patient.name} · `
+                  : null}
+                Pick the specimen type to create, then the tests of this lab
+                order it should cover.
+              </DialogDescription>
             </DialogHeader>
             <div
               ref={comboboxContentContainerRef}
@@ -261,12 +272,12 @@ export default function CreateSpecimenDialog({
                           </ItemTitle>
                           <ItemDescription className="flex gap-1 items-center flex-wrap">
                             {item.specimenUsedBy.length
-                              ? `Used by : ${item.specimenUsedBy.map(({ performableName }) => performableName).join(", ")}`
+                              ? `Used by: ${item.specimenUsedBy.map(({ performableName }) => performableName).join(", ")}`
                               : null}
                             {item.specimenDefaultIn.length ? (
                               <>
                                 <Dot />
-                                {`Default in : ${item.specimenDefaultIn.join(", ")}`}
+                                {`Default in: ${item.specimenDefaultIn.join(", ")}`}
                               </>
                             ) : null}
                           </ItemDescription>
@@ -284,6 +295,7 @@ export default function CreateSpecimenDialog({
                   formId="create-specimen"
                   className="w-fit"
                   options={associableTests}
+                  emptyMessage="Select a specimen type to see the tests that can be assigned."
                   renderLabelContent={() => "Associated Tests"}
                 />
               </FieldGroup>

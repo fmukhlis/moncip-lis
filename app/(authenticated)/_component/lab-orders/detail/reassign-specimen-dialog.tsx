@@ -33,6 +33,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogContent,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -245,11 +246,14 @@ export default function ReassignSpecimenDialog({
                     <span className="sr-only">Reassign Specimen</span>
                   </>
                 ) : (
-                  <span>
-                    {`Reassign "${specimenData.data.specimenType.displayName}"`}
-                  </span>
+                  <span>Reassign Specimen</span>
                 )}
               </DialogTitle>
+              {specimenData?.data ? (
+                <DialogDescription>
+                  {`${specimenData.data.specimenType.displayName} · ${specimenData.data.no}`}
+                </DialogDescription>
+              ) : null}
             </DialogHeader>
             <div
               ref={comboboxContentContainerRef}
@@ -296,12 +300,12 @@ export default function ReassignSpecimenDialog({
                           </ItemTitle>
                           <ItemDescription className="flex gap-1 items-center flex-wrap">
                             {item.specimenUsedBy.length
-                              ? `Used by : ${item.specimenUsedBy.map(({ performableName }) => performableName).join(", ")}`
+                              ? `Used by: ${item.specimenUsedBy.map(({ performableName }) => performableName).join(", ")}`
                               : null}
                             {item.specimenDefaultIn.length ? (
                               <>
                                 <Dot />
-                                {`Default in : ${item.specimenDefaultIn.join(", ")}`}
+                                {`Default in: ${item.specimenDefaultIn.join(", ")}`}
                               </>
                             ) : null}
                           </ItemDescription>

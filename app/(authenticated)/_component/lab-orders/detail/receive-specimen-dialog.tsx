@@ -29,6 +29,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogContent,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import {
   SpecimenReceiveDialogMode,
@@ -41,7 +42,7 @@ type FormValues = z.output<typeof SpecimenReceiptActionSchema>;
 type ReceiveSpecimenDialogConfig = {
   formId: string;
   fallbackTitle: string;
-  title: (displayName: string) => string;
+  title: string;
   submitLabel: string;
   submittingLabel: string;
   successMessage: (displayName: string) => string;
@@ -55,16 +56,16 @@ const dialogConfigs: Record<
   receive: {
     formId: "receive-specimen",
     fallbackTitle: "Receive Specimen",
-    title: (displayName) => `Receive "${displayName}"`,
-    submitLabel: "Receive",
-    submittingLabel: "Receiving...",
+    title: "Receive Specimen",
+    submitLabel: "Save",
+    submittingLabel: "Saving...",
     successMessage: (displayName) => `Specimen "${displayName}" received`,
     errorMessage: "Failed to receive specimen",
   },
   update: {
     formId: "update-receipt-record",
     fallbackTitle: "Update Receipt Record",
-    title: (displayName) => `Update receipt record of "${displayName}"`,
+    title: "Update Receipt Record",
     submitLabel: "Save",
     submittingLabel: "Saving...",
     successMessage: (displayName) =>
@@ -234,26 +235,27 @@ export default function ReceiveSpecimenDialog({
                     <span className="sr-only">{config.fallbackTitle}</span>
                   </>
                 ) : (
-                  <span>
-                    {config.title(
-                      specimenData?.data?.specimenType.displayName ?? "",
-                    )}
-                  </span>
+                  <span>{config.title}</span>
                 )}
               </DialogTitle>
+              {specimenData?.data ? (
+                <DialogDescription>
+                  {`${specimenData.data.specimenType.displayName} · ${specimenData.data.no}`}
+                </DialogDescription>
+              ) : null}
             </DialogHeader>
             <div className="px-4 pb-1 -mx-4 max-h-[50vh] overflow-y-auto">
               <FieldGroup className="gap-4">
                 <DateTimeField<FormInput>
                   name="receivedAt"
                   formId={config.formId}
-                  labelText="Received Time"
+                  labelText="Date"
                   disabled={isFetching}
                 />
                 <SelectField<FormInput>
                   name="receivedById"
                   formId={config.formId}
-                  labelText="Received By"
+                  labelText="Receiver name"
                   options={receiverOptions}
                   placeholder={
                     isFetchingCandidates
@@ -265,8 +267,7 @@ export default function ReceiveSpecimenDialog({
                 <TextareaField<FormInput>
                   name="note"
                   formId={config.formId}
-                  labelText="Note"
-                  placeholder="Optional"
+                  labelText="Note (optional)"
                   maxLength={500}
                   disabled={isFetching}
                 />

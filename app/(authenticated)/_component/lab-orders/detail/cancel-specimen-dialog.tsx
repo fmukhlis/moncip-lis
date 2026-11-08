@@ -115,10 +115,13 @@ export default function CancelSpecimenDialog({
                     <span className="sr-only">Cancel Specimen</span>
                   </>
                 ) : (
-                  <>{`Cancel "${specimenData.data.specimenType.displayName}"`}</>
+                  <span>Cancel Specimen</span>
                 )}
               </AlertDialogTitle>
               <AlertDialogDescription>
+                {specimenData?.data
+                  ? `${specimenData.data.specimenType.displayName} · ${specimenData.data.no}. `
+                  : null}
                 Are you sure you want to cancel this specimen? This action
                 cannot be undone.
               </AlertDialogDescription>
@@ -144,9 +147,8 @@ export default function CancelSpecimenDialog({
             <InputField<FormValues>
               name="additionalReason"
               formId="cancel-specimen"
-              labelText="Additional Reason"
+              labelText="Additional Reason (optional)"
               className="pb-4"
-              placeholder="Optional"
             />
             <AlertDialogFooter>
               <AlertDialogCancel

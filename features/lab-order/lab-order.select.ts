@@ -11,7 +11,24 @@ export const labOrderListSelect = {
     select: {
       ...labOrderItemBaseSelect,
       performable: {
-        select: { id: true, type: true, displayName: true },
+        select: {
+          id: true,
+          type: true,
+          displayName: true,
+          // The specimen types the performable can be examined from, which is
+          // what decides whether an existing specimen can be reused for the
+          // item. The list projection carries it so the reuse dialog can rule
+          // on every item of an order it did not open.
+          specimenTypes: {
+            where: { specimenType: { isActive: true } },
+            select: {
+              isDefault: true,
+              specimenType: {
+                select: { id: true, code: true, displayName: true },
+              },
+            },
+          },
+        },
       },
       specimens: {
         select: {

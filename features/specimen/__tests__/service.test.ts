@@ -7,6 +7,7 @@ import {
   getSpecimen,
   receiveSpecimen,
   reserveSpecimenNo,
+  reuseSpecimen,
   updateSpecimen,
 } from "../specimen.service";
 
@@ -482,5 +483,60 @@ describe("updateSpecimen", () => {
     const db = makeSpecimenDatabase({ update });
 
     await expect(updateSpecimen(db, baseParams)).rejects.toBe(error);
+  });
+});
+
+describe("reuseSpecimen", () => {
+  const reuseParams = {
+    id: TEST_IDS.id,
+    laboratoryId: TEST_IDS.laboratoryId,
+    orderItemIds: [TEST_IDS.labOrderId, TEST_IDS.collectedById],
+  };
+
+  it("creates the assignments of the specimen scoped to its laboratory", async () => {
+    const { db, update } = makeDatabase();
+
+    await reuseSpecimen(db, reuseParams);
+
+    const { where, data, select } = firstUpdateArgs(update);
+
+    expect(where).toEqual({
+      id: TEST_IDS.id,
+      laboratoryId: TEST_IDS.laboratoryId,
+    });
+    expect(data).toEqual({
+      orderItems: {
+        create: reuseParams.orderItemIds.map((labOrderItemId) => ({
+          laboratory: { connect: { id: TEST_IDS.laboratoryId } },
+          labOrderItem: { connect: { id: labOrderItemId } },
+        })),
+      },
+    });
+    expect(select).toBe(specimenDetailSelect);
+  });
+
+  // The reuse is append-only: writing the status or a record here would let a
+  // reuse move a specimen backwards and would overwrite the sample it carries.
+  it("writes nothing but the assignments", async () => {
+    const { db, update } = makeDatabase();
+
+    await reuseSpecimen(db, reuseParams);
+
+    expect(Object.keys(firstUpdateArgs(update).data)).toEqual(["orderItems"]);
+  });
+
+  it("returns the record returned by the client", async () => {
+    const row = { id: TEST_IDS.id, status: SpecimenStatus.RECEIVED };
+    const { db } = makeDatabase(row);
+
+    await expect(reuseSpecimen(db, reuseParams)).resolves.toBe(row);
+  });
+
+  it("propagates persistence failures so the caller's transaction can roll back", async () => {
+    const error = new Error("foreign key constraint failed");
+    const { db, update } = makeDatabase();
+    update.mockRejectedValueOnce(error);
+
+    await expect(reuseSpecimen(db, reuseParams)).rejects.toBe(error);
   });
 });
