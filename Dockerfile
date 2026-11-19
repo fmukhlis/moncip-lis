@@ -12,6 +12,8 @@ RUN corepack enable
 
 RUN pnpm config set store-dir /pnpm/store
 
+RUN npm install -g @opencode/cli
+
 EXPOSE 3000
 
 CMD [ "sh", "-c", "pnpm install && pnpm run dev" ]
