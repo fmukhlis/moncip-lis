@@ -8,7 +8,9 @@ ENV NEXT_TELEMETRY_DISABLED=1
 
 WORKDIR /app
 
-RUN corepack enable
+RUN npm install --global corepack@latest
+
+RUN corepack enable pnpm
 
 RUN pnpm config set store-dir /pnpm/store
 
