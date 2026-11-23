@@ -14,11 +14,11 @@ RUN corepack enable pnpm
 
 RUN pnpm config set store-dir /pnpm/store
 
-RUN npm install -g @opencode/cli
+RUN npm install -g @opencode/cli@2.3.2
 
-EXPOSE 3000
+EXPOSE 3000 49374
 
-CMD [ "sh", "-c", "pnpm install && pnpm run dev" ]
+CMD [ "sh", "-c", "pnpm install && (opencode service set hostname 0.0.0.0 || true) && (opencode service set port 49374 || true) && (opencode service start || true) && pnpm run dev" ]
 
 ########################################
 
