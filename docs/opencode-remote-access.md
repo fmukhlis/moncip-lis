@@ -10,9 +10,9 @@ production `runner` stage and is unaffected.
 
 ## How it works
 
-- The `dev` image starts the shared OpenCode service on `0.0.0.0:49374`.
+- The `dev` image starts the shared OpenCode service on `0.0.0.0:4096`.
 - `compose.dev.yaml` publishes that port on the host loopback only:
-  `127.0.0.1:49374:49374`.
+  `127.0.0.1:4096:4096`.
 - The host's `tailscale serve` proxies a tailnet port to that host loopback
   port.
 - The phone opens the tailnet URL and pairs once. The session cookie lasts 30
@@ -41,7 +41,7 @@ Port `8080` is already used by Adminer in `compose.dev.yaml`, so use `8081`
 here:
 
 ```bash
-sudo tailscale serve --bg --http=8081 http://127.0.0.1:49374
+sudo tailscale serve --bg --http=8081 http://127.0.0.1:4096
 sudo tailscale serve status
 ```
 
@@ -57,7 +57,7 @@ For HTTPS instead of HTTP (requires HTTPS certificates in the Tailscale admin
 console):
 
 ```bash
-sudo tailscale serve --bg --https=8443 http://127.0.0.1:49374
+sudo tailscale serve --bg --https=8443 http://127.0.0.1:4096
 ```
 
 ## Pair a phone
@@ -99,8 +99,8 @@ container if you need the current password or sessions.
 
 ## Security notes
 
-- Keep the host binding on loopback: `127.0.0.1:49374:49374`. Do not use
-  `0.0.0.0` or an unqualified `49374:49374`.
+- Keep the host binding on loopback: `127.0.0.1:4096:4096`. Do not use
+  `0.0.0.0` or an unqualified `4096:4096`.
 - Use `tailscale serve`, not `tailscale funnel`. Funnel exposes the service to
   the internet.
 - The web UI is a full OpenCode agent. It can edit files and run commands as
