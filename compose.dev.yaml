@@ -10,8 +10,13 @@ services:
     volumes:
       - ./:/app
       - pnpm-store:/pnpm/store
+      - opencode-config:/root/.config/opencode
+      - opencode-data:/root/.local/share/opencode
+      - opencode-state:/root/.local/state/opencode
+      - opencode-cache:/root/.cache/opencode
     ports:
       - 3000:3000
+      - "127.0.0.1:49374:49374"
     networks:
       - lis-his-network
 
@@ -33,6 +38,10 @@ services:
 
 volumes:
   pnpm-store:
+  opencode-config:
+  opencode-data:
+  opencode-state:
+  opencode-cache:
 
 networks:
   lis-his-network:
