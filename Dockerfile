@@ -12,7 +12,7 @@ RUN npm install --global corepack@latest
 
 RUN corepack enable pnpm
 
-RUN pnpm config set store-dir /pnpm/store
+ENV NPM_CONFIG_STORE_DIR=/pnpm/store
 
 RUN npm install -g @opencode/cli@2.3.2
 
